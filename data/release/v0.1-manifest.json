@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "release_id": "bqb-v0.1",
+  "public_seed": "BibleQuoteBench/v0.1/2026-09-04",
+  "translations": [
+    "bsb-2025-third-printing",
+    "asv-1901",
+    "web-classic-2020"
+  ],
+  "corpus_sha256": {
+    "asv-1901": "74c716d28bcab09b36f197d8eb7f7c11ffb30fd827b60092524265502177ddef",
+    "bsb-2025-third-printing": "a5331afeff88c78b2706e8f7fd9fefd9df426dbb8a715b0ade531a03dc543871",
+    "web-classic-2020": "021e41c0a1e111125562c2ffe7e2e5872f5e382564930181453bf69f6d8865b7"
+  },
+  "dev_reference_count": 100,
+  "dev_case_count": 300,
+  "hidden_reference_count": 400,
+  "hidden_case_count": 1200,
+  "strata": {
+    "extremely_famous": 10,
+    "long_verse": 25,
+    "random": 350,
+    "short_verse": 25,
+    "translation_sensitive": 50,
+    "well_known": 40
+  },
+  "dev_cases_sha256": "1acd6b732e487e12991cd8ad7d0c77f2ea69cb2504cb195d92bc8fa25bfdef5a",
+  "hidden_cases_sha256": "c9e2cffb7667fdc82204941b45e22940eddec3e3c75f95e1657f3eb73a2eeafe"
+}

@@ -1,0 +1,300 @@
+{"case_id":"BQ-DEV-9C933E9FDCED456D","translation":"bsb-2025-third-printing","reference":{"book":"1 Chronicles","chapter":13,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B62AEB8D40A035D3","translation":"asv-1901","reference":{"book":"1 Chronicles","chapter":13,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1ADC31E23DDADC6E","translation":"web-classic-2020","reference":{"book":"1 Chronicles","chapter":13,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F0A3A8113338C584","translation":"bsb-2025-third-printing","reference":{"book":"1 Chronicles","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C460A93B7F3A72B9","translation":"asv-1901","reference":{"book":"1 Chronicles","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DEBC9CCC52C9A180","translation":"web-classic-2020","reference":{"book":"1 Chronicles","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E5B8FD2C6A57B758","translation":"bsb-2025-third-printing","reference":{"book":"1 Chronicles","chapter":1,"verse_start":49},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DFDA683BD7C6473E","translation":"asv-1901","reference":{"book":"1 Chronicles","chapter":1,"verse_start":49},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1A940CC271C9D648","translation":"web-classic-2020","reference":{"book":"1 Chronicles","chapter":1,"verse_start":49},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D13CDD50DACE4EE9","translation":"bsb-2025-third-printing","reference":{"book":"1 Corinthians","chapter":10,"verse_start":13},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A69F45BD3E75B45C","translation":"asv-1901","reference":{"book":"1 Corinthians","chapter":10,"verse_start":13},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FB42F1A45C7DE126","translation":"web-classic-2020","reference":{"book":"1 Corinthians","chapter":10,"verse_start":13},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CE9ECB61791ED940","translation":"bsb-2025-third-printing","reference":{"book":"1 Kings","chapter":16,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-95DDEDC889046799","translation":"asv-1901","reference":{"book":"1 Kings","chapter":16,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CDF8A46F8F757A87","translation":"web-classic-2020","reference":{"book":"1 Kings","chapter":16,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-66748730640D56D4","translation":"bsb-2025-third-printing","reference":{"book":"1 Thessalonians","chapter":3,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C8E78B0388D696B3","translation":"asv-1901","reference":{"book":"1 Thessalonians","chapter":3,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-698BFFAB29D3314B","translation":"web-classic-2020","reference":{"book":"1 Thessalonians","chapter":3,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0AF7742858AF0E60","translation":"bsb-2025-third-printing","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B2C14EAAD2EFEFA7","translation":"asv-1901","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B435D68E0FEE065D","translation":"web-classic-2020","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3293ABF3DE14AC19","translation":"bsb-2025-third-printing","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":20},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9A03FC6B0FE4B486","translation":"asv-1901","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":20},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4756426984132866","translation":"web-classic-2020","reference":{"book":"1 Thessalonians","chapter":5,"verse_start":20},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-794E1320C211B321","translation":"bsb-2025-third-printing","reference":{"book":"2 Chronicles","chapter":22,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0364CB8A5239FA49","translation":"asv-1901","reference":{"book":"2 Chronicles","chapter":22,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-67204C9333AF9E39","translation":"web-classic-2020","reference":{"book":"2 Chronicles","chapter":22,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F9626D19A7BFA6D0","translation":"bsb-2025-third-printing","reference":{"book":"2 Chronicles","chapter":2,"verse_start":14},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DE0B9611F684825F","translation":"asv-1901","reference":{"book":"2 Chronicles","chapter":2,"verse_start":14},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A2A46A8B07630CCE","translation":"web-classic-2020","reference":{"book":"2 Chronicles","chapter":2,"verse_start":14},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-37C170F4F5ED41E9","translation":"bsb-2025-third-printing","reference":{"book":"2 Samuel","chapter":1,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-315280F46DDF4159","translation":"asv-1901","reference":{"book":"2 Samuel","chapter":1,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-870D3A42AF2E50A5","translation":"web-classic-2020","reference":{"book":"2 Samuel","chapter":1,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3D6587EB779D33CB","translation":"bsb-2025-third-printing","reference":{"book":"2 Samuel","chapter":5,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F5B0119380FCC567","translation":"asv-1901","reference":{"book":"2 Samuel","chapter":5,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-536BE3FC33A5FDBA","translation":"web-classic-2020","reference":{"book":"2 Samuel","chapter":5,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-55011CC069E84322","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":1,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-86BA2E2F45746CE9","translation":"asv-1901","reference":{"book":"Acts","chapter":1,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A001A86548DD9BC5","translation":"web-classic-2020","reference":{"book":"Acts","chapter":1,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FF19D9071A1C3801","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":1,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-296837A4A5539A19","translation":"asv-1901","reference":{"book":"Acts","chapter":1,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F52BCE206E4F4CCF","translation":"web-classic-2020","reference":{"book":"Acts","chapter":1,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E51B202E562AB6B2","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":27,"verse_start":27},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-331FFDB6AFADBC43","translation":"asv-1901","reference":{"book":"Acts","chapter":27,"verse_start":27},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C3B958C13117F00D","translation":"web-classic-2020","reference":{"book":"Acts","chapter":27,"verse_start":27},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-59B8E7A6BE8696CC","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":5,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8AAE14D6A89E4835","translation":"asv-1901","reference":{"book":"Acts","chapter":5,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-340AE723AEC26005","translation":"web-classic-2020","reference":{"book":"Acts","chapter":5,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EFDCE038ED76A1CA","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":7,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A97677EC28892CC9","translation":"asv-1901","reference":{"book":"Acts","chapter":7,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DD95F2CCDB6C4479","translation":"web-classic-2020","reference":{"book":"Acts","chapter":7,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-61FAD6588B8600BA","translation":"bsb-2025-third-printing","reference":{"book":"Acts","chapter":7,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EB18F55D28D26F92","translation":"asv-1901","reference":{"book":"Acts","chapter":7,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DC74FFD5752968E6","translation":"web-classic-2020","reference":{"book":"Acts","chapter":7,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C2E891271188C007","translation":"bsb-2025-third-printing","reference":{"book":"Amos","chapter":3,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A3FBE6404D230F2B","translation":"asv-1901","reference":{"book":"Amos","chapter":3,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-10EC77C57CAC6C82","translation":"web-classic-2020","reference":{"book":"Amos","chapter":3,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-95E7BE9CEFD2E5ED","translation":"bsb-2025-third-printing","reference":{"book":"Colossians","chapter":2,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-32ABB0AC3DF7FA96","translation":"asv-1901","reference":{"book":"Colossians","chapter":2,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-55C9546C1575567F","translation":"web-classic-2020","reference":{"book":"Colossians","chapter":2,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0450157E71E08BC6","translation":"bsb-2025-third-printing","reference":{"book":"Daniel","chapter":11,"verse_start":33},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4DE61F0C78442545","translation":"asv-1901","reference":{"book":"Daniel","chapter":11,"verse_start":33},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F64564B1031B3956","translation":"web-classic-2020","reference":{"book":"Daniel","chapter":11,"verse_start":33},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8F09C509634061B7","translation":"bsb-2025-third-printing","reference":{"book":"Daniel","chapter":12,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1050671790C8D258","translation":"asv-1901","reference":{"book":"Daniel","chapter":12,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E7024932BE6A0C54","translation":"web-classic-2020","reference":{"book":"Daniel","chapter":12,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9207071DFA0FABE5","translation":"bsb-2025-third-printing","reference":{"book":"Daniel","chapter":5,"verse_start":23},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-2A32F60B6A65CFF9","translation":"asv-1901","reference":{"book":"Daniel","chapter":5,"verse_start":23},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-11EC4ED8B3FEA45A","translation":"web-classic-2020","reference":{"book":"Daniel","chapter":5,"verse_start":23},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3425DF43F4851F50","translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C2101EE3C348B8B5","translation":"asv-1901","reference":{"book":"Deuteronomy","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-16757FF3DEFDDD08","translation":"web-classic-2020","reference":{"book":"Deuteronomy","chapter":15,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E6A055EBCB91D3BA","translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":32,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-22DC1423E50593B3","translation":"asv-1901","reference":{"book":"Deuteronomy","chapter":32,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D38B3666F6596561","translation":"web-classic-2020","reference":{"book":"Deuteronomy","chapter":32,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F23A94FC8099D66C","translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":3,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-41CFBA1A9FB3D810","translation":"asv-1901","reference":{"book":"Deuteronomy","chapter":3,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BEB6CDF9EBE6C5D8","translation":"web-classic-2020","reference":{"book":"Deuteronomy","chapter":3,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9194817DB62FA44E","translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":6,"verse_start":5},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FFD957EC9D12167E","translation":"asv-1901","reference":{"book":"Deuteronomy","chapter":6,"verse_start":5},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-120927A6AF1037DD","translation":"web-classic-2020","reference":{"book":"Deuteronomy","chapter":6,"verse_start":5},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-841C0E448609E4FF","translation":"bsb-2025-third-printing","reference":{"book":"Esther","chapter":8,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E10ED7A5D2EC28A4","translation":"asv-1901","reference":{"book":"Esther","chapter":8,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1ACD72BA0225BD4C","translation":"web-classic-2020","reference":{"book":"Esther","chapter":8,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8703884CAB646A78","translation":"bsb-2025-third-printing","reference":{"book":"Exodus","chapter":29,"verse_start":38},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0B7289A78F352E9C","translation":"asv-1901","reference":{"book":"Exodus","chapter":29,"verse_start":38},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-315627281691D790","translation":"web-classic-2020","reference":{"book":"Exodus","chapter":29,"verse_start":38},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D0030C118D1DADD9","translation":"bsb-2025-third-printing","reference":{"book":"Exodus","chapter":34,"verse_start":24},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7634048E9D2DADC7","translation":"asv-1901","reference":{"book":"Exodus","chapter":34,"verse_start":24},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3A9B425BD26BBB02","translation":"web-classic-2020","reference":{"book":"Exodus","chapter":34,"verse_start":24},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-20091660EA4CDBA0","translation":"bsb-2025-third-printing","reference":{"book":"Ezekiel","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-41D2AE2B08B90109","translation":"asv-1901","reference":{"book":"Ezekiel","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1EA1586D252939BC","translation":"web-classic-2020","reference":{"book":"Ezekiel","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C7E1117A31DEAF73","translation":"bsb-2025-third-printing","reference":{"book":"Ezekiel","chapter":46,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B58194A660CDD787","translation":"asv-1901","reference":{"book":"Ezekiel","chapter":46,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BA80D9E39033999A","translation":"web-classic-2020","reference":{"book":"Ezekiel","chapter":46,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-06263DFBD501F65F","translation":"bsb-2025-third-printing","reference":{"book":"Ezekiel","chapter":46,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D3576D9B6524E24C","translation":"asv-1901","reference":{"book":"Ezekiel","chapter":46,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E003FCAF5AC43947","translation":"web-classic-2020","reference":{"book":"Ezekiel","chapter":46,"verse_start":9},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EED48E7726135AC9","translation":"bsb-2025-third-printing","reference":{"book":"Ezekiel","chapter":48,"verse_start":21},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-20E0C2AFD39BC9D0","translation":"asv-1901","reference":{"book":"Ezekiel","chapter":48,"verse_start":21},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-05E89EF825FC1177","translation":"web-classic-2020","reference":{"book":"Ezekiel","chapter":48,"verse_start":21},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BB1CD2B6B907DFFC","translation":"bsb-2025-third-printing","reference":{"book":"Ezekiel","chapter":8,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-751D6D036ADE3873","translation":"asv-1901","reference":{"book":"Ezekiel","chapter":8,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F80D24A7B8992285","translation":"web-classic-2020","reference":{"book":"Ezekiel","chapter":8,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6DC7E6FF5DE7BA6E","translation":"bsb-2025-third-printing","reference":{"book":"Ezra","chapter":10,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A83F0A5DF692F833","translation":"asv-1901","reference":{"book":"Ezra","chapter":10,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E24E7A6E501EC6D8","translation":"web-classic-2020","reference":{"book":"Ezra","chapter":10,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-97A73ED82CEB5223","translation":"bsb-2025-third-printing","reference":{"book":"Galatians","chapter":5,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-AC8CDBBB067B18EA","translation":"asv-1901","reference":{"book":"Galatians","chapter":5,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-344CEDBBFC474D96","translation":"web-classic-2020","reference":{"book":"Galatians","chapter":5,"verse_start":23},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-79D0DFB810CA6E1D","translation":"bsb-2025-third-printing","reference":{"book":"Genesis","chapter":30,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8549FC15BD985AEA","translation":"asv-1901","reference":{"book":"Genesis","chapter":30,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EB7FE6A73AD7C1AE","translation":"web-classic-2020","reference":{"book":"Genesis","chapter":30,"verse_start":16},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-48D9715F7377CAE5","translation":"bsb-2025-third-printing","reference":{"book":"Genesis","chapter":33,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6FC716BAFBF0CF91","translation":"asv-1901","reference":{"book":"Genesis","chapter":33,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4491B8AA45235823","translation":"web-classic-2020","reference":{"book":"Genesis","chapter":33,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9A7A7B354D31543F","translation":"bsb-2025-third-printing","reference":{"book":"Genesis","chapter":47,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-322E1ACFE5F5655B","translation":"asv-1901","reference":{"book":"Genesis","chapter":47,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CBB4B462C2B5FDD8","translation":"web-classic-2020","reference":{"book":"Genesis","chapter":47,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C064578BF4CF52F9","translation":"bsb-2025-third-printing","reference":{"book":"Hebrews","chapter":4,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4C3CD6B311203FA5","translation":"asv-1901","reference":{"book":"Hebrews","chapter":4,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-63897B0C10ED8687","translation":"web-classic-2020","reference":{"book":"Hebrews","chapter":4,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5EF1FBE551F78D91","translation":"bsb-2025-third-printing","reference":{"book":"Isaiah","chapter":44,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EBC498447CD0C479","translation":"asv-1901","reference":{"book":"Isaiah","chapter":44,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-61504A4AF56110A6","translation":"web-classic-2020","reference":{"book":"Isaiah","chapter":44,"verse_start":11},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-62FE47AB6B046124","translation":"bsb-2025-third-printing","reference":{"book":"Isaiah","chapter":44,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A2B1597778EB3955","translation":"asv-1901","reference":{"book":"Isaiah","chapter":44,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CD88A68F56358C1A","translation":"web-classic-2020","reference":{"book":"Isaiah","chapter":44,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DFD28AA73047DDA8","translation":"bsb-2025-third-printing","reference":{"book":"James","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-06F6EBD05E2CBE27","translation":"asv-1901","reference":{"book":"James","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3E9EACCA35557D96","translation":"web-classic-2020","reference":{"book":"James","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-437B328D44497523","translation":"bsb-2025-third-printing","reference":{"book":"Jeremiah","chapter":29,"verse_start":11},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3FDD178BE32647BF","translation":"asv-1901","reference":{"book":"Jeremiah","chapter":29,"verse_start":11},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-AA8B5975E267A6D7","translation":"web-classic-2020","reference":{"book":"Jeremiah","chapter":29,"verse_start":11},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-85FE19ADCA065FFD","translation":"bsb-2025-third-printing","reference":{"book":"Jeremiah","chapter":29,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C0480C14AFD28BE3","translation":"asv-1901","reference":{"book":"Jeremiah","chapter":29,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4D2E366501F8395F","translation":"web-classic-2020","reference":{"book":"Jeremiah","chapter":29,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8AA3EBAD18FE0BD9","translation":"bsb-2025-third-printing","reference":{"book":"Job","chapter":42,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-864776FDD8BE643B","translation":"asv-1901","reference":{"book":"Job","chapter":42,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C32F73892D08F427","translation":"web-classic-2020","reference":{"book":"Job","chapter":42,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7B9B219A434F99B5","translation":"bsb-2025-third-printing","reference":{"book":"Job","chapter":9,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9DCCA60DC9B95872","translation":"asv-1901","reference":{"book":"Job","chapter":9,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-598AB6A88161257D","translation":"web-classic-2020","reference":{"book":"Job","chapter":9,"verse_start":26},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A4B36B3BF1D6E286","translation":"bsb-2025-third-printing","reference":{"book":"John","chapter":10,"verse_start":10},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-94A423D66518FAC7","translation":"asv-1901","reference":{"book":"John","chapter":10,"verse_start":10},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-54B7D11E625A7C13","translation":"web-classic-2020","reference":{"book":"John","chapter":10,"verse_start":10},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D71305F3F8357B2D","translation":"bsb-2025-third-printing","reference":{"book":"John","chapter":11,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1FD6CF20EFE4000A","translation":"asv-1901","reference":{"book":"John","chapter":11,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5B1F9F78B0055B6A","translation":"web-classic-2020","reference":{"book":"John","chapter":11,"verse_start":35},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C0EF80DCC6C96D7B","translation":"bsb-2025-third-printing","reference":{"book":"John","chapter":20,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A9B224E25E902F5D","translation":"asv-1901","reference":{"book":"John","chapter":20,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4B7BC163AB50CD2E","translation":"web-classic-2020","reference":{"book":"John","chapter":20,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-98912A4E14E38597","translation":"bsb-2025-third-printing","reference":{"book":"John","chapter":4,"verse_start":39},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C2BC588645AC7A96","translation":"asv-1901","reference":{"book":"John","chapter":4,"verse_start":39},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A4748E22D443C20A","translation":"web-classic-2020","reference":{"book":"John","chapter":4,"verse_start":39},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-47D5B2D498FC2ACA","translation":"bsb-2025-third-printing","reference":{"book":"Joshua","chapter":10,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-60EE3EC450ECE4D6","translation":"asv-1901","reference":{"book":"Joshua","chapter":10,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-34438383B101032C","translation":"web-classic-2020","reference":{"book":"Joshua","chapter":10,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8F5E3215D89AD2E8","translation":"bsb-2025-third-printing","reference":{"book":"Joshua","chapter":15,"verse_start":26},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-ECEE22DF22B0087B","translation":"asv-1901","reference":{"book":"Joshua","chapter":15,"verse_start":26},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EFCFCAF7F2C0FC09","translation":"web-classic-2020","reference":{"book":"Joshua","chapter":15,"verse_start":26},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CE6C48D14BDE415F","translation":"bsb-2025-third-printing","reference":{"book":"Judges","chapter":20,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A8622CC5F52A25B9","translation":"asv-1901","reference":{"book":"Judges","chapter":20,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-506D6641BB74CD8D","translation":"web-classic-2020","reference":{"book":"Judges","chapter":20,"verse_start":1},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-ADA5E80C7CC79E31","translation":"bsb-2025-third-printing","reference":{"book":"Judges","chapter":20,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8AEA794BF3D4F668","translation":"asv-1901","reference":{"book":"Judges","chapter":20,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4A99F311EF6F24E4","translation":"web-classic-2020","reference":{"book":"Judges","chapter":20,"verse_start":37},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7F979AA9E44E37A2","translation":"bsb-2025-third-printing","reference":{"book":"Lamentations","chapter":3,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D02911CBBD2F95DC","translation":"asv-1901","reference":{"book":"Lamentations","chapter":3,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-61E72A1B8F3953E1","translation":"web-classic-2020","reference":{"book":"Lamentations","chapter":3,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EC1BB25FACE35B6D","translation":"bsb-2025-third-printing","reference":{"book":"Luke","chapter":11,"verse_start":36},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DFF1A5EE7B2DC399","translation":"asv-1901","reference":{"book":"Luke","chapter":11,"verse_start":36},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-83ACF67618449912","translation":"web-classic-2020","reference":{"book":"Luke","chapter":11,"verse_start":36},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D73C668D00B3FCD9","translation":"bsb-2025-third-printing","reference":{"book":"Luke","chapter":6,"verse_start":31},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1076D76AC7F550BD","translation":"asv-1901","reference":{"book":"Luke","chapter":6,"verse_start":31},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-42878EBA9F862C93","translation":"web-classic-2020","reference":{"book":"Luke","chapter":6,"verse_start":31},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BC9DC0B6284028B8","translation":"bsb-2025-third-printing","reference":{"book":"Mark","chapter":1,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-57C6BAFCD1BBC5B5","translation":"asv-1901","reference":{"book":"Mark","chapter":1,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-66C40C1457E7671F","translation":"web-classic-2020","reference":{"book":"Mark","chapter":1,"verse_start":31},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6F49008B482B5C64","translation":"bsb-2025-third-printing","reference":{"book":"Mark","chapter":2,"verse_start":3},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-44A1517163BBD56E","translation":"asv-1901","reference":{"book":"Mark","chapter":2,"verse_start":3},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CFDDF4E9D02C2A37","translation":"web-classic-2020","reference":{"book":"Mark","chapter":2,"verse_start":3},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0AD6A00F4C60E33E","translation":"bsb-2025-third-printing","reference":{"book":"Mark","chapter":9,"verse_start":16},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-31D5266D9F83E00F","translation":"asv-1901","reference":{"book":"Mark","chapter":9,"verse_start":16},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4DDC6C0831D4E614","translation":"web-classic-2020","reference":{"book":"Mark","chapter":9,"verse_start":16},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BB23A72E20043CD5","translation":"bsb-2025-third-printing","reference":{"book":"Matthew","chapter":11,"verse_start":28},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8535105A44C29B3B","translation":"asv-1901","reference":{"book":"Matthew","chapter":11,"verse_start":28},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1297ED5EB09C4E5D","translation":"web-classic-2020","reference":{"book":"Matthew","chapter":11,"verse_start":28},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A1925E46A412A441","translation":"bsb-2025-third-printing","reference":{"book":"Matthew","chapter":4,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-20106D48972C2CB7","translation":"asv-1901","reference":{"book":"Matthew","chapter":4,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F8FD52F388F15E70","translation":"web-classic-2020","reference":{"book":"Matthew","chapter":4,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E9908E06127263AB","translation":"bsb-2025-third-printing","reference":{"book":"Micah","chapter":6,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C4AEABFCC84A61A6","translation":"asv-1901","reference":{"book":"Micah","chapter":6,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7DEA77EB7901BA1E","translation":"web-classic-2020","reference":{"book":"Micah","chapter":6,"verse_start":8},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E087A1657AB6C7A8","translation":"bsb-2025-third-printing","reference":{"book":"Nehemiah","chapter":10,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7C312D0F52DD486F","translation":"asv-1901","reference":{"book":"Nehemiah","chapter":10,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5FCA7BF344B3607E","translation":"web-classic-2020","reference":{"book":"Nehemiah","chapter":10,"verse_start":16},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-407B3B2F37298CA4","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":16,"verse_start":6},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5960D8F3FE2E8647","translation":"asv-1901","reference":{"book":"Numbers","chapter":16,"verse_start":6},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6D720BFEB0A7C0B0","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":16,"verse_start":6},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FCBDE8B089C6A01C","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":22,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-0694B3701E21BB6E","translation":"asv-1901","reference":{"book":"Numbers","chapter":22,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8FEC08D2FB4983FB","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":22,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-08B5A26C7A7C3F5E","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":31,"verse_start":33},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-81328DF5C1F44057","translation":"asv-1901","reference":{"book":"Numbers","chapter":31,"verse_start":33},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-853EA52E72A87FF1","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":31,"verse_start":33},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-56CDF80371ECBF06","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":31,"verse_start":44},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-71B37FFBCB2D8C71","translation":"asv-1901","reference":{"book":"Numbers","chapter":31,"verse_start":44},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CF174928A43E09D2","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":31,"verse_start":44},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D9C59E2608C04F44","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D605B4048D03359F","translation":"asv-1901","reference":{"book":"Numbers","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-83FA9F5C7D1F9935","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":31,"verse_start":7},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-165D083C22193D3C","translation":"bsb-2025-third-printing","reference":{"book":"Numbers","chapter":6,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-28399E0567370098","translation":"asv-1901","reference":{"book":"Numbers","chapter":6,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A9FD5C01B754D1BE","translation":"web-classic-2020","reference":{"book":"Numbers","chapter":6,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-666685FCB371F28D","translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":10,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-095D555225126023","translation":"asv-1901","reference":{"book":"Proverbs","chapter":10,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9D7C8DB34D0F1FBC","translation":"web-classic-2020","reference":{"book":"Proverbs","chapter":10,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-80D07C75F261056A","translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":13,"verse_start":11},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6BA1EF3DB5A3F569","translation":"asv-1901","reference":{"book":"Proverbs","chapter":13,"verse_start":11},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-951B9F04F6557031","translation":"web-classic-2020","reference":{"book":"Proverbs","chapter":13,"verse_start":11},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-AEFD3587580AF432","translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":22,"verse_start":19},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C8B5D3CB61B4069C","translation":"asv-1901","reference":{"book":"Proverbs","chapter":22,"verse_start":19},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C4B10D4B95EBDD6A","translation":"web-classic-2020","reference":{"book":"Proverbs","chapter":22,"verse_start":19},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F85F31F92DBC72CB","translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":8,"verse_start":9},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DE61A02BEBF833AD","translation":"asv-1901","reference":{"book":"Proverbs","chapter":8,"verse_start":9},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8BEE8388BB40CBED","translation":"web-classic-2020","reference":{"book":"Proverbs","chapter":8,"verse_start":9},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9C535829C3288CA9","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":103,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D4939498BD22A30A","translation":"asv-1901","reference":{"book":"Psalms","chapter":103,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-2BB7D88D8B093179","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":103,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-26058B515C37944E","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":104,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E1D4467112B65088","translation":"asv-1901","reference":{"book":"Psalms","chapter":104,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5749C4AB46CF5CE9","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":104,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F389A69AEC210B62","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":119,"verse_start":138},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6BD6F88AC756647C","translation":"asv-1901","reference":{"book":"Psalms","chapter":119,"verse_start":138},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A6B930506F9D389B","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":119,"verse_start":138},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-10CC44DF93E61237","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":119,"verse_start":38},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D219E271AA767E8F","translation":"asv-1901","reference":{"book":"Psalms","chapter":119,"verse_start":38},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E64E903DEFDC9D61","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":119,"verse_start":38},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-AFE2F12135C66CD1","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":119,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3D78D5C97A4C1E96","translation":"asv-1901","reference":{"book":"Psalms","chapter":119,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-844CCCC1CCE94905","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":119,"verse_start":5},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-EDCD2D6482954EF9","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":138,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E8E9EB38B189F07F","translation":"asv-1901","reference":{"book":"Psalms","chapter":138,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-39849E1B29003B26","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":138,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3DB7353579D47EB6","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":145,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FF8AE82FC4C8C925","translation":"asv-1901","reference":{"book":"Psalms","chapter":145,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-75748B4D9EE2E2AC","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":145,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-05E087C1F15B4BB8","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":148,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A9C16EA3638F3F81","translation":"asv-1901","reference":{"book":"Psalms","chapter":148,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-31E756F2667D18D8","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":148,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CA53864243DA50AE","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":22,"verse_start":30},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-87B541921CE08F50","translation":"asv-1901","reference":{"book":"Psalms","chapter":22,"verse_start":30},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-310372AF5E193A20","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":22,"verse_start":30},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C4CAAB34EE5A7CE9","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":23,"verse_start":1},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E9799D63B954C40D","translation":"asv-1901","reference":{"book":"Psalms","chapter":23,"verse_start":1},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B191FECC95211A5F","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":23,"verse_start":1},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-42886CD02D3D3215","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":45,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-8B625BEE61862619","translation":"asv-1901","reference":{"book":"Psalms","chapter":45,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-155D30D5121D28F3","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":45,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6269A648662F9BB4","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":48,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1AE25DC09A846E8B","translation":"asv-1901","reference":{"book":"Psalms","chapter":48,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F2949241CDFE3809","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":48,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3C6F25D5FCA9D53C","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":49,"verse_start":13},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-FB3331DB88E0386B","translation":"asv-1901","reference":{"book":"Psalms","chapter":49,"verse_start":13},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-E830431FBD84F282","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":49,"verse_start":13},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DC5ED5509A31E286","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":64,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-49FC6F20822A6B29","translation":"asv-1901","reference":{"book":"Psalms","chapter":64,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-59FE23C6D2244C2C","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":64,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-5BCE8C8E7B78F65B","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":75,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-566911108845CECE","translation":"asv-1901","reference":{"book":"Psalms","chapter":75,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-06227EE65CA3B628","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":75,"verse_start":8},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-ACE789A2CAAA1596","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":80,"verse_start":10},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6021E797E5297AD8","translation":"asv-1901","reference":{"book":"Psalms","chapter":80,"verse_start":10},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-564C3F92009C07EE","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":80,"verse_start":10},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-88DC2637FF8EBED0","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":86,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A043C21A0AB1987C","translation":"asv-1901","reference":{"book":"Psalms","chapter":86,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F17DF6AAB0BCEFD8","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":86,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-43C3773378DAD7B0","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":9,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-928CB98212B0FA1D","translation":"asv-1901","reference":{"book":"Psalms","chapter":9,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-260D474CFD0E759E","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":9,"verse_start":18},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A88263ED8E25C2A1","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":9,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-260B4A328BEC5670","translation":"asv-1901","reference":{"book":"Psalms","chapter":9,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-61CAF8894B04FFBF","translation":"web-classic-2020","reference":{"book":"Psalms","chapter":9,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-9A92D25D3B111E7C","translation":"bsb-2025-third-printing","reference":{"book":"Revelation","chapter":22,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D1AAF4DFA3213FA5","translation":"asv-1901","reference":{"book":"Revelation","chapter":22,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CD5970E210DDB51F","translation":"web-classic-2020","reference":{"book":"Revelation","chapter":22,"verse_start":3},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-1EBE2D9A6D9DBC41","translation":"bsb-2025-third-printing","reference":{"book":"Romans","chapter":3,"verse_start":23},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-A93E85736E38FEE4","translation":"asv-1901","reference":{"book":"Romans","chapter":3,"verse_start":23},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-B10616C766114433","translation":"web-classic-2020","reference":{"book":"Romans","chapter":3,"verse_start":23},"stratum":"well_known","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-CEB808EAC400373F","translation":"bsb-2025-third-printing","reference":{"book":"Ruth","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3742CEB9ACC33588","translation":"asv-1901","reference":{"book":"Ruth","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-F11D4CEBEB112E0A","translation":"web-classic-2020","reference":{"book":"Ruth","chapter":1,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6329A7B1D416B356","translation":"bsb-2025-third-printing","reference":{"book":"Ruth","chapter":2,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-6F8BEEB802D01837","translation":"asv-1901","reference":{"book":"Ruth","chapter":2,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-7275BE7DE79874B8","translation":"web-classic-2020","reference":{"book":"Ruth","chapter":2,"verse_start":20},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-099B137C29B9AA26","translation":"bsb-2025-third-printing","reference":{"book":"Song of Solomon","chapter":3,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-3478CF4E51D9DF40","translation":"asv-1901","reference":{"book":"Song of Solomon","chapter":3,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-DFCC2E169F1595C8","translation":"web-classic-2020","reference":{"book":"Song of Solomon","chapter":3,"verse_start":2},"stratum":"random","prompt_variant":"canonical"}

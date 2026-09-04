@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "translation": "web-classic-2020",
+  "edition": "2020 stable text edition",
+  "source_url": "https://ebible.org/Scriptures/eng-web_usfm.zip",
+  "source_sha256": "2403c879aa6b0c9e5e43a4db6f604f7dd1a1f8f32b959c08c8a1fc32c4833e00",
+  "importer_version": "0.1.0",
+  "artifacts": [
+    {
+      "path": "00-FRTeng-web.usfm",
+      "sha256": "7a246a569694346a211fbc4911e7a236f27c053f0d88a7934a5162301e3e49d9",
+      "bytes": 9459
+    },
+    {
+      "path": "02-GENeng-web.usfm",
+      "sha256": "93948c2fad196c872de63fe7c34e480eb25c31e5ba20011afcf6e4f4029d8121",
+      "bytes": 881260
+    },
+    {
+      "path": "03-EXOeng-web.usfm",
+      "sha256": "d69bf7d83d92486fce7bbf13ce8dd2865000c80b68356d86899f88cb40ce516e",
+      "bytes": 764512
+    },
+    {
+      "path": "04-LEVeng-web.usfm",
+      "sha256": "e8fb41ded3080711c85923fde4a8b8ee14ea4aa36a959aad1edcac451fb8acfa",
+      "bytes": 578733
+    },
+    {
+      "path": "05-NUMeng-web.usfm",
+      "sha256": "283c7d301c0e4dd63ec1acccc7794f08ded7c46d17b6fe3c778428cd46f2ec93",
+      "bytes": 770908
+    },
+    {
+      "path": "06-DEUeng-web.usfm",
+      "sha256": "2cc1dfad5a8c5ca8ea3477536bd1e8b80715e4d914e09c031a6f2d08e86829b2",
+      "bytes": 670461
+    },
+    {
+      "path": "07-JOSeng-web.usfm",
+      "sha256": "1e16d0d6b640834d7e9092c47b577fb78877fd99c441217623240671ac553199",
+      "bytes": 449316
+    },
+    {
+      "path": "08-JDGeng-web.usfm",
+      "sha256": "bbbb01791962f0171687477d7d27d9a76ce7e375872aa64b5ffaad383e689405",
+      "bytes": 447609
+    },
+    {
+      "path": "09-RUTeng-web.usfm",
+      "sha256": "70681da38f6d4bef84f7fd3d23fd7e354b4a2013418afcc30a123e17fa66543b",
+      "bytes": 61060
+    },
+    {
+      "path": "10-1SAeng-web.usfm",
+      "sha256": "a575b516863a03239162fd25f77d6daaf8b28a4bbaae62e0a4efc4ca4638f3b9",
+      "bytes": 586782
+    },
+    {
+      "path": "106-GLOeng-web.usfm",
+      "sha256": "82933d659dc27b4a595347a35611928cba5a2d9fdee8fbdf971bb2dfd0406bfe",
+      "bytes": 18991
+    },
+    {
+      "path": "11-2SAeng-web.usfm",
+      "sha256": "1084628322b6be56ce2260ab605ced84c67e29e561ad65044ca739e3d73ee19d",
+      "bytes": 479703
+    },
+    {
+      "path": "12-1KIeng-web.usfm",
+      "sha256": "5305f30b790bb2f4acc6cbcf93ef3674b97607597ef62f00c46e4cedfd10ceb9",
+      "bytes": 566852
+    },
+    {
+      "path": "13-2KIeng-web.usfm",
+      "sha256": "66e09111185f964b86f4909d6ee6404bfdf6e2dbd981c94bf53de5d0f03cb195",
+      "bytes": 552480
+    },
+    {
+      "path": "14-1CHeng-web.usfm",
+      "sha256": "3000ae54547e889d844f7fd3e73542f251b0590461b32ba32e77c555730c3277",
+      "bytes": 466356
+    },
+    {
+      "path": "15-2CHeng-web.usfm",
+      "sha256": "0c8fcbed0c8962786f7d7b775d1b9e8445fb62240775841f5b41bcbf3b8afed0",
+      "bytes": 617973
+    },
+    {
+      "path": "16-EZReng-web.usfm",
+      "sha256": "f571557c4fc81ccf13125b881625041e8ed780edacf3a47af3fc1eb77280d200",
+      "bytes": 168452
+    },
+    {
+      "path": "17-NEHeng-web.usfm",
+      "sha256": "1b0834b419fa47a1b7ee2bc282d4a33bfe007c1d4299efe7fa0d126bdca46e87",
+      "bytes": 235705
+    },
+    {
+      "path": "18-ESTeng-web.usfm",
+      "sha256": "a533ef3ee4feb1a0315d30ffe7ef2ca137fb9a922ff630cb91c14c50a1f8eddd",
+      "bytes": 138410
+    },
+    {
+      "path": "19-JOBeng-web.usfm",
+      "sha256": "e07d34178c80602831b53831f32ba36d674286998c22494ca87bb7b574ddf27a",
+      "bytes": 434576
+    },
+    {
+      "path": "20-PSAeng-web.usfm",
+      "sha256": "6dbe740933ae59d2db09053627d5f5d4bbaa486167b98e1a6ba00d2ea302745f",
+      "bytes": 927751
+    },
+    {
+      "path": "21-PROeng-web.usfm",
+      "sha256": "8f675acde0ce5b04664aa97ed725d60d9fbaaf139fd02c2dacc10bf73df91f14",
+      "bytes": 359941
+    },
+    {
+      "path": "22-ECCeng-web.usfm",
+      "sha256": "427dc3c3cf6a1c1e67b278a2c94d397a5b99ac6deacbd28a6b2656dd7a3e0185",
+      "bytes": 135740
+    },
+    {
+      "path": "23-SNGeng-web.usfm",
+      "sha256": "29efa861154ab0f3b990024d6ca808901fd06e1d7158a21bea6efaa363d613a9",
+      "bytes": 62002
+    },
+    {
+      "path": "24-ISAeng-web.usfm",
+      "sha256": "f38b04032dc8a68f376a7d1db5091a265fb8cb968c36267430d7642033497562",
+      "bytes": 893668
+    },
+    {
+      "path": "25-JEReng-web.usfm",
+      "sha256": "5b290c6d93d3fb9088b7d780c4613de8ab2bc9e5b82baeabd6c557498b067622",
+      "bytes": 1039343
+    },
+    {
+      "path": "26-LAMeng-web.usfm",
+      "sha256": "60f64d612d6ded661b7d61aced16652b24ff5c8e6b23054e6b8c1b540ab616a1",
+      "bytes": 87356
+    },
+    {
+      "path": "27-EZKeng-web.usfm",
+      "sha256": "b3853266889f36ff5bb32fb40ecad67761ed7b24c65d48b55624558a30a715f8",
+      "bytes": 948585
+    },
+    {
+      "path": "28-DANeng-web.usfm",
+      "sha256": "fe8b7e830c32f8c757fb74d7e61f77d3affdc6853716fb70072cfbffd02e27dd",
+      "bytes": 262986
+    },
+    {
+      "path": "29-HOSeng-web.usfm",
+      "sha256": "92311b1bcee3d945c0734ef9dfe73705fb4fbd895b5698075e8e7f3443ef1d2d",
+      "bytes": 118764
+    },
+    {
+      "path": "30-JOLeng-web.usfm",
+      "sha256": "da8a4916042a0de750b9f6ad92c48072f10ddb72a0d70cfe94b9ab0af842ecce",
+      "bytes": 39753
+    },
+    {
+      "path": "31-AMOeng-web.usfm",
+      "sha256": "2aed3ab2e0f507a68ee3e69f3e90a70de480207e943a49d572248b34f9f9f5b3",
+      "bytes": 101639
+    },
+    {
+      "path": "32-OBAeng-web.usfm",
+      "sha256": "9732156009b5680739debdf65d416cfa1681833c6d840ee333527abdf3731c6a",
+      "bytes": 15682
+    },
+    {
+      "path": "33-JONeng-web.usfm",
+      "sha256": "6f4c2184a8ec5ff90cd3e00768b6f8f39ac194ce733c3591638db36793a458c7",
+      "bytes": 30210
+    },
+    {
+      "path": "34-MICeng-web.usfm",
+      "sha256": "1c2b5e6925ec6e76dc0cc256469e70536d546ea99c033104668bd9519174f22b",
+      "bytes": 74183
+    },
+    {
+      "path": "35-NAMeng-web.usfm",
+      "sha256": "51b1615044a7af5e028dbc2ce4904d2e2b3634235a6e78d1c763fe87fd05a204",
+      "bytes": 26999
+    },
+    {
+      "path": "36-HABeng-web.usfm",
+      "sha256": "730a1543f95c561005e88ea135ac039c5a35779f11f65fb2a300c5bb987c4004",
+      "bytes": 34561
+    },
+    {
+      "path": "37-ZEPeng-web.usfm",
+      "sha256": "5543a63feb8c917c3bf0385651833348cec24c495d4cf3c323d5e15bd68dc425",
+      "bytes": 39290
+    },
+    {
+      "path": "38-HAGeng-web.usfm",
+      "sha256": "31a57885fc6d6f7d3defef48e4de32c6492b5e363f607080d8f13a4c2ce493a3",
+      "bytes": 26447
+    },
+    {
+      "path": "39-ZECeng-web.usfm",
+      "sha256": "be5681531994a263591949be8c6d78842a16e42ef0d780094352770cd8bfff97",
+      "bytes": 148714
+    },
+    {
+      "path": "40-MALeng-web.usfm",
+      "sha256": "b7d9272759e1e7ce054f03cdaec484aa128797f0442cc95b99420b753e667401",
+      "bytes": 39118
+    },
+    {
+      "path": "41-TOBeng-web.usfm",
+      "sha256": "39da13000df54b460e003894be05575a70f03cb9cfdccd1e845a9b09dccbd35d",
+      "bytes": 39030
+    },
+    {
+      "path": "42-JDTeng-web.usfm",
+      "sha256": "d8d450dec5bd9cce8e05d77a788e69f94962772f6d773b766b7424548c5cdde8",
+      "bytes": 62461
+    },
+    {
+      "path": "43-ESGeng-web.usfm",
+      "sha256": "89e0007d08fa2daf253ab2f7c694d976fc39dc69259dbe688c8a5a3b6b139712",
+      "bytes": 43883
+    },
+    {
+      "path": "45-WISeng-web.usfm",
+      "sha256": "d06898f80170f21a666fcab632f2da44086ef99d89c6bb201bdc3497a4d5d233",
+      "bytes": 69658
+    },
+    {
+      "path": "46-SIReng-web.usfm",
+      "sha256": "102424b55c3e48a2880cad8deafd0a2bd8bf8a0dba79f774e801fb41cd599549",
+      "bytes": 178459
+    },
+    {
+      "path": "47-BAReng-web.usfm",
+      "sha256": "59488efac7bfd4cf8b8964f7e638e9f994ddff8620f927d4ca6f2add2b64a061",
+      "bytes": 28695
+    },
+    {
+      "path": "52-1MAeng-web.usfm",
+      "sha256": "4bb9983c22d6e9b02b3f9a40e6d05602af64f3cd75069fe2100a180960758648",
+      "bytes": 135279
+    },
+    {
+      "path": "53-2MAeng-web.usfm",
+      "sha256": "c532fbf99ecd3eb81cbc68fe99f91c848085c0ea8ffab27dcd4e9212eada1326",
+      "bytes": 107838
+    },
+    {
+      "path": "54-1ESeng-web.usfm",
+      "sha256": "7d05bfcd8356d134b48d9b629f87cc4eb6b78ca7dc8bc4ea17aca8d2354414a7",
+      "bytes": 72995
+    },
+    {
+      "path": "55-MANeng-web.usfm",
+      "sha256": "018518186f0722c3438a08c021223a6fd383d33c94e7b636dc087aa22d6e4f91",
+      "bytes": 3119
+    },
+    {
+      "path": "56-PS2eng-web.usfm",
+      "sha256": "1fb30c4c048b6fec87f9630a2afdcf212f57594dab778047e8f9813edabaaa11",
+      "bytes": 1072
+    },
+    {
+      "path": "57-3MAeng-web.usfm",
+      "sha256": "303731734159e1edbc71b7163f7251dfcae2adae9453ff7f51213e559686b934",
+      "bytes": 40599
+    },
+    {
+      "path": "58-2ESeng-web.usfm",
+      "sha256": "96cfee2e746cb0c8dc6c84e4d5b9f315686d3a9f5e96f75508f77e191ed2b74d",
+      "bytes": 130988
+    },
+    {
+      "path": "59-4MAeng-web.usfm",
+      "sha256": "f1d0786ce630600424c46359908fd61181080f4a1b2e982113aec338e0adff75",
+      "bytes": 62515
+    },
+    {
+      "path": "66-DAGeng-web.usfm",
+      "sha256": "81e4f1abc1531e6146f108b18894bd2a36128a542744ed27c511dadc1acd813c",
+      "bytes": 88640
+    },
+    {
+      "path": "70-MATeng-web.usfm",
+      "sha256": "7d643ead869792dc3c15fedcc79d6ce8800e608a2dec97f6d62708fec22f4598",
+      "bytes": 621410
+    },
+    {
+      "path": "71-MRKeng-web.usfm",
+      "sha256": "7ac2770fe5d099249831df903133ac6dda9602adb6951749feb4f8c6aec9162a",
+      "bytes": 378883
+    },
+    {
+      "path": "72-LUKeng-web.usfm",
+      "sha256": "000887783d9918d3cf142099d4f7eca9bd5f5535f4d3fee27a787fb4eabe3172",
+      "bytes": 651902
+    },
+    {
+      "path": "73-JHNeng-web.usfm",
+      "sha256": "56cdc2ff9164b687f40df66ed61efa69a7bb1dc3d79eddf9df276ebb06f1202b",
+      "bytes": 505304
+    },
+    {
+      "path": "74-ACTeng-web.usfm",
+      "sha256": "10ee2113114d82b7d68d7433a57270a8ba5dfffc248071d0d42606199a85d7c1",
+      "bytes": 594795
+    },
+    {
+      "path": "75-ROMeng-web.usfm",
+      "sha256": "8aae4215934dce8cb32f87593dc25a44618ca00c020c5e35c67b6035c1b1bed2",
+      "bytes": 242528
+    },
+    {
+      "path": "76-1COeng-web.usfm",
+      "sha256": "696433cea5749084b399021a85e1e7c28fc0706b4137c7eaae372dbe28ac87d2",
+      "bytes": 238146
+    },
+    {
+      "path": "77-2COeng-web.usfm",
+      "sha256": "4246cbe58640f5aa18d8e39b3c240f676fdb3bfce0a4dd803cc7c23333bf00fc",
+      "bytes": 154688
+    },
+    {
+      "path": "78-GALeng-web.usfm",
+      "sha256": "312ed2d0937a048999046bebfc1a8ee695b6bbc8ee0c35d6f8c01d1794465cd6",
+      "bytes": 80153
+    },
+    {
+      "path": "79-EPHeng-web.usfm",
+      "sha256": "c559596b0d96aa1f3bb80a96a26438c1f470c4d1bc324c04daecc4b72c227130",
+      "bytes": 78693
+    },
+    {
+      "path": "80-PHPeng-web.usfm",
+      "sha256": "ba687b6490aeebd89de5476dff270b6e3eecfc9a7c029ed69d9c60e5150c0c72",
+      "bytes": 56674
+    },
+    {
+      "path": "81-COLeng-web.usfm",
+      "sha256": "d2cdc89b45053f49dc4052a8d629c2b1879f54ad3d62d5c53abc89b2b3bb5a2a",
+      "bytes": 50855
+    },
+    {
+      "path": "82-1THeng-web.usfm",
+      "sha256": "7ebb614acb0d543557cac4dede2a52ca8b58ae70406f9628df58ba1e2f03fb1f",
+      "bytes": 46975
+    },
+    {
+      "path": "83-2THeng-web.usfm",
+      "sha256": "110df72bb38ae2c387202a79ba2d45c81cc0904566ca92da61046698bfa89042",
+      "bytes": 26424
+    },
+    {
+      "path": "84-1TIeng-web.usfm",
+      "sha256": "a6dc0fca2f3bc4e82ca771b65505d797437e050592c6d23c2b0d8bf76f044e5c",
+      "bytes": 57593
+    },
+    {
+      "path": "85-2TIeng-web.usfm",
+      "sha256": "bce0b42474014e05c14e0af6d940eb4977b3cf47d364d305232650dad64237d8",
+      "bytes": 40838
+    },
+    {
+      "path": "86-TITeng-web.usfm",
+      "sha256": "f64a3840be666f7180b92fd997eb4f03767f5eb3f6dfdfba2ca5ecda3f1a45a5",
+      "bytes": 23124
+    },
+    {
+      "path": "87-PHMeng-web.usfm",
+      "sha256": "393e628daaabeebcfdda4b80d684bbeae696773fa621638318950d09bc361444",
+      "bytes": 11370
+    },
+    {
+      "path": "88-HEBeng-web.usfm",
+      "sha256": "71c3edc8921e3f11d8d6d3bd9de77fb1871be7d5b15481e56f7fdb6921c75972",
+      "bytes": 176553
+    },
+    {
+      "path": "89-JASeng-web.usfm",
+      "sha256": "695208854da5b666a9672ec36e854aacc4587780febc4fa3edd28365c0e8ed2c",
+      "bytes": 57857
+    },
+    {
+      "path": "90-1PEeng-web.usfm",
+      "sha256": "ba148f11d1b3d4f87e900606b1e55bc2808eed3cb6cf542d6bd32f8b935c7dc4",
+      "bytes": 61589
+    },
+    {
+      "path": "91-2PEeng-web.usfm",
+      "sha256": "d5c7f809f5a2a1dd87cc9d8e2d1e0b6072efe2abd3d01e3661874dd26f21b302",
+      "bytes": 38399
+    },
+    {
+      "path": "92-1JNeng-web.usfm",
+      "sha256": "c171c4118a541faaf6bad2ade30e1ccc9b788dd1c9ed64b6698931347bfa8044",
+      "bytes": 62294
+    },
+    {
+      "path": "93-2JNeng-web.usfm",
+      "sha256": "0d5f2e7d78908fd3baa055e6ce41e8957cf318ee948b220c48dbc888993e4104",
+      "bytes": 7590
+    },
+    {
+      "path": "94-3JNeng-web.usfm",
+      "sha256": "1f36404eedefc21f658352b35924f681c8f52b82ea123f424d1cd4705918d6d3",
+      "bytes": 7363
+    },
+    {
+      "path": "95-JUDeng-web.usfm",
+      "sha256": "680df2ff2b5b83109e6ae2f3cb01febd61f4df2ed1abfec13d2e9bab7e5591a7",
+      "bytes": 15206
+    },
+    {
+      "path": "96-REVeng-web.usfm",
+      "sha256": "07e0a15587fdf8872c50cffd98ddb38dc700ee165c41d3d808917a559c680bee",
+      "bytes": 296986
+    }
+  ],
+  "reference_count": 31098,
+  "corpus_sha256": "021e41c0a1e111125562c2ffe7e2e5872f5e382564930181453bf69f6d8865b7"
+}

@@ -1,0 +1,9 @@
+/target/
+/results/
+/data/sources/
+/data/corpus/
+/data/hidden/
+*.local.jsonl
+.env
+.env.*
+!.env.example
