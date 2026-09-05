@@ -1,0 +1,38 @@
+{
+  "budget_eur": 20,
+  "documented_reasoning_levels": [
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max"
+  ],
+  "execution_enabled": false,
+  "model_documentation_checked": "2026-09-05",
+  "model_documentation_url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+  "planned_requests": 540,
+  "provider": "openai",
+  "reference_count_per_track": 12,
+  "repetitions": 3,
+  "requested_model_label": "GPT-6 Astra (max reasoning)",
+  "requested_reasoning_effort": "max",
+  "requested_reasoning_verified": true,
+  "requirements_before_execution": [
+    "Explicit user authorization to spend",
+    "Verify account access for gpt-6-astra",
+    "Configure credential locally",
+    "Estimate costs using verified pricing and exchange rate; enforce remaining budget before each request"
+  ],
+  "schema_version": 2,
+  "spent_eur": 0,
+  "status": "held_by_user",
+  "temperature": null,
+  "tracks": [
+    "canonical",
+    "concise",
+    "word_for_word",
+    "copy_control",
+    "passage"
+  ],
+  "verified_api_model_id": "gpt-6-astra"
+}

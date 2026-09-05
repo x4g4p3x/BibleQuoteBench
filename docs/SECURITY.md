@@ -10,6 +10,13 @@ credential files, private-key containers, and high-confidence provider or cloud
 credential formats. Findings report only the affected path and credential kind;
 secret values are never echoed.
 
+Recognizable hidden case identifiers are also blocked inside renamed JSON or
+report artifacts, including the expected-case lists in run manifests. Keep hidden
+responses and manifests in ignored evaluator storage. Annotated examples are
+suppressed for hidden case IDs and private licensed catalogs. These controls cannot
+identify every possible excerpt of public-domain scripture; they are not a secrecy
+guarantee for arbitrary renamed reference files.
+
 Enable the versioned hook in a clone with:
 
 ```console

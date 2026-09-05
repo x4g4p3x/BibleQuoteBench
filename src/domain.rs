@@ -85,6 +85,8 @@ pub enum PromptVariant {
     Canonical,
     Concise,
     WordForWord,
+    /// Separate open-book diagnostic; never part of closed-book recall.
+    CopyControl,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -170,6 +172,8 @@ pub struct ResponseRecord {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provider_request_id: Option<String>,
@@ -216,8 +220,16 @@ pub struct ScoreRecord {
     pub classification: Classification,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exact_other_translation: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub exact_other_translations: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub closest_translation: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub closest_translations: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "alternative_edition_token_overlap",
+        alias = "translation_contamination_rate"
+    )]
     pub translation_contamination_rate: Option<f64>,
 }

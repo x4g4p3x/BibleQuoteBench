@@ -52,28 +52,41 @@ pub fn score_response(
     let output_chars: Vec<char> = output_text.chars().collect();
     let character_edits = edit_counts(&expected_chars, &output_chars).total();
 
-    let exact_text = output_text == expected_text;
-    let exact_words = output_words == expected_words;
+    let exact_text = response.error.is_none() && output_text == expected_text;
+    let exact_words = response.error.is_none() && output_words == expected_words;
     let refusal = looks_like_refusal(&output_text);
     let extraneous_text = !exact_text
         && ((!expected_text.is_empty() && output_text.contains(&expected_text))
-            || contains_contiguous(&output_words, &expected_words));
+            || (output_words.len() > expected_words.len()
+                && contains_contiguous(&output_words, &expected_words)));
 
-    let exact_other_translation = alternatives.iter().find_map(|alternative| {
-        (normalize_technical(&alternative.text) == output_text)
-            .then(|| alternative.translation.clone())
-    });
+    let mut exact_other_translations: Vec<_> = alternatives
+        .iter()
+        .filter(|alternative| normalize_technical(&alternative.text) == output_text)
+        .map(|alternative| alternative.translation.clone())
+        .collect();
+    exact_other_translations.sort();
+    exact_other_translations.dedup();
+    let exact_other_translation = exact_other_translations.first().cloned();
 
-    let mut closest_translation = None;
+    let mut closest_translations = Vec::new();
     let mut closest_distance = word_edits.total();
     for alternative in alternatives {
         let alternative_words = tokenize_words(&normalize_technical(&alternative.text));
         let distance = edit_counts(&alternative_words, &output_words).total();
         if distance < closest_distance {
             closest_distance = distance;
-            closest_translation = Some(alternative.translation.clone());
+            closest_translations = vec![alternative.translation.clone()];
+        } else if distance == closest_distance && distance < word_edits.total() {
+            closest_translations.push(alternative.translation.clone());
         }
     }
+    closest_translations.sort();
+    closest_translations.dedup();
+    if output_words.is_empty() || refusal || response.error.is_some() {
+        closest_translations.clear();
+    }
+    let closest_translation = closest_translations.first().cloned();
 
     let translation_contamination_rate = contamination_rate(
         &expected_words,
@@ -126,7 +139,9 @@ pub fn score_response(
         extraneous_text,
         classification,
         exact_other_translation,
+        exact_other_translations,
         closest_translation,
+        closest_translations,
         translation_contamination_rate,
     }
 }
@@ -430,6 +445,7 @@ mod tests {
             output: output.to_owned(),
             error: None,
             temperature: Some(0.0),
+            reasoning_effort: None,
             seed: None,
             provider_request_id: None,
             system_fingerprint: None,
@@ -478,6 +494,7 @@ mod tests {
         );
         assert!(!score.exact_text);
         assert!(score.exact_words);
+        assert!(!score.extraneous_text);
     }
 
     #[test]
@@ -524,5 +541,48 @@ mod tests {
     #[test]
     fn aggregate_is_defined_for_empty_input() {
         assert_eq!(aggregate_scores(&[]).responses, 0);
+    }
+
+    #[test]
+    fn alternative_ties_are_explicit_and_order_independent() {
+        let a = reference("a", "A X C");
+        let b = reference("b", "A X C");
+        let requested = reference("requested", "A B C");
+        let exact = score_response(&case(), &response("A X C"), &requested, &[&b, &a]);
+        let reordered = score_response(&case(), &response("A X C"), &requested, &[&a, &b]);
+        assert_eq!(exact, reordered);
+        assert_eq!(exact.exact_other_translations, vec!["a", "b"]);
+        let report = crate::report::build_report(&[exact]);
+        assert_eq!(
+            report.requested_to_resembles["requested"]["_ambiguous_exact"],
+            1
+        );
+        assert_eq!(report.exact_alternative_matches["requested"]["a"], 1);
+        assert_eq!(report.exact_alternative_matches["requested"]["b"], 1);
+        let approximate = score_response(&case(), &response("A X extra C"), &requested, &[&a, &b]);
+        assert!(approximate.exact_other_translations.is_empty());
+        assert_eq!(approximate.closest_translations, vec!["a", "b"]);
+        assert_eq!(
+            crate::report::build_report(&[approximate]).requested_to_resembles["requested"]["_ambiguous_closest"],
+            1
+        );
+    }
+
+    #[test]
+    fn serialized_overlap_has_new_name_and_reads_legacy_alias() {
+        let score = score_response(
+            &case(),
+            &response("A X C"),
+            &reference("requested", "A B C"),
+            &[&reference("other", "A X C")],
+        );
+        let json = serde_json::to_string(&score).unwrap();
+        assert!(json.contains("alternative_edition_token_overlap"));
+        assert!(!json.contains("translation_contamination_rate"));
+        let legacy = json.replace(
+            "alternative_edition_token_overlap",
+            "translation_contamination_rate",
+        );
+        assert_eq!(serde_json::from_str::<ScoreRecord>(&legacy).unwrap(), score);
     }
 }

@@ -10,8 +10,7 @@ use biblequotebench::{
     aggregate_scores,
     importer::import_usfm,
     io::{ensure_nonempty, read_json, read_jsonl, write_json, write_jsonl, write_text},
-    provider::{ProviderConfig, ProviderKind, run_cases},
-    render_prompt,
+    provider::{ProviderConfig, ProviderKind, run_cases_with_supplied},
     report::{build_report, render_markdown},
     sampling::{CuratedReference, SamplingConfig, sample_dataset},
     score_response,
@@ -46,7 +45,7 @@ enum Command {
     },
     /// Build deterministic, stratified public and hidden dataset splits.
     Sample {
-        #[arg(long, default_value = "data/sampling-v0.1.json")]
+        #[arg(long, default_value = "data/sampling-v0.2.json")]
         config: PathBuf,
         #[arg(long, default_value = "data/dev/translations.json")]
         translations: PathBuf,
@@ -64,7 +63,7 @@ enum Command {
         hidden_cases: PathBuf,
         #[arg(long, default_value = "data/hidden/references.jsonl")]
         hidden_references: PathBuf,
-        #[arg(long, default_value = "data/release/v0.1-manifest.json")]
+        #[arg(long, default_value = "data/release/v0.2-manifest.json")]
         manifest: PathBuf,
         #[arg(long, default_value = "data/hidden/sampling-secret.txt")]
         hidden_seed_file: PathBuf,
@@ -94,6 +93,9 @@ enum Command {
         base_url: Option<String>,
         #[arg(long)]
         temperature: Option<f32>,
+        /// Explicit Responses API reasoning level; recorded without substitution.
+        #[arg(long)]
+        reasoning_effort: Option<String>,
         #[arg(long, default_value_t = 512)]
         max_output_tokens: u32,
         #[arg(long)]
@@ -126,6 +128,35 @@ enum Command {
         #[arg(long, default_value = "results/report.json")]
         json: PathBuf,
     },
+    /// Analyze complete, manifest-bound runs with paired cluster confidence intervals.
+    Analyze {
+        #[command(flatten)]
+        dataset: DatasetPaths,
+        #[arg(long, required = true)]
+        responses: Vec<PathBuf>,
+        #[arg(long, default_value = "results/analysis")]
+        output_dir: PathBuf,
+        #[arg(long, default_value_t = 2000)]
+        resamples: usize,
+    },
+    /// Prepare public prompt controls and three-verse passage diagnostics.
+    PreparePilot {
+        #[command(flatten)]
+        dataset: DatasetPaths,
+        #[arg(long, required = true)]
+        corpus: Vec<PathBuf>,
+        #[arg(long, default_value_t = 12)]
+        reference_count: usize,
+        #[arg(long, default_value = "data/pilot/v0.2")]
+        output_dir: PathBuf,
+    },
+    /// Produce an explicitly synthetic pilot without any network or paid calls.
+    SyntheticPilot {
+        #[arg(long, default_value = "data/pilot/v0.2")]
+        dataset_dir: PathBuf,
+        #[arg(long, default_value = "docs/pilot/v0.2")]
+        output_dir: PathBuf,
+    },
     /// Reject private benchmark material or credentials in staged changes.
     GuardStaged,
     /// Reject private benchmark material or credentials anywhere in the Git index.
@@ -142,6 +173,7 @@ struct DatasetPaths {
     references: PathBuf,
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() -> Result<()> {
     match Cli::parse().command {
         Command::ImportUsfm {
@@ -197,6 +229,7 @@ fn main() -> Result<()> {
             api_key_env,
             base_url,
             temperature,
+            reasoning_effort,
             max_output_tokens,
             case_limit,
             fail_fast,
@@ -210,6 +243,7 @@ fn main() -> Result<()> {
                 api_key_env,
                 base_url,
                 temperature,
+                reasoning_effort,
                 max_output_tokens,
                 case_limit,
                 fail_fast,
@@ -227,6 +261,42 @@ fn main() -> Result<()> {
             markdown,
             json,
         } => report_command(&scores, &markdown, &json),
+        Command::Analyze {
+            dataset,
+            responses,
+            output_dir,
+            resamples,
+        } => {
+            let dataset = load_dataset(&dataset)?;
+            biblequotebench::study::analyze_files(
+                &dataset.cases,
+                &dataset.references,
+                &dataset.catalog,
+                &responses,
+                &output_dir,
+                resamples,
+            )
+        }
+        Command::PreparePilot {
+            dataset,
+            corpus,
+            reference_count,
+            output_dir,
+        } => {
+            let dataset = load_dataset(&dataset)?;
+            let corpus = read_many_jsonl(&corpus)?;
+            biblequotebench::pilot::prepare(
+                &dataset.cases,
+                &corpus,
+                &dataset.catalog,
+                reference_count,
+                &output_dir,
+            )
+        }
+        Command::SyntheticPilot {
+            dataset_dir,
+            output_dir,
+        } => biblequotebench::pilot::synthetic(&dataset_dir, &output_dir),
         Command::GuardStaged => guard_command(false),
         Command::GuardTracked => guard_command(true),
     }
@@ -368,16 +438,47 @@ fn prompt_command(paths: &DatasetPaths, case_id: &str) -> Result<()> {
         .iter()
         .find(|translation| translation.id == case.translation)
         .expect("validated dataset guarantees translation coverage");
-    println!("{}", render_prompt(case, translation));
+    let supplied = dataset
+        .references
+        .iter()
+        .find(|record| record.translation == case.translation && record.reference == case.reference)
+        .map(|record| record.text.as_str());
+    println!(
+        "{}",
+        biblequotebench::prompt::execution_prompt(case, translation, supplied)?
+    );
     Ok(())
 }
 
 fn run_command(paths: &DatasetPaths, config: &ProviderConfig, output: &Path) -> Result<()> {
     let dataset = load_dataset(paths)?;
     validate_dataset(&dataset.catalog, &dataset.cases, &dataset.references)?;
-    let records = run_cases(config, &dataset.cases, &dataset.catalog)?;
+    if output.exists() || biblequotebench::study::manifest_path(output).exists() {
+        bail!("run output or manifest already exists; use a new output path");
+    }
+    biblequotebench::study::make_manifest(
+        config,
+        &dataset.cases,
+        &dataset.references,
+        &dataset.catalog,
+        &[],
+    )?;
+    let records = run_cases_with_supplied(
+        config,
+        &dataset.cases,
+        &dataset.catalog,
+        &dataset.references,
+    )?;
+    let manifest = biblequotebench::study::make_manifest(
+        config,
+        &dataset.cases,
+        &dataset.references,
+        &dataset.catalog,
+        &records,
+    )?;
     ensure_parent(output)?;
     write_jsonl(Some(output), &records)?;
+    write_json(&biblequotebench::study::manifest_path(output), &manifest)?;
     let failures = records
         .iter()
         .filter(|record| record.error.is_some())
@@ -537,6 +638,7 @@ mod tests {
             output: "Text".to_owned(),
             error: None,
             temperature: Some(0.0),
+            reasoning_effort: None,
             seed: None,
             provider_request_id: None,
             system_fingerprint: None,

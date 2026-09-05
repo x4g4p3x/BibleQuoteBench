@@ -23,6 +23,7 @@ pub struct BenchmarkReport {
     pub by_translation: BTreeMap<String, ScoreSummary>,
     pub by_stratum: BTreeMap<String, ScoreSummary>,
     pub requested_to_resembles: BTreeMap<String, BTreeMap<String, usize>>,
+    pub exact_alternative_matches: BTreeMap<String, BTreeMap<String, usize>>,
     pub stability: BTreeMap<String, StabilitySummary>,
 }
 
@@ -34,6 +35,7 @@ pub fn build_report(scores: &[ScoreRecord]) -> BenchmarkReport {
         by_translation: grouped_summary(scores, |score| score.requested_translation.clone()),
         by_stratum: grouped_summary(scores, |score| stratum_name(score.stratum).to_owned()),
         requested_to_resembles: confusion_matrix(scores),
+        exact_alternative_matches: exact_matches(scores),
         stability: stability(scores),
     }
 }
@@ -41,7 +43,7 @@ pub fn build_report(scores: &[ScoreRecord]) -> BenchmarkReport {
 /// Renders a benchmark report as a stable Markdown document.
 pub fn render_markdown(report: &BenchmarkReport) -> String {
     let mut output = String::from(
-        "# BibleQuoteBench report\n\n\
+        "# BibleQuoteBench report\n\nExploratory descriptive report: supplied rows only; coverage and configuration comparability are not verified here. Use `analyze` for validated comparisons.\n\n\
          ## Overall\n\n\
          | Responses | ExactText | ExactWords | Word accuracy | Refusals | Provider errors | Translation confusion |\n\
          | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n",
@@ -76,6 +78,19 @@ pub fn render_markdown(report: &BenchmarkReport) -> String {
         );
         output.push('\n');
     }
+    output.push_str("\nExact other-edition matches (separate from approximate resemblance):\n\n");
+    for (requested, matches) in &report.exact_alternative_matches {
+        let _ = writeln!(
+            output,
+            "- {}: {}",
+            escape_table(requested),
+            matches
+                .iter()
+                .map(|(name, count)| format!("{}={count}", escape_table(name)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
     output.push_str("\n## Stability\n\n| Provider / model | Repeated cases | Output consistency | Exact recall |\n| --- | ---: | ---: | ---: |\n");
     for (name, summary) in &report.stability {
         let _ = writeln!(
@@ -107,10 +122,20 @@ fn grouped_summary(
 fn confusion_matrix(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String, usize>> {
     let mut matrix: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
     for score in scores {
-        let resembles = if score.classification == Classification::ExactRequested {
+        let resembles = if score.classification == Classification::ProviderError {
+            "_provider_error"
+        } else if score.classification == Classification::Empty {
+            "_empty"
+        } else if score.classification == Classification::Refusal {
+            "_refusal"
+        } else if score.classification == Classification::ExactRequested {
             score.requested_translation.as_str()
+        } else if score.exact_other_translations.len() > 1 {
+            "_ambiguous_exact"
         } else if let Some(translation) = score.exact_other_translation.as_deref() {
             translation
+        } else if score.closest_translations.len() > 1 {
+            "_ambiguous_closest"
         } else {
             score
                 .closest_translation
@@ -126,17 +151,44 @@ fn confusion_matrix(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String,
     matrix
 }
 
+fn exact_matches(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String, usize>> {
+    let mut matrix: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
+    for score in scores
+        .iter()
+        .filter(|score| score.classification == Classification::TranslationConfusion)
+    {
+        let matches: Vec<_> = if score.exact_other_translations.is_empty() {
+            score.exact_other_translation.iter().collect()
+        } else {
+            score.exact_other_translations.iter().collect()
+        };
+        for translation in matches {
+            *matrix
+                .entry(score.requested_translation.clone())
+                .or_default()
+                .entry(translation.clone())
+                .or_default() += 1;
+        }
+    }
+    matrix
+}
+
 #[allow(clippy::cast_precision_loss)]
 fn stability(scores: &[ScoreRecord]) -> BTreeMap<String, StabilitySummary> {
-    let mut cases: HashMap<(String, String), Vec<&ScoreRecord>> = HashMap::new();
+    let mut cases: BTreeMap<(String, String), Vec<&ScoreRecord>> = BTreeMap::new();
     for score in scores {
+        if score.classification == Classification::ProviderError {
+            continue;
+        }
         cases
             .entry((model_key(score), score.case_id.clone()))
             .or_default()
             .push(score);
     }
     let mut per_model: BTreeMap<String, Vec<(f64, f64)>> = BTreeMap::new();
-    for ((model, _), runs) in cases {
+    for ((model, _), mut runs) in cases {
+        runs.sort_by_key(|score| &score.run_id);
+        runs.dedup_by_key(|score| &score.run_id);
         if runs.len() < 2 {
             continue;
         }
@@ -204,7 +256,12 @@ fn summary_row(summary: &ScoreSummary) -> String {
 }
 
 fn model_key(score: &ScoreRecord) -> String {
-    format!("{} / {}", score.provider, score.model)
+    format!(
+        "{} / {} / {}",
+        score.provider,
+        score.model,
+        score.resolved_model.as_deref().unwrap_or("unresolved")
+    )
 }
 
 const fn stratum_name(stratum: CaseStratum) -> &'static str {

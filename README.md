@@ -4,21 +4,31 @@ BibleQuoteBench measures whether a model can reproduce the exact text of a
 specified Bible translation and edition from internal recall. Its primary track
 is closed-book: no retrieval, browsing, Bible API, tools, or RAG.
 
-The v0.1 implementation includes:
+The v0.2 implementation includes:
 
 - edition-pinned translation metadata;
 - strict JSON/JSONL schemas through Rust types;
 - dataset integrity and licensing-invariant validation;
 - deterministic canonical prompt rendering;
 - `ExactText`, `ExactWords`, WER, CER, and edit-operation counts;
-- exact-other-translation detection and conservative contamination scoring;
+- exact-other-translation detection and alternative-edition token overlap;
 - refusal and extraneous-output classification;
-- aggregate summaries and an auditable JSONL result format.
+- aggregate summaries and an auditable JSONL result format;
 - provenance-preserving USFM zip/directory imports with SHA-256 locks;
 - a deterministic shared-reference sampler and 20/80 public/hidden split;
 - live OpenAI, Anthropic, Gemini, xAI, and OpenAI-compatible adapters;
 - per-model, translation, and stratum reporting, a requested-to-resembles
-  matrix, and repeated-run stability statistics.
+  matrix, and repeated-run stability statistics;
+- complete-run manifests, configuration checks, and paired cluster-bootstrap intervals;
+- separate copy controls, fixed prompt variants, and three-verse passage diagnostics;
+- a reproducible [synthetic pilot with annotated failures](docs/pilot/v0.2/README.md).
+
+This measures edition-specific quotation reliability under closed-book prompting.
+It does not establish theological understanding, general intelligence, or whether
+a passage appeared in training. Hidden selection protects against tuning to chosen
+questions; the underlying Bible text may already be familiar to a model.
+
+See the [v0.2 release notes](docs/RELEASE-v0.2.md) for changes and limitations.
 
 ## Quick start
 
@@ -28,6 +38,11 @@ cargo run -- score --responses data/dev/responses.example.jsonl --output scores.
 cargo run -- summarize --scores scores.jsonl
 cargo run -- report --scores scores.jsonl
 ```
+
+The example report is descriptive. For full model comparisons, use `analyze`
+with response files and their companion manifests; see [scoring](docs/SCORING.md).
+No live GPT-6 pilot has been run. The saved EUR 20 pilot plan is held at the user's
+request, with zero spend.
 
 Run the quality gates with:
 
@@ -103,7 +118,9 @@ software is MIT-licensed.
 
 ## Scope boundary
 
-v0.1 deliberately benchmarks single verses. Multi-verse passage construction,
-publisher-authorized private editions, hosted hidden-set evaluation, and a public
-leaderboard are later release concerns; they do not alter the v0.1 scoring or
-provenance contracts.
+The primary v0.2 score remains single-verse closed-book recall. Copy controls,
+prompt variants, and three-verse passages are separate diagnostic tracks.
+Publisher-authorized private editions, hosted hidden-set evaluation, and a public
+leaderboard remain future work. The v0.1 public dataset is preserved under
+`data/releases/v0.1/dev`; do not compare scores across versions as if the cases
+were unchanged.

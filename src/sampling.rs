@@ -34,6 +34,8 @@ pub struct CuratedReference {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReleaseManifest {
     pub schema_version: u16,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection_policy: Option<String>,
     pub release_id: String,
     pub public_seed: String,
     pub translations: Vec<String>,
@@ -74,7 +76,12 @@ pub fn sample_dataset(
     if hidden_seed.trim().is_empty() {
         bail!("hidden sampling seed must not be empty");
     }
-    let universe = common_universe(translations, references);
+    let mut universe = common_universe(translations, references);
+    if config.schema_version == 2 {
+        for records in universe.values_mut() {
+            records.sort_by_key(|record| &record.translation);
+        }
+    }
     if universe.len() < config.total_references {
         bail!(
             "only {} single-verse references are shared by all translations; {} requested",
@@ -116,7 +123,8 @@ pub fn sample_dataset(
 
     Ok(SampledDataset {
         manifest: ReleaseManifest {
-            schema_version: 1,
+            schema_version: config.schema_version,
+            selection_policy: (config.schema_version == 2).then(|| "v2: famous pool >=2x quota; sensitive/length top-5x pools, privately hash-sampled; remaining references hash-sampled".into()),
             release_id: config.release_id.clone(),
             public_seed: config.seed.clone(),
             translations: translations.to_vec(),
@@ -143,7 +151,7 @@ fn select_partition(
     selected: &mut HashMap<BibleReference, CaseStratum>,
 ) -> Result<()> {
     select_curated(config, curated, universe, selected)?;
-    select_translation_sensitive(config, universe, selected);
+    select_translation_sensitive(config, universe, selected)?;
     select_by_length(
         config.short_references,
         false,
@@ -151,7 +159,8 @@ fn select_partition(
         universe,
         selected,
         CaseStratum::ShortVerse,
-    );
+        config.schema_version,
+    )?;
     select_by_length(
         config.long_references,
         true,
@@ -159,7 +168,8 @@ fn select_partition(
         universe,
         selected,
         CaseStratum::LongVerse,
-    );
+        config.schema_version,
+    )?;
     select_random(config, universe, selected);
     Ok(())
 }
@@ -191,7 +201,7 @@ fn validate_config(
     translations: &[String],
     locks: &[CorpusLock],
 ) -> Result<()> {
-    if config.schema_version != 1 {
+    if ![1, 2].contains(&config.schema_version) {
         bail!(
             "unsupported sampling schema_version {}",
             config.schema_version
@@ -250,6 +260,10 @@ fn select_curated(
     universe: &HashMap<BibleReference, Vec<&ReferenceRecord>>,
     selected: &mut HashMap<BibleReference, CaseStratum>,
 ) -> Result<()> {
+    let unique: HashSet<_> = curated.iter().map(|item| &item.reference).collect();
+    if unique.len() != curated.len() {
+        bail!("duplicate curated reference");
+    }
     let mut candidates: Vec<&CuratedReference> = curated
         .iter()
         .filter(|item| {
@@ -261,6 +275,12 @@ fn select_curated(
     candidates.sort_by_key(|item| deterministic_key(&config.seed, "famous", &item.reference));
     if candidates.len() < config.famous_references {
         bail!("famous-reference quota exceeds curated input");
+    }
+    if config.schema_version == 2
+        && config.famous_references > 0
+        && candidates.len() < config.famous_references * 2
+    {
+        bail!("v0.2 famous pool must contain at least twice the selected quota");
     }
     for item in candidates.into_iter().take(config.famous_references) {
         if !universe.contains_key(&item.reference) {
@@ -278,7 +298,7 @@ fn select_translation_sensitive(
     config: &SamplingConfig,
     universe: &HashMap<BibleReference, Vec<&ReferenceRecord>>,
     selected: &mut HashMap<BibleReference, CaseStratum>,
-) {
+) -> Result<()> {
     let mut candidates: Vec<(&BibleReference, f64)> = universe
         .iter()
         .filter(|(reference, _)| !selected.contains_key(*reference))
@@ -293,14 +313,25 @@ fn select_translation_sensitive(
             ))
         })
     });
+    if config.schema_version == 2 {
+        if candidates.len() < config.translation_sensitive_references.saturating_mul(2) {
+            bail!("translation-sensitive candidate pool must exceed quota by at least twofold");
+        }
+        candidates.truncate(config.translation_sensitive_references.saturating_mul(5));
+        candidates.sort_by_key(|(reference, _)| {
+            deterministic_key(&config.seed, "sensitive-pool", reference)
+        });
+    }
     for (reference, _) in candidates
         .into_iter()
         .take(config.translation_sensitive_references)
     {
         selected.insert(reference.clone(), CaseStratum::TranslationSensitive);
     }
+    Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn select_by_length(
     count: usize,
     descending: bool,
@@ -308,7 +339,8 @@ fn select_by_length(
     universe: &HashMap<BibleReference, Vec<&ReferenceRecord>>,
     selected: &mut HashMap<BibleReference, CaseStratum>,
     stratum: CaseStratum,
-) {
+    schema_version: u16,
+) -> Result<()> {
     let mut candidates: Vec<(&BibleReference, usize)> = universe
         .iter()
         .filter(|(reference, _)| !selected.contains_key(*reference))
@@ -335,9 +367,17 @@ fn select_by_length(
     if descending {
         candidates.reverse();
     }
+    if schema_version == 2 {
+        if candidates.len() < count.saturating_mul(2) {
+            bail!("length candidate pool must exceed quota by at least twofold");
+        }
+        candidates.truncate(count.saturating_mul(5));
+        candidates.sort_by_key(|(reference, _)| deterministic_key(seed, "length-pool", reference));
+    }
     for (reference, _) in candidates.into_iter().take(count) {
         selected.insert(reference.clone(), stratum);
     }
+    Ok(())
 }
 
 fn select_random(
@@ -476,6 +516,133 @@ mod tests {
         assert_ne!(
             deterministic_key("seed", "a", &reference),
             deterministic_key("seed", "b", &reference)
+        );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn private_seed_changes_every_v2_stratum_without_changing_public_cases() {
+        let config = SamplingConfig {
+            schema_version: 2,
+            release_id: "test-v2".into(),
+            seed: "public".into(),
+            total_references: 60,
+            dev_references: 12,
+            famous_references: 20,
+            translation_sensitive_references: 10,
+            short_references: 10,
+            long_references: 10,
+        };
+        let translations: Vec<String> = vec!["a".into(), "b".into(), "c".into()];
+        let mut references = Vec::new();
+        let mut curated = Vec::new();
+        for verse in 1..=300 {
+            let reference = BibleReference {
+                book: "Psalms".into(),
+                chapter: 1,
+                verse_start: verse,
+                verse_end: None,
+            };
+            if verse <= 50 {
+                curated.push(CuratedReference {
+                    reference: reference.clone(),
+                    stratum: CaseStratum::WellKnown,
+                });
+            }
+            for translation in &translations {
+                references.push(ReferenceRecord {
+                    translation: translation.clone(),
+                    reference: reference.clone(),
+                    text: format!(
+                        "{translation} {}",
+                        "word ".repeat(usize::from(verse % 31 + 1))
+                    ),
+                });
+            }
+        }
+        let locks: Vec<_> = translations
+            .iter()
+            .map(|translation| CorpusLock {
+                schema_version: 1,
+                translation: translation.clone(),
+                edition: "1".into(),
+                source_url: "https://example.test".into(),
+                source_sha256: "source".into(),
+                importer_version: "test".into(),
+                artifacts: vec![],
+                reference_count: 300,
+                corpus_sha256: "corpus".into(),
+            })
+            .collect();
+        let first = sample_dataset(
+            &config,
+            &translations,
+            &references,
+            &locks,
+            &curated,
+            "private-one",
+        )
+        .unwrap();
+        references.reverse();
+        curated.reverse();
+        let repeat = sample_dataset(
+            &config,
+            &translations,
+            &references,
+            &locks,
+            &curated,
+            "private-one",
+        )
+        .unwrap();
+        assert_eq!(first.manifest, repeat.manifest);
+        let second = sample_dataset(
+            &config,
+            &translations,
+            &references,
+            &locks,
+            &curated,
+            "private-two",
+        )
+        .unwrap();
+        assert_eq!(first.dev_cases, second.dev_cases);
+        let public: HashSet<_> = first.dev_cases.iter().map(|case| &case.reference).collect();
+        assert!(
+            first
+                .hidden_cases
+                .iter()
+                .all(|case| !public.contains(&case.reference))
+        );
+        for stratum in [
+            CaseStratum::WellKnown,
+            CaseStratum::TranslationSensitive,
+            CaseStratum::ShortVerse,
+            CaseStratum::LongVerse,
+            CaseStratum::Random,
+        ] {
+            let selected = |cases: &[BenchmarkCase]| {
+                cases
+                    .iter()
+                    .filter(|case| case.stratum == stratum)
+                    .map(|case| case.reference.to_string())
+                    .collect::<HashSet<_>>()
+            };
+            assert_ne!(
+                selected(&first.hidden_cases),
+                selected(&second.hidden_cases),
+                "{stratum:?} did not vary"
+            );
+        }
+        curated.truncate(20);
+        assert!(
+            sample_dataset(
+                &config,
+                &translations,
+                &references,
+                &locks,
+                &curated,
+                "private"
+            )
+            .is_err()
         );
     }
 

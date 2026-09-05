@@ -94,4 +94,4 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Hidden dataset validation failed'
 }
 
-Write-Output 'BibleQuoteBench v0.1 dataset reproduced successfully.'
+Write-Output 'BibleQuoteBench v0.2 dataset reproduced successfully.'

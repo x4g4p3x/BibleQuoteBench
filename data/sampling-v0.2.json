@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "release_id": "bqb-v0.2",
+  "seed": "BibleQuoteBench/v0.2/2026-09-05",
+  "total_references": 500,
+  "dev_references": 100,
+  "famous_references": 20,
+  "translation_sensitive_references": 50,
+  "short_references": 25,
+  "long_references": 25
+}

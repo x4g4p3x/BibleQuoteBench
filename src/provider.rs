@@ -7,7 +7,9 @@ use clap::ValueEnum;
 use reqwest::{StatusCode, blocking::Client};
 use serde_json::{Value, json};
 
-use crate::{BenchmarkCase, ResponseRecord, TranslationCatalog, render_prompt};
+use crate::{
+    BenchmarkCase, ReferenceRecord, ResponseRecord, TranslationCatalog, prompt::execution_prompt,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum ProviderKind {
@@ -58,6 +60,7 @@ pub struct ProviderConfig {
     pub api_key_env: Option<String>,
     pub base_url: Option<String>,
     pub temperature: Option<f32>,
+    pub reasoning_effort: Option<String>,
     pub max_output_tokens: u32,
     pub case_limit: Option<usize>,
     pub fail_fast: bool,
@@ -85,8 +88,29 @@ pub fn run_cases(
     cases: &[BenchmarkCase],
     catalog: &TranslationCatalog,
 ) -> Result<Vec<ResponseRecord>> {
+    run_cases_with_supplied(config, cases, catalog, &[])
+}
+
+/// Runs a diagnostic dataset, supplying corpus text exclusively to copy controls.
+///
+/// # Errors
+/// Returns configuration, missing-copy-text, or fail-fast provider errors.
+pub fn run_cases_with_supplied(
+    config: &ProviderConfig,
+    cases: &[BenchmarkCase],
+    catalog: &TranslationCatalog,
+    supplied: &[ReferenceRecord],
+) -> Result<Vec<ResponseRecord>> {
     if config.run_id.trim().is_empty() || config.model.trim().is_empty() {
         bail!("run_id and model must not be empty");
+    }
+    if config.reasoning_effort.is_some()
+        && !matches!(config.kind, ProviderKind::Openai | ProviderKind::Xai)
+    {
+        bail!("explicit reasoning effort is supported only by the Responses adapters");
+    }
+    if config.max_output_tokens == 0 {
+        bail!("max_output_tokens must be positive");
     }
     let key_name = config
         .api_key_env
@@ -115,7 +139,13 @@ pub fn run_cases(
             .iter()
             .find(|translation| translation.id == case.translation)
             .with_context(|| format!("case {} uses unknown translation", case.case_id))?;
-        let prompt = render_prompt(case, translation);
+        let text = supplied
+            .iter()
+            .find(|record| {
+                record.translation == case.translation && record.reference == case.reference
+            })
+            .map(|record| record.text.as_str());
+        let prompt = execution_prompt(case, translation, text)?;
         let result = complete(&client, config, base_url, api_key.as_deref(), &prompt);
         match result {
             Ok(completion) => records.push(ResponseRecord {
@@ -127,6 +157,7 @@ pub fn run_cases(
                 output: completion.text,
                 error: None,
                 temperature: config.temperature,
+                reasoning_effort: config.reasoning_effort.clone(),
                 seed: None,
                 provider_request_id: completion.request_id,
                 system_fingerprint: completion.system_fingerprint,
@@ -143,6 +174,7 @@ pub fn run_cases(
                 output: String::new(),
                 error: Some(truncate_error(&format!("{error:#}"))),
                 temperature: config.temperature,
+                reasoning_effort: config.reasoning_effort.clone(),
                 seed: None,
                 provider_request_id: None,
                 system_fingerprint: None,
@@ -191,6 +223,9 @@ fn complete_responses(
         "tool_choice": "none"
     });
     insert_temperature(&mut body, config.temperature);
+    if let Some(effort) = &config.reasoning_effort {
+        body["reasoning"] = json!({"effort": effort});
+    }
     let value = post_json(
         client,
         &format!("{base_url}/responses"),
@@ -428,6 +463,7 @@ mod tests {
             api_key_env: None,
             base_url: Some(base_url),
             temperature: Some(0.0),
+            reasoning_effort: None,
             max_output_tokens: 64,
             case_limit: None,
             fail_fast: true,

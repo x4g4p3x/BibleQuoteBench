@@ -9,12 +9,15 @@
 pub mod domain;
 pub mod importer;
 pub mod io;
+pub mod pilot;
 pub mod prompt;
 pub mod provider;
 pub mod report;
 pub mod sampling;
 pub mod scoring;
 pub mod security;
+pub mod statistics;
+pub mod study;
 pub mod validation;
 
 pub use domain::{

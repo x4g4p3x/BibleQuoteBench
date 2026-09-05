@@ -1,0 +1,1705 @@
+{
+  "schema_version": 2,
+  "track": "passage",
+  "evidence": "synthetic_fixture",
+  "dataset_sha256": "43393b43c13aa0f0b358e7132b6e3b824cc9689130aa5a9b02ae382675d8beb7",
+  "notes": [
+    "95% percentile intervals use deterministic stratified reference-cluster bootstrap; translations and repetitions stay together. Intervals are conditional on these runs, not estimates of future provider drift.",
+    "Pairwise intervals are exploratory and unadjusted for multiple comparisons. Small pilot strata can yield degenerate intervals; no superiority claim follows automatically.",
+    "The overall score is the fixed benchmark mixture, not a population estimate for the whole Bible. Provider errors count as end-to-end failures and are excluded only from conditional recall.",
+    "Exact alternative matches establish textual resemblance, not training provenance. Hidden references are not necessarily unseen training text.",
+    "Matched requested temperature and token limits do not guarantee identical effective behavior across providers. A missing resolved model identifier is explicitly marked unresolved."
+  ],
+  "models": {
+    "openai_compatible / synthetic-a / synthetic-a / 42038f972648": {
+      "repetitions": 3,
+      "completed_cases_per_run": 36,
+      "exact_text": {
+        "estimate": 0.40740740740740744,
+        "lower": 0.20370370370370372,
+        "upper": 0.6111111111111113,
+        "clusters": 12,
+        "resamples": 2000
+      },
+      "exact_words": {
+        "estimate": 0.5,
+        "lower": 0.27777777777777773,
+        "upper": 0.7129629629629629,
+        "clusters": 12,
+        "resamples": 2000
+      },
+      "provider_error_rate": 0.08333333333333333,
+      "recall_given_provider_success": 0.4444444444444444,
+      "differing_editions": {
+        "overall": {
+          "responses": 108,
+          "exact_text_rate": 0.4074074074074074,
+          "exact_words_rate": 0.5,
+          "mean_word_accuracy": 0.6667843600605553,
+          "mean_word_error_rate": 0.33321563993944464,
+          "mean_character_error_rate": 0.3126060965153237,
+          "refusal_rate": 0.08333333333333333,
+          "provider_error_rate": 0.08333333333333333,
+          "extraneous_text_rate": 0.08333333333333333,
+          "translation_confusion_rate": 0.08333333333333333,
+          "classifications": {
+            "empty": 9,
+            "exact_requested": 44,
+            "extraneous_text": 9,
+            "partial": 19,
+            "provider_error": 9,
+            "refusal": 9,
+            "translation_confusion": 9
+          }
+        },
+        "by_model": {
+          "openai_compatible / synthetic-a / synthetic-a": {
+            "responses": 108,
+            "exact_text_rate": 0.4074074074074074,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6667843600605553,
+            "mean_word_error_rate": 0.33321563993944464,
+            "mean_character_error_rate": 0.3126060965153237,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 44,
+              "extraneous_text": 9,
+              "partial": 19,
+              "provider_error": 9,
+              "refusal": 9,
+              "translation_confusion": 9
+            }
+          }
+        },
+        "by_translation": {
+          "asv-1901": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6706239041403126,
+            "mean_word_error_rate": 0.3293760958596874,
+            "mean_character_error_rate": 0.3095260118701526,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "bsb-2025-third-printing": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6609854046160109,
+            "mean_word_error_rate": 0.33901459538398915,
+            "mean_character_error_rate": 0.3142685233719998,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "web-classic-2020": {
+            "responses": 36,
+            "exact_text_rate": 0.3888888888888889,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6687437714253429,
+            "mean_word_error_rate": 0.3312562285746571,
+            "mean_character_error_rate": 0.31402375430381885,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 14,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          }
+        },
+        "by_stratum": {
+          "passage": {
+            "responses": 108,
+            "exact_text_rate": 0.4074074074074074,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6667843600605553,
+            "mean_word_error_rate": 0.33321563993944464,
+            "mean_character_error_rate": 0.3126060965153237,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 44,
+              "extraneous_text": 9,
+              "partial": 19,
+              "provider_error": 9,
+              "refusal": 9,
+              "translation_confusion": 9
+            }
+          }
+        },
+        "requested_to_resembles": {
+          "asv-1901": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "asv-1901": 15,
+            "bsb-2025-third-printing": 3
+          },
+          "bsb-2025-third-printing": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 8,
+            "asv-1901": 4,
+            "bsb-2025-third-printing": 15
+          },
+          "web-classic-2020": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "bsb-2025-third-printing": 4,
+            "web-classic-2020": 14
+          }
+        },
+        "exact_alternative_matches": {
+          "asv-1901": {
+            "bsb-2025-third-printing": 3
+          },
+          "bsb-2025-third-printing": {
+            "asv-1901": 3
+          },
+          "web-classic-2020": {
+            "bsb-2025-third-printing": 3
+          }
+        },
+        "stability": {
+          "openai_compatible / synthetic-a / synthetic-a": {
+            "repeated_cases": 36,
+            "mean_output_consistency": 0.6018518518518516,
+            "mean_exact_recall": 0.449074074074074
+          }
+        }
+      },
+      "by_translation_and_stratum": {
+        "asv-1901 / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6706239041403126,
+            "mean_word_error_rate": 0.3293760958596874,
+            "mean_character_error_rate": 0.3095260118701526,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6706239041403126,
+              "mean_word_error_rate": 0.3293760958596874,
+              "mean_character_error_rate": 0.3095260118701526,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_translation": {
+            "asv-1901": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6706239041403126,
+              "mean_word_error_rate": 0.3293760958596874,
+              "mean_character_error_rate": 0.3095260118701526,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6706239041403126,
+              "mean_word_error_rate": 0.3293760958596874,
+              "mean_character_error_rate": 0.3095260118701526,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "asv-1901": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 3,
+              "_unclassified": 9,
+              "asv-1901": 15,
+              "bsb-2025-third-printing": 3
+            }
+          },
+          "exact_alternative_matches": {
+            "asv-1901": {
+              "bsb-2025-third-printing": 3
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.611111111111111,
+              "mean_exact_recall": 0.45833333333333326
+            }
+          }
+        },
+        "bsb-2025-third-printing / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6609854046160109,
+            "mean_word_error_rate": 0.33901459538398915,
+            "mean_character_error_rate": 0.3142685233719998,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6609854046160109,
+              "mean_word_error_rate": 0.33901459538398915,
+              "mean_character_error_rate": 0.3142685233719998,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_translation": {
+            "bsb-2025-third-printing": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6609854046160109,
+              "mean_word_error_rate": 0.33901459538398915,
+              "mean_character_error_rate": 0.3142685233719998,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.4166666666666667,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6609854046160109,
+              "mean_word_error_rate": 0.33901459538398915,
+              "mean_character_error_rate": 0.3142685233719998,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 15,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "bsb-2025-third-printing": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 3,
+              "_unclassified": 8,
+              "asv-1901": 4,
+              "bsb-2025-third-printing": 15
+            }
+          },
+          "exact_alternative_matches": {
+            "bsb-2025-third-printing": {
+              "asv-1901": 3
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.611111111111111,
+              "mean_exact_recall": 0.45833333333333326
+            }
+          }
+        },
+        "web-classic-2020 / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.3888888888888889,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6687437714253429,
+            "mean_word_error_rate": 0.3312562285746571,
+            "mean_character_error_rate": 0.31402375430381885,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 14,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "responses": 36,
+              "exact_text_rate": 0.3888888888888889,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6687437714253429,
+              "mean_word_error_rate": 0.3312562285746571,
+              "mean_character_error_rate": 0.31402375430381885,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 14,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_translation": {
+            "web-classic-2020": {
+              "responses": 36,
+              "exact_text_rate": 0.3888888888888889,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6687437714253429,
+              "mean_word_error_rate": 0.3312562285746571,
+              "mean_character_error_rate": 0.31402375430381885,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 14,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.3888888888888889,
+              "exact_words_rate": 0.5,
+              "mean_word_accuracy": 0.6687437714253429,
+              "mean_word_error_rate": 0.3312562285746571,
+              "mean_character_error_rate": 0.31402375430381885,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.08333333333333333,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 14,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 3
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "web-classic-2020": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 3,
+              "_unclassified": 9,
+              "bsb-2025-third-printing": 4,
+              "web-classic-2020": 14
+            }
+          },
+          "exact_alternative_matches": {
+            "web-classic-2020": {
+              "bsb-2025-third-printing": 3
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-a / synthetic-a": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.5833333333333333,
+              "mean_exact_recall": 0.4305555555555555
+            }
+          }
+        }
+      },
+      "report": {
+        "overall": {
+          "responses": 108,
+          "exact_text_rate": 0.4074074074074074,
+          "exact_words_rate": 0.5,
+          "mean_word_accuracy": 0.6667843600605553,
+          "mean_word_error_rate": 0.33321563993944464,
+          "mean_character_error_rate": 0.3126060965153237,
+          "refusal_rate": 0.08333333333333333,
+          "provider_error_rate": 0.08333333333333333,
+          "extraneous_text_rate": 0.08333333333333333,
+          "translation_confusion_rate": 0.08333333333333333,
+          "classifications": {
+            "empty": 9,
+            "exact_requested": 44,
+            "extraneous_text": 9,
+            "partial": 19,
+            "provider_error": 9,
+            "refusal": 9,
+            "translation_confusion": 9
+          }
+        },
+        "by_model": {
+          "openai_compatible / synthetic-a / synthetic-a": {
+            "responses": 108,
+            "exact_text_rate": 0.4074074074074074,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6667843600605553,
+            "mean_word_error_rate": 0.33321563993944464,
+            "mean_character_error_rate": 0.3126060965153237,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 44,
+              "extraneous_text": 9,
+              "partial": 19,
+              "provider_error": 9,
+              "refusal": 9,
+              "translation_confusion": 9
+            }
+          }
+        },
+        "by_translation": {
+          "asv-1901": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6706239041403126,
+            "mean_word_error_rate": 0.3293760958596874,
+            "mean_character_error_rate": 0.3095260118701526,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "bsb-2025-third-printing": {
+            "responses": 36,
+            "exact_text_rate": 0.4166666666666667,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6609854046160109,
+            "mean_word_error_rate": 0.33901459538398915,
+            "mean_character_error_rate": 0.3142685233719998,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 15,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          },
+          "web-classic-2020": {
+            "responses": 36,
+            "exact_text_rate": 0.3888888888888889,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6687437714253429,
+            "mean_word_error_rate": 0.3312562285746571,
+            "mean_character_error_rate": 0.31402375430381885,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 14,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 3
+            }
+          }
+        },
+        "by_stratum": {
+          "passage": {
+            "responses": 108,
+            "exact_text_rate": 0.4074074074074074,
+            "exact_words_rate": 0.5,
+            "mean_word_accuracy": 0.6667843600605553,
+            "mean_word_error_rate": 0.33321563993944464,
+            "mean_character_error_rate": 0.3126060965153237,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.08333333333333333,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 44,
+              "extraneous_text": 9,
+              "partial": 19,
+              "provider_error": 9,
+              "refusal": 9,
+              "translation_confusion": 9
+            }
+          }
+        },
+        "requested_to_resembles": {
+          "asv-1901": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "asv-1901": 15,
+            "bsb-2025-third-printing": 3
+          },
+          "bsb-2025-third-printing": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 8,
+            "asv-1901": 4,
+            "bsb-2025-third-printing": 15
+          },
+          "web-classic-2020": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "bsb-2025-third-printing": 4,
+            "web-classic-2020": 14
+          }
+        },
+        "exact_alternative_matches": {
+          "asv-1901": {
+            "bsb-2025-third-printing": 3
+          },
+          "bsb-2025-third-printing": {
+            "asv-1901": 3
+          },
+          "web-classic-2020": {
+            "bsb-2025-third-printing": 3
+          }
+        },
+        "stability": {
+          "openai_compatible / synthetic-a / synthetic-a": {
+            "repeated_cases": 36,
+            "mean_output_consistency": 0.6018518518518516,
+            "mean_exact_recall": 0.449074074074074
+          }
+        }
+      }
+    },
+    "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12": {
+      "repetitions": 3,
+      "completed_cases_per_run": 36,
+      "exact_text": {
+        "estimate": 0.34259259259259256,
+        "lower": 0.16666666666666666,
+        "upper": 0.5462962962962963,
+        "clusters": 12,
+        "resamples": 2000
+      },
+      "exact_words": {
+        "estimate": 0.4444444444444444,
+        "lower": 0.25925925925925924,
+        "upper": 0.6574074074074073,
+        "clusters": 12,
+        "resamples": 2000
+      },
+      "provider_error_rate": 0.08333333333333333,
+      "recall_given_provider_success": 0.37373737373737376,
+      "differing_editions": {
+        "overall": {
+          "responses": 108,
+          "exact_text_rate": 0.3425925925925926,
+          "exact_words_rate": 0.4444444444444444,
+          "mean_word_accuracy": 0.6550821806879237,
+          "mean_word_error_rate": 0.3449178193120763,
+          "mean_character_error_rate": 0.3227761704083993,
+          "refusal_rate": 0.09259259259259259,
+          "provider_error_rate": 0.08333333333333333,
+          "extraneous_text_rate": 0.08333333333333333,
+          "translation_confusion_rate": 0.12962962962962962,
+          "classifications": {
+            "empty": 9,
+            "exact_requested": 37,
+            "extraneous_text": 9,
+            "partial": 20,
+            "provider_error": 9,
+            "refusal": 10,
+            "translation_confusion": 14
+          }
+        },
+        "by_model": {
+          "openai_compatible / synthetic-b / synthetic-b": {
+            "responses": 108,
+            "exact_text_rate": 0.3425925925925926,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6550821806879237,
+            "mean_word_error_rate": 0.3449178193120763,
+            "mean_character_error_rate": 0.3227761704083993,
+            "refusal_rate": 0.09259259259259259,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.12962962962962962,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 37,
+              "extraneous_text": 9,
+              "partial": 20,
+              "provider_error": 9,
+              "refusal": 10,
+              "translation_confusion": 14
+            }
+          }
+        },
+        "by_translation": {
+          "asv-1901": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6629189604992681,
+            "mean_word_error_rate": 0.337081039500732,
+            "mean_character_error_rate": 0.317656571059147,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 5
+            }
+          },
+          "bsb-2025-third-printing": {
+            "responses": 36,
+            "exact_text_rate": 0.3611111111111111,
+            "exact_words_rate": 0.4722222222222222,
+            "mean_word_accuracy": 0.6609034577435209,
+            "mean_word_error_rate": 0.3390965422564791,
+            "mean_character_error_rate": 0.3192933487537325,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1111111111111111,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 13,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 4
+            }
+          },
+          "web-classic-2020": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4166666666666667,
+            "mean_word_accuracy": 0.6414241238209821,
+            "mean_word_error_rate": 0.358575876179018,
+            "mean_character_error_rate": 0.33137859141231835,
+            "refusal_rate": 0.1111111111111111,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 4,
+              "translation_confusion": 5
+            }
+          }
+        },
+        "by_stratum": {
+          "passage": {
+            "responses": 108,
+            "exact_text_rate": 0.3425925925925926,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6550821806879237,
+            "mean_word_error_rate": 0.3449178193120763,
+            "mean_character_error_rate": 0.3227761704083993,
+            "refusal_rate": 0.09259259259259259,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.12962962962962962,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 37,
+              "extraneous_text": 9,
+              "partial": 20,
+              "provider_error": 9,
+              "refusal": 10,
+              "translation_confusion": 14
+            }
+          }
+        },
+        "requested_to_resembles": {
+          "asv-1901": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 8,
+            "asv-1901": 12,
+            "bsb-2025-third-printing": 7
+          },
+          "bsb-2025-third-printing": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "asv-1901": 5,
+            "bsb-2025-third-printing": 13
+          },
+          "web-classic-2020": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 4,
+            "_unclassified": 9,
+            "bsb-2025-third-printing": 5,
+            "web-classic-2020": 12
+          }
+        },
+        "exact_alternative_matches": {
+          "asv-1901": {
+            "bsb-2025-third-printing": 5
+          },
+          "bsb-2025-third-printing": {
+            "asv-1901": 4
+          },
+          "web-classic-2020": {
+            "bsb-2025-third-printing": 5
+          }
+        },
+        "stability": {
+          "openai_compatible / synthetic-b / synthetic-b": {
+            "repeated_cases": 36,
+            "mean_output_consistency": 0.5740740740740741,
+            "mean_exact_recall": 0.3842592592592593
+          }
+        }
+      },
+      "by_translation_and_stratum": {
+        "asv-1901 / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6629189604992681,
+            "mean_word_error_rate": 0.337081039500732,
+            "mean_character_error_rate": 0.317656571059147,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 5
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4444444444444444,
+              "mean_word_accuracy": 0.6629189604992681,
+              "mean_word_error_rate": 0.337081039500732,
+              "mean_character_error_rate": 0.317656571059147,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "by_translation": {
+            "asv-1901": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4444444444444444,
+              "mean_word_accuracy": 0.6629189604992681,
+              "mean_word_error_rate": 0.337081039500732,
+              "mean_character_error_rate": 0.317656571059147,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4444444444444444,
+              "mean_word_accuracy": 0.6629189604992681,
+              "mean_word_error_rate": 0.337081039500732,
+              "mean_character_error_rate": 0.317656571059147,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "asv-1901": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 3,
+              "_unclassified": 8,
+              "asv-1901": 12,
+              "bsb-2025-third-printing": 7
+            }
+          },
+          "exact_alternative_matches": {
+            "asv-1901": {
+              "bsb-2025-third-printing": 5
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.5833333333333334,
+              "mean_exact_recall": 0.375
+            }
+          }
+        },
+        "bsb-2025-third-printing / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.3611111111111111,
+            "exact_words_rate": 0.4722222222222222,
+            "mean_word_accuracy": 0.6609034577435209,
+            "mean_word_error_rate": 0.3390965422564791,
+            "mean_character_error_rate": 0.3192933487537325,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1111111111111111,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 13,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 4
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "responses": 36,
+              "exact_text_rate": 0.3611111111111111,
+              "exact_words_rate": 0.4722222222222222,
+              "mean_word_accuracy": 0.6609034577435209,
+              "mean_word_error_rate": 0.3390965422564791,
+              "mean_character_error_rate": 0.3192933487537325,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1111111111111111,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 13,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 4
+              }
+            }
+          },
+          "by_translation": {
+            "bsb-2025-third-printing": {
+              "responses": 36,
+              "exact_text_rate": 0.3611111111111111,
+              "exact_words_rate": 0.4722222222222222,
+              "mean_word_accuracy": 0.6609034577435209,
+              "mean_word_error_rate": 0.3390965422564791,
+              "mean_character_error_rate": 0.3192933487537325,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1111111111111111,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 13,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 4
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.3611111111111111,
+              "exact_words_rate": 0.4722222222222222,
+              "mean_word_accuracy": 0.6609034577435209,
+              "mean_word_error_rate": 0.3390965422564791,
+              "mean_character_error_rate": 0.3192933487537325,
+              "refusal_rate": 0.08333333333333333,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1111111111111111,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 13,
+                "extraneous_text": 3,
+                "partial": 7,
+                "provider_error": 3,
+                "refusal": 3,
+                "translation_confusion": 4
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "bsb-2025-third-printing": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 3,
+              "_unclassified": 9,
+              "asv-1901": 5,
+              "bsb-2025-third-printing": 13
+            }
+          },
+          "exact_alternative_matches": {
+            "bsb-2025-third-printing": {
+              "asv-1901": 4
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.5555555555555556,
+              "mean_exact_recall": 0.40277777777777785
+            }
+          }
+        },
+        "web-classic-2020 / passage": {
+          "overall": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4166666666666667,
+            "mean_word_accuracy": 0.6414241238209821,
+            "mean_word_error_rate": 0.358575876179018,
+            "mean_character_error_rate": 0.33137859141231835,
+            "refusal_rate": 0.1111111111111111,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 4,
+              "translation_confusion": 5
+            }
+          },
+          "by_model": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4166666666666667,
+              "mean_word_accuracy": 0.6414241238209821,
+              "mean_word_error_rate": 0.358575876179018,
+              "mean_character_error_rate": 0.33137859141231835,
+              "refusal_rate": 0.1111111111111111,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 4,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "by_translation": {
+            "web-classic-2020": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4166666666666667,
+              "mean_word_accuracy": 0.6414241238209821,
+              "mean_word_error_rate": 0.358575876179018,
+              "mean_character_error_rate": 0.33137859141231835,
+              "refusal_rate": 0.1111111111111111,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 4,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "by_stratum": {
+            "passage": {
+              "responses": 36,
+              "exact_text_rate": 0.3333333333333333,
+              "exact_words_rate": 0.4166666666666667,
+              "mean_word_accuracy": 0.6414241238209821,
+              "mean_word_error_rate": 0.358575876179018,
+              "mean_character_error_rate": 0.33137859141231835,
+              "refusal_rate": 0.1111111111111111,
+              "provider_error_rate": 0.08333333333333333,
+              "extraneous_text_rate": 0.08333333333333333,
+              "translation_confusion_rate": 0.1388888888888889,
+              "classifications": {
+                "empty": 3,
+                "exact_requested": 12,
+                "extraneous_text": 3,
+                "partial": 6,
+                "provider_error": 3,
+                "refusal": 4,
+                "translation_confusion": 5
+              }
+            }
+          },
+          "requested_to_resembles": {
+            "web-classic-2020": {
+              "_empty": 3,
+              "_provider_error": 3,
+              "_refusal": 4,
+              "_unclassified": 9,
+              "bsb-2025-third-printing": 5,
+              "web-classic-2020": 12
+            }
+          },
+          "exact_alternative_matches": {
+            "web-classic-2020": {
+              "bsb-2025-third-printing": 5
+            }
+          },
+          "stability": {
+            "openai_compatible / synthetic-b / synthetic-b": {
+              "repeated_cases": 12,
+              "mean_output_consistency": 0.5833333333333334,
+              "mean_exact_recall": 0.375
+            }
+          }
+        }
+      },
+      "report": {
+        "overall": {
+          "responses": 108,
+          "exact_text_rate": 0.3425925925925926,
+          "exact_words_rate": 0.4444444444444444,
+          "mean_word_accuracy": 0.6550821806879237,
+          "mean_word_error_rate": 0.3449178193120763,
+          "mean_character_error_rate": 0.3227761704083993,
+          "refusal_rate": 0.09259259259259259,
+          "provider_error_rate": 0.08333333333333333,
+          "extraneous_text_rate": 0.08333333333333333,
+          "translation_confusion_rate": 0.12962962962962962,
+          "classifications": {
+            "empty": 9,
+            "exact_requested": 37,
+            "extraneous_text": 9,
+            "partial": 20,
+            "provider_error": 9,
+            "refusal": 10,
+            "translation_confusion": 14
+          }
+        },
+        "by_model": {
+          "openai_compatible / synthetic-b / synthetic-b": {
+            "responses": 108,
+            "exact_text_rate": 0.3425925925925926,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6550821806879237,
+            "mean_word_error_rate": 0.3449178193120763,
+            "mean_character_error_rate": 0.3227761704083993,
+            "refusal_rate": 0.09259259259259259,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.12962962962962962,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 37,
+              "extraneous_text": 9,
+              "partial": 20,
+              "provider_error": 9,
+              "refusal": 10,
+              "translation_confusion": 14
+            }
+          }
+        },
+        "by_translation": {
+          "asv-1901": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6629189604992681,
+            "mean_word_error_rate": 0.337081039500732,
+            "mean_character_error_rate": 0.317656571059147,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 5
+            }
+          },
+          "bsb-2025-third-printing": {
+            "responses": 36,
+            "exact_text_rate": 0.3611111111111111,
+            "exact_words_rate": 0.4722222222222222,
+            "mean_word_accuracy": 0.6609034577435209,
+            "mean_word_error_rate": 0.3390965422564791,
+            "mean_character_error_rate": 0.3192933487537325,
+            "refusal_rate": 0.08333333333333333,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1111111111111111,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 13,
+              "extraneous_text": 3,
+              "partial": 7,
+              "provider_error": 3,
+              "refusal": 3,
+              "translation_confusion": 4
+            }
+          },
+          "web-classic-2020": {
+            "responses": 36,
+            "exact_text_rate": 0.3333333333333333,
+            "exact_words_rate": 0.4166666666666667,
+            "mean_word_accuracy": 0.6414241238209821,
+            "mean_word_error_rate": 0.358575876179018,
+            "mean_character_error_rate": 0.33137859141231835,
+            "refusal_rate": 0.1111111111111111,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.1388888888888889,
+            "classifications": {
+              "empty": 3,
+              "exact_requested": 12,
+              "extraneous_text": 3,
+              "partial": 6,
+              "provider_error": 3,
+              "refusal": 4,
+              "translation_confusion": 5
+            }
+          }
+        },
+        "by_stratum": {
+          "passage": {
+            "responses": 108,
+            "exact_text_rate": 0.3425925925925926,
+            "exact_words_rate": 0.4444444444444444,
+            "mean_word_accuracy": 0.6550821806879237,
+            "mean_word_error_rate": 0.3449178193120763,
+            "mean_character_error_rate": 0.3227761704083993,
+            "refusal_rate": 0.09259259259259259,
+            "provider_error_rate": 0.08333333333333333,
+            "extraneous_text_rate": 0.08333333333333333,
+            "translation_confusion_rate": 0.12962962962962962,
+            "classifications": {
+              "empty": 9,
+              "exact_requested": 37,
+              "extraneous_text": 9,
+              "partial": 20,
+              "provider_error": 9,
+              "refusal": 10,
+              "translation_confusion": 14
+            }
+          }
+        },
+        "requested_to_resembles": {
+          "asv-1901": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 8,
+            "asv-1901": 12,
+            "bsb-2025-third-printing": 7
+          },
+          "bsb-2025-third-printing": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 3,
+            "_unclassified": 9,
+            "asv-1901": 5,
+            "bsb-2025-third-printing": 13
+          },
+          "web-classic-2020": {
+            "_empty": 3,
+            "_provider_error": 3,
+            "_refusal": 4,
+            "_unclassified": 9,
+            "bsb-2025-third-printing": 5,
+            "web-classic-2020": 12
+          }
+        },
+        "exact_alternative_matches": {
+          "asv-1901": {
+            "bsb-2025-third-printing": 5
+          },
+          "bsb-2025-third-printing": {
+            "asv-1901": 4
+          },
+          "web-classic-2020": {
+            "bsb-2025-third-printing": 5
+          }
+        },
+        "stability": {
+          "openai_compatible / synthetic-b / synthetic-b": {
+            "repeated_cases": 36,
+            "mean_output_consistency": 0.5740740740740741,
+            "mean_exact_recall": 0.3842592592592593
+          }
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "left": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "right": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "exact_text_difference": {
+        "estimate": 0.06481481481481481,
+        "lower": -0.25000000000000006,
+        "upper": 0.37037037037037024,
+        "clusters": 12,
+        "resamples": 2000
+      },
+      "reason": null
+    }
+  ],
+  "examples": [
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-0",
+      "case_id": "BQ-DEV-0A8391B4C89643C7-passage",
+      "reference": "2 Chronicles 15:6-8",
+      "requested_translation": "web-classic-2020",
+      "classification": "provider_error",
+      "diagnostic": "ProviderError",
+      "expected": "They were broken in pieces, nation against nation, and city against city; for God troubled them with all adversity. But you be strong! Don’t let your hands be slack, for your work will be rewarded.” When Asa heard these words and the prophecy of Oded the prophet, he took courage, and put away the abominations out of all the land of Judah and Benjamin, and out of the cities which he had taken from the hill country of Ephraim; and he renewed Yahweh’s altar that was before Yahweh’s porch.",
+      "output": "",
+      "word_diff": "[-They] [-were] [-broken] [-in] [-pieces,] [-nation] [-against] [-nation,] [-and] [-city] [-against] [-city;] [-for] [-God] [-troubled] [-them] [-with] [-all] [-adversity.] [-But] [-you] [-be] [-strong!] [-Don’t] [-let] [-your] [-hands] [-be] [-slack,] [-for] [-your] [-work] [-will] [-be] [-rewarded.”] [-When] [-Asa] [-heard] [-these] [-words] [-and] [-the] [-prophecy] [-of] [-Oded] [-the] [-prophet,] [-he] [-took] [-courage,] [-and] [-put] [-away] [-the] [-abominations] [-out] [-of] [-all] [-the] [-land] [-of] [-Judah] [-and] [-Benjamin,] [-and] [-out] [-of] [-the] [-cities] [-which] [-he] [-had] [-taken] [-from] [-the] [-hill] [-country] [-of] [-Ephraim;] [-and] [-he] [-renewed] [-Yahweh’s] [-altar] [-that] [-was] [-before] [-Yahweh’s] [-porch.]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-0",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "translation_confusion",
+      "diagnostic": "TranslationConfusion",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "And there went out a champion out of the camp of the Philistines, named Goliath, of Gath, whose height was six cubits and a span. And he had a helmet of brass upon his head, and he was clad with a coat of mail; and the weight of the coat was five thousand shekels of brass. And he had greaves of brass upon his legs, and a javelin of brass between his shoulders.",
+      "word_diff": "[+And] [+there] [+went] [-Then][+out] a champion [-named][+out] [-Goliath,][+of] [-who][+the] [-was][+camp] [-from][+of] [-Gath,][+the] [-came][+Philistines,] [-out][+named] [-from][+Goliath,] [-the][+of] [-Philistine][+Gath,] [-camp.][+whose] [-He][+height] was six cubits and a [-span] [-in] [-height,][+span.] [-and][+And] he had a [+helmet] [-bronze][+of] [-helmet][+brass] [-on][+upon] his [+head,] [+and] [+he] [-head.][+was] [-He][+clad] [-wore][+with] a [+coat] [+of] [+mail;] [+and] [-bronze][+the] [-coat][+weight] of [+the] [-mail][+coat] [-weighing][+was] five thousand [+shekels] [+of] [-shekels,][+brass.] [-and][+And] he had [-armor][+greaves] of [-bronze][+brass] [-on][+upon] his [-legs][+legs,] and a javelin of [-bronze] [-slung][+brass] between his shoulders.",
+      "exact_alternative_editions": [
+        "asv-1901"
+      ],
+      "closer_alternative": "asv-1901",
+      "closer_alternatives": [
+        "asv-1901"
+      ],
+      "alternative_edition_token_overlap": 1.0
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-1",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "partial",
+      "diagnostic": "partial_with_alternative_overlap",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on he was clad with a coat of mail; and the weight of the coat was five thousand shekels of brass. And he had greaves of brass upon his legs, and a javelin of brass between his shoulders.",
+      "word_diff": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on [-his][+he] [-head.][+was] [-He][+clad] [-wore][+with] a [+coat] [+of] [+mail;] [+and] [-bronze][+the] [-coat][+weight] of [+the] [-mail][+coat] [-weighing][+was] five thousand [+shekels] [+of] [-shekels,][+brass.] [-and][+And] he had [-armor][+greaves] of [-bronze][+brass] [-on][+upon] his [-legs][+legs,] and a javelin of [-bronze] [-slung][+brass] between his shoulders.",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": 1.0
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-2",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "refusal",
+      "diagnostic": "Refusal",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "I cannot provide that passage.",
+      "word_diff": "[-Then] [-a] [-champion] [-named] [-Goliath,] [-who] [-was] [-from] [-Gath,] [-came] [-out] [-from] [-the] [-Philistine] [-camp.] [-He] [-was] [-six] [-cubits] [-and] [-a] [-span] [-in] [-height,] [-and] [-he] [-had] [-a] [-bronze] [-helmet] [-on] [-his] [-head.] [-He] [-wore] [-a] [-bronze] [-coat] [-of] [-mail] [-weighing] [-five] [-thousand] [-shekels,] [-and] [-he] [-had] [-armor] [-of] [-bronze] [-on] [-his] [-legs] [-and] [-a] [-javelin] [-of] [-bronze][+I] [-slung][+cannot] [-between][+provide] [-his][+that] [-shoulders.][+passage.]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": 0.0
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-2",
+      "case_id": "BQ-DEV-2CB242707886D004-passage",
+      "reference": "1 Samuel 13:21-23",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "partial",
+      "diagnostic": "formatting_only",
+      "expected": "The charge was a pim for sharpening a plowshare or mattock, a third of a shekel for sharpening a pitchfork or an axe, and a third of a shekel for repointing an oxgoad. So on the day of battle not a sword or spear could be found in the hands of the troops with Saul and Jonathan; only Saul and his son Jonathan had weapons. And a garrison of the Philistines had gone out to the pass at Michmash.",
+      "output": "The charge was a pim for sharpening a plowshare or mattock a third of a shekel for sharpening a pitchfork or an axe and a third of a shekel for repointing an oxgoad So on the day of battle not a sword or spear could be found in the hands of the troops with Saul and Jonathan only Saul and his son Jonathan had weapons And a garrison of the Philistines had gone out to the pass at Michmash",
+      "word_diff": "The charge was a pim for sharpening a plowshare or [-mattock,][+mattock] a third of a shekel for sharpening a pitchfork or an [-axe,][+axe] and a third of a shekel for repointing an [-oxgoad.][+oxgoad] So on the day of battle not a sword or spear could be found in the hands of the troops with Saul and [-Jonathan;][+Jonathan] only Saul and his son Jonathan had [-weapons.][+weapons] And a garrison of the Philistines had gone out to the pass at [-Michmash.][+Michmash]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-1",
+      "case_id": "BQ-DEV-3C3391E361BAC905-passage",
+      "reference": "1 Kings 18:13-15",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "extraneous_text",
+      "diagnostic": "ExtraneousText",
+      "expected": "Was it not reported to my lord what I did when Jezebel slaughtered the prophets of the LORD? I hid a hundred prophets of the LORD, fifty men per cave, and I provided them with food and water. And now you say, ‘Go tell your lord that Elijah is here!’ He will kill me!” Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.”",
+      "output": "Here is the passage: Was it not reported to my lord what I did when Jezebel slaughtered the prophets of the LORD? I hid a hundred prophets of the LORD, fifty men per cave, and I provided them with food and water. And now you say, ‘Go tell your lord that Elijah is here!’ He will kill me!” Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.”",
+      "word_diff": "[+Here] [+is] [+the] [+passage:] Was it not reported to my lord what I did when Jezebel slaughtered the prophets of the LORD? I hid a hundred prophets of the LORD, fifty men per cave, and I provided them with food and water. And now you say, ‘Go tell your lord that Elijah is here!’ He will kill me!” Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.”",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": 0.0
+    },
+    {
+      "model": "openai_compatible / synthetic-a / synthetic-a / 42038f972648",
+      "run_id": "synthetic-a-2",
+      "case_id": "BQ-DEV-3C3391E361BAC905-passage",
+      "reference": "1 Kings 18:13-15",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "empty",
+      "diagnostic": "Empty",
+      "expected": "Was it not reported to my lord what I did when Jezebel slaughtered the prophets of the LORD? I hid a hundred prophets of the LORD, fifty men per cave, and I provided them with food and water. And now you say, ‘Go tell your lord that Elijah is here!’ He will kill me!” Then Elijah said, “As surely as the LORD of Hosts lives, before whom I stand, I will present myself to Ahab today.”",
+      "output": "",
+      "word_diff": "[-Was] [-it] [-not] [-reported] [-to] [-my] [-lord] [-what] [-I] [-did] [-when] [-Jezebel] [-slaughtered] [-the] [-prophets] [-of] [-the] [-LORD?] [-I] [-hid] [-a] [-hundred] [-prophets] [-of] [-the] [-LORD,] [-fifty] [-men] [-per] [-cave,] [-and] [-I] [-provided] [-them] [-with] [-food] [-and] [-water.] [-And] [-now] [-you] [-say,] [-‘Go] [-tell] [-your] [-lord] [-that] [-Elijah] [-is] [-here!’] [-He] [-will] [-kill] [-me!”] [-Then] [-Elijah] [-said,] [-“As] [-surely] [-as] [-the] [-LORD] [-of] [-Hosts] [-lives,] [-before] [-whom] [-I] [-stand,] [-I] [-will] [-present] [-myself] [-to] [-Ahab] [-today.”]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-1",
+      "case_id": "BQ-DEV-0590F03501241002-passage",
+      "reference": "1 Kings 8:26-28",
+      "requested_translation": "asv-1901",
+      "classification": "partial",
+      "diagnostic": "formatting_only",
+      "expected": "Now therefore, O God of Israel, let thy word, I pray thee, be verified, which thou spakest unto thy servant David my father. But will God in very deed dwell on the earth? behold, heaven and the heaven of heavens cannot contain thee; how much less this house that I have builded! Yet have thou respect unto the prayer of thy servant, and to his supplication, O Jehovah my God, to hearken unto the cry and to the prayer which thy servant prayeth before thee this day;",
+      "output": "Now therefore O God of Israel let thy word I pray thee be verified which thou spakest unto thy servant David my father But will God in very deed dwell on the earth behold heaven and the heaven of heavens cannot contain thee how much less this house that I have builded Yet have thou respect unto the prayer of thy servant and to his supplication O Jehovah my God to hearken unto the cry and to the prayer which thy servant prayeth before thee this day",
+      "word_diff": "Now [-therefore,][+therefore] O God of [-Israel,][+Israel] let thy [-word,][+word] I pray [-thee,][+thee] be [-verified,][+verified] which thou spakest unto thy servant David my [-father.][+father] But will God in very deed dwell on the [-earth?][+earth] [-behold,][+behold] heaven and the heaven of heavens cannot contain [-thee;][+thee] how much less this house that I have [-builded!][+builded] Yet have thou respect unto the prayer of thy [-servant,][+servant] and to his [-supplication,][+supplication] O Jehovah my [-God,][+God] to hearken unto the cry and to the prayer which thy servant prayeth before thee this [-day;][+day]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-2",
+      "case_id": "BQ-DEV-0590F03501241002-passage",
+      "reference": "1 Kings 8:26-28",
+      "requested_translation": "asv-1901",
+      "classification": "translation_confusion",
+      "diagnostic": "TranslationConfusion",
+      "expected": "Now therefore, O God of Israel, let thy word, I pray thee, be verified, which thou spakest unto thy servant David my father. But will God in very deed dwell on the earth? behold, heaven and the heaven of heavens cannot contain thee; how much less this house that I have builded! Yet have thou respect unto the prayer of thy servant, and to his supplication, O Jehovah my God, to hearken unto the cry and to the prayer which thy servant prayeth before thee this day;",
+      "output": "And now, O God of Israel, please confirm what You promised to Your servant, my father David. But will God indeed dwell upon the earth? The heavens, even the highest heavens, cannot contain You, much less this temple I have built. Yet regard the prayer and plea of Your servant, O LORD my God, so that You may hear the cry and the prayer that Your servant is praying before You today.",
+      "word_diff": "[-Now][+And] [-therefore,][+now,] O God of Israel, [-let] [-thy] [-word,] [-I] [-pray] [-thee,] [-be][+please] [-verified,][+confirm] [-which][+what] [-thou][+You] [-spakest][+promised] [-unto][+to] [-thy][+Your] [-servant][+servant,] [-David][+my] [-my][+father] [-father.][+David.] But will God [-in] [-very] [-deed][+indeed] dwell [-on][+upon] the earth? [-behold,][+The] [-heaven][+heavens,] [-and][+even] the [-heaven] [-of][+highest] [-heavens][+heavens,] cannot contain [-thee;] [-how][+You,] much less this [-house] [-that][+temple] I have [-builded!][+built.] Yet [-have] [-thou] [-respect] [-unto][+regard] the prayer [-of] [-thy] [-servant,][+and] [-and][+plea] [-to][+of] [-his][+Your] [-supplication,][+servant,] O [-Jehovah][+LORD] my God, [+so] [+that] [-to][+You] [-hearken][+may] [-unto][+hear] the cry and [-to] the prayer [-which][+that] [-thy][+Your] servant [-prayeth][+is] [-before][+praying] [-thee][+before] [-this][+You] [-day;][+today.]",
+      "exact_alternative_editions": [
+        "bsb-2025-third-printing"
+      ],
+      "closer_alternative": "bsb-2025-third-printing",
+      "closer_alternatives": [
+        "bsb-2025-third-printing"
+      ],
+      "alternative_edition_token_overlap": 1.0
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-2",
+      "case_id": "BQ-DEV-0A65F718E801DFAE-passage",
+      "reference": "1 Chronicles 9:33-35",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "partial",
+      "diagnostic": "partial_with_alternative_overlap",
+      "expected": "Those who were musicians, the heads of Levite families, stayed in the temple chambers and were exempt from other duties because they were on duty day and night. All these were heads of Levite families, chiefs according to their genealogies, and they lived in Jerusalem. Jeiel the father of Gibeon lived in Gibeon. His wife’s name was Maacah.",
+      "output": "Those who were musicians, the heads of Levite families, stayed in the temple chambers and were exempt from other duties because they were on duty day and night. All night. These were heads of fathers’ houses of the Levites, throughout their generations, chief men: these dwelt at Jerusalem. And in Gibeon there dwelt the father of Gibeon, Jeiel, whose wife’s name was Maacah;",
+      "word_diff": "Those who were musicians, the heads of Levite families, stayed in the temple chambers and were exempt from other duties because they were on duty day and night. All [+night.] [-these][+These] were heads of [+fathers’] [-Levite][+houses] [-families,][+of] [-chiefs][+the] [-according][+Levites,] [-to][+throughout] their [+generations,] [+chief] [+men:] [+these] [-genealogies,][+dwelt] [-and][+at] [-they][+Jerusalem.] [-lived][+And] in [+Gibeon] [-Jerusalem.][+there] [-Jeiel][+dwelt] the father of [-Gibeon] [-lived] [-in][+Gibeon,] [-Gibeon.][+Jeiel,] [-His][+whose] wife’s name was [-Maacah.][+Maacah;]",
+      "exact_alternative_editions": [],
+      "closer_alternative": "asv-1901",
+      "closer_alternatives": [
+        "asv-1901"
+      ],
+      "alternative_edition_token_overlap": 1.0
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-0",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "extraneous_text",
+      "diagnostic": "ExtraneousText",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "Here is the passage: Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "word_diff": "[+Here] [+is] [+the] [+passage:] Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": 0.25
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-1",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "empty",
+      "diagnostic": "Empty",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "",
+      "word_diff": "[-Then] [-a] [-champion] [-named] [-Goliath,] [-who] [-was] [-from] [-Gath,] [-came] [-out] [-from] [-the] [-Philistine] [-camp.] [-He] [-was] [-six] [-cubits] [-and] [-a] [-span] [-in] [-height,] [-and] [-he] [-had] [-a] [-bronze] [-helmet] [-on] [-his] [-head.] [-He] [-wore] [-a] [-bronze] [-coat] [-of] [-mail] [-weighing] [-five] [-thousand] [-shekels,] [-and] [-he] [-had] [-armor] [-of] [-bronze] [-on] [-his] [-legs] [-and] [-a] [-javelin] [-of] [-bronze] [-slung] [-between] [-his] [-shoulders.]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-2",
+      "case_id": "BQ-DEV-1015B25C5B9ECAA0-passage",
+      "reference": "1 Samuel 17:4-6",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "provider_error",
+      "diagnostic": "ProviderError",
+      "expected": "Then a champion named Goliath, who was from Gath, came out from the Philistine camp. He was six cubits and a span in height, and he had a bronze helmet on his head. He wore a bronze coat of mail weighing five thousand shekels, and he had armor of bronze on his legs and a javelin of bronze slung between his shoulders.",
+      "output": "",
+      "word_diff": "[-Then] [-a] [-champion] [-named] [-Goliath,] [-who] [-was] [-from] [-Gath,] [-came] [-out] [-from] [-the] [-Philistine] [-camp.] [-He] [-was] [-six] [-cubits] [-and] [-a] [-span] [-in] [-height,] [-and] [-he] [-had] [-a] [-bronze] [-helmet] [-on] [-his] [-head.] [-He] [-wore] [-a] [-bronze] [-coat] [-of] [-mail] [-weighing] [-five] [-thousand] [-shekels,] [-and] [-he] [-had] [-armor] [-of] [-bronze] [-on] [-his] [-legs] [-and] [-a] [-javelin] [-of] [-bronze] [-slung] [-between] [-his] [-shoulders.]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": null
+    },
+    {
+      "model": "openai_compatible / synthetic-b / synthetic-b / bfde5e8bee12",
+      "run_id": "synthetic-b-2",
+      "case_id": "BQ-DEV-2CB242707886D004-passage",
+      "reference": "1 Samuel 13:21-23",
+      "requested_translation": "bsb-2025-third-printing",
+      "classification": "refusal",
+      "diagnostic": "Refusal",
+      "expected": "The charge was a pim for sharpening a plowshare or mattock, a third of a shekel for sharpening a pitchfork or an axe, and a third of a shekel for repointing an oxgoad. So on the day of battle not a sword or spear could be found in the hands of the troops with Saul and Jonathan; only Saul and his son Jonathan had weapons. And a garrison of the Philistines had gone out to the pass at Michmash.",
+      "output": "I cannot provide that passage.",
+      "word_diff": "[-The] [-charge] [-was] [-a] [-pim] [-for] [-sharpening] [-a] [-plowshare] [-or] [-mattock,] [-a] [-third] [-of] [-a] [-shekel] [-for] [-sharpening] [-a] [-pitchfork] [-or] [-an] [-axe,] [-and] [-a] [-third] [-of] [-a] [-shekel] [-for] [-repointing] [-an] [-oxgoad.] [-So] [-on] [-the] [-day] [-of] [-battle] [-not] [-a] [-sword] [-or] [-spear] [-could] [-be] [-found] [-in] [-the] [-hands] [-of] [-the] [-troops] [-with] [-Saul] [-and] [-Jonathan;] [-only] [-Saul] [-and] [-his] [-son] [-Jonathan] [-had] [-weapons.] [-And] [-a] [-garrison] [-of] [-the] [-Philistines] [-had] [-gone] [-out] [-to][+I] [-the][+cannot] [-pass][+provide] [-at][+that] [-Michmash.][+passage.]",
+      "exact_alternative_editions": [],
+      "closer_alternative": null,
+      "closer_alternatives": [],
+      "alternative_edition_token_overlap": 0.2
+    }
+  ]
+}

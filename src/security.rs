@@ -119,6 +119,14 @@ fn inspect_entry(path: &str, bytes: &[u8]) -> Vec<GuardViolation> {
         return Vec::new();
     };
     let mut violations = Vec::new();
+    let hidden_id =
+        Regex::new(r#""BQ-HID-[0-9A-Fa-f]{16}(?:-[a-z_]+)?""#).expect("hidden id regex");
+    if hidden_id.is_match(text) {
+        violations.push(GuardViolation {
+            path: path.to_owned(),
+            reason: "hidden case identifiers detected in artifact contents",
+        });
+    }
     let private_key_markers = [
         ["-----BEGIN ", "PRIVATE KEY-----"].concat(),
         ["-----BEGIN RSA ", "PRIVATE KEY-----"].concat(),
@@ -189,6 +197,17 @@ fn looks_like_placeholder(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_identifiers_in_renamed_outputs_are_blocked() {
+        let identifier = ["BQ-", "HID-", "1234567890ABCDEF"].concat();
+        let text = serde_json::json!({"expected_case_ids": [identifier]}).to_string();
+        assert_eq!(
+            inspect_entry("innocent-report.json", text.as_bytes()).len(),
+            1
+        );
+        assert!(inspect_entry("manifest.json", br#"{"hidden_cases_sha256":"digest"}"#).is_empty());
+    }
 
     #[test]
     fn blocks_hidden_paths_and_secret_files() {

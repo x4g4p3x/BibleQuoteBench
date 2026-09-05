@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "translations": [
+    {
+      "id": "bsb-2025-third-printing",
+      "name": "Berean Standard Bible",
+      "abbreviation": "BSB",
+      "edition": "2025 third printing",
+      "license_kind": "public_domain",
+      "license_url": "https://berean.bible/licensing.htm",
+      "source_url": "https://bereanbible.com/bsb_usfm.zip",
+      "redistribute_reference_text": true
+    },
+    {
+      "id": "asv-1901",
+      "name": "American Standard Version",
+      "abbreviation": "ASV",
+      "edition": "1901 standard edition",
+      "license_kind": "public_domain",
+      "license_url": "https://ebible.org/asv/FRT01.htm",
+      "source_url": "https://ebible.org/Scriptures/eng-asv_usfm.zip",
+      "redistribute_reference_text": true
+    },
+    {
+      "id": "web-classic-2020",
+      "name": "World English Bible Classic",
+      "abbreviation": "WEB",
+      "edition": "2020 stable text edition",
+      "license_kind": "public_domain",
+      "license_url": "https://ebible.org/eng-web/copyright.htm",
+      "source_url": "https://ebible.org/Scriptures/eng-web_usfm.zip",
+      "redistribute_reference_text": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 2,
+  "selection_policy": "v2: famous pool >=2x quota; sensitive/length top-5x pools, privately hash-sampled; remaining references hash-sampled",
+  "release_id": "bqb-v0.2",
+  "public_seed": "BibleQuoteBench/v0.2/2026-09-05",
+  "translations": [
+    "bsb-2025-third-printing",
+    "asv-1901",
+    "web-classic-2020"
+  ],
+  "corpus_sha256": {
+    "asv-1901": "74c716d28bcab09b36f197d8eb7f7c11ffb30fd827b60092524265502177ddef",
+    "bsb-2025-third-printing": "a5331afeff88c78b2706e8f7fd9fefd9df426dbb8a715b0ade531a03dc543871",
+    "web-classic-2020": "021e41c0a1e111125562c2ffe7e2e5872f5e382564930181453bf69f6d8865b7"
+  },
+  "dev_reference_count": 100,
+  "dev_case_count": 300,
+  "hidden_reference_count": 400,
+  "hidden_case_count": 1200,
+  "strata": {
+    "extremely_famous": 5,
+    "long_verse": 25,
+    "random": 380,
+    "short_verse": 25,
+    "translation_sensitive": 50,
+    "well_known": 15
+  },
+  "dev_cases_sha256": "12aede8ca9d6692d2630b40ff7e2293e155d095dc2bdc23d44a83bc710e35d73",
+  "hidden_cases_sha256": "0deb4f7f531f9e1ba5860f6a5704500ea3eae0f0ea62f7cde18a530c652e6ece"
+}

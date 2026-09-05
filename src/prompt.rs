@@ -20,7 +20,31 @@ pub fn render_prompt(case: &BenchmarkCase, translation: &TranslationSpec) -> Str
             "Reproduce {} word-for-word according to the {source}.\nOutput only the passage text.",
             case.reference
         ),
+        PromptVariant::CopyControl => format!(
+            "Copy the supplied text for {} from the {source} exactly.\nOutput only the passage text.",
+            case.reference
+        ),
     }
+}
+
+/// Renders an executable prompt, requiring supplied text only for copy controls.
+///
+/// # Errors
+/// Returns an error if a copy control lacks its explicitly supplied text.
+pub fn execution_prompt(
+    case: &BenchmarkCase,
+    translation: &TranslationSpec,
+    supplied: Option<&str>,
+) -> anyhow::Result<String> {
+    let mut prompt = render_prompt(case, translation);
+    if case.prompt_variant == crate::PromptVariant::CopyControl {
+        let text =
+            supplied.ok_or_else(|| anyhow::anyhow!("copy control requires supplied text"))?;
+        prompt.push_str("\n\n<supplied_text>\n");
+        prompt.push_str(text);
+        prompt.push_str("\n</supplied_text>");
+    }
+    Ok(prompt)
 }
 
 #[cfg(test)]
@@ -60,5 +84,28 @@ mod tests {
              Give the passage exactly as it appears in that translation.\n\
              Output only the passage text."
         );
+        let copy = BenchmarkCase {
+            prompt_variant: PromptVariant::CopyControl,
+            ..case.clone()
+        };
+        assert!(execution_prompt(&copy, &translation, None).is_err());
+        let copy_prompt =
+            execution_prompt(&copy, &translation, Some("unique supplied passage")).unwrap();
+        assert!(copy_prompt.contains("<supplied_text>\nunique supplied passage\n</supplied_text>"));
+        for variant in [
+            PromptVariant::Canonical,
+            PromptVariant::Concise,
+            PromptVariant::WordForWord,
+        ] {
+            let recall = BenchmarkCase {
+                prompt_variant: variant,
+                ..case.clone()
+            };
+            assert!(
+                !execution_prompt(&recall, &translation, Some("unique supplied passage"))
+                    .unwrap()
+                    .contains("unique supplied passage")
+            );
+        }
     }
 }

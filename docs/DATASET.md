@@ -1,43 +1,71 @@
 # Dataset construction
 
-BibleQuoteBench v0.1 uses one shared set of 500 single-verse references across
-BSB, ASV, and WEB. Using the same references is essential for meaningful
-translation-confusion comparisons.
+BibleQuoteBench v0.2 uses 500 shared single-verse references across BSB, ASV,
+and WEB: 100 public development references (300 cases), and 400 privately
+selected evaluation references (1,200 cases). This is a fixed benchmark mixture,
+not a prevalence-weighted estimate for all Bible verses.
 
-The source USFM archives are not committed. Each archive, every USFM member, and
-the imported corpus have SHA-256 digests in `data/locks`. The build script refuses
-upstream bytes or importer output that differs from those locks.
+| Stratum | Total references | Public | Hidden |
+| --- | ---: | ---: | ---: |
+| Editorial famous/well-known pool | 20 | 4 | 16 |
+| Translation-sensitive candidate pool | 50 | 10 | 40 |
+| Short candidate pool | 25 | 5 | 20 |
+| Long candidate pool | 25 | 5 | 20 |
+| Remaining random references | 380 | 76 | 304 |
 
-The selection is deterministic and independent of hash-map iteration order.
-Public references are ranked by SHA-256 over the public seed, purpose, and
-canonical reference. Hidden references use a separate private seed stored at
-`data/hidden/sampling-secret.txt`; publishing only the output commitment prevents
-the hidden set from being reconstructed from the repository. The 500 references
-contain:
+The curated pool retains the original 50 editorially chosen references. Sampling
+20 instead of taking all 50 leaves uncertainty about which remaining references
+are hidden. The former 30 famous slots move to random selection. These labels
+remain editorial judgments; they do not claim measured quotation frequency.
 
-- 50 editorially curated famous or well-known verses;
-- 50 automatically selected translation-sensitive verses with the greatest
-  mean pairwise whitespace-token edit distance;
-- 25 shortest remaining verses;
-- 25 longest remaining verses;
-- 350 random remaining verses.
+Selection proceeds independently for public and hidden partitions, with quotas
+allocated first. Public cases use the published seed. Their references are then
+removed before the hidden partition uses a private seed. Within each partition:
 
-Quotas are divided 20/80 before selection: 100 public development references are
-selected with the public seed, then 400 non-overlapping hidden evaluation
-references are selected with the private seed. With three translations this
-produces 300 public and 1,200 hidden cases.
+1. Famous references are sampled from the curated pool, which must have at least
+   twice the partition's selected quota.
+2. Eligible translation-sensitive references are ranked by mean pairwise
+   normalized whitespace-token edit distance. Selection is hash-randomized within
+   the top five times the quota, rather than taking the top-ranked verses directly.
+3. Short and long references use the same top-five-times-quota pool policy,
+   ranked by mean whitespace-token length across translations. Already selected
+   references are excluded at each step. Available pools must be at least twice
+   the selected quota.
+4. Remaining random slots use hash-ranked selection from unselected references.
 
-Hidden references and texts are generated under `data/hidden`, which Git ignores.
-The public release manifest records their counts and a SHA-256 commitment to the
-ordered hidden case file. Publishing that file later allows independent
-verification that the hidden set was not changed after results were observed.
-The build script creates a cryptographically random private seed if one is not
-already present. An evaluator must back that ignored file up securely; the same
-seed reproduces the same hidden files and commitment. A fresh checkout without
-that seed intentionally creates a different hidden set while reproducing the
-same public development set.
+Stable ordering and domain-separated SHA-256 rankings make selection independent
+of input ordering and hash-map iteration. Tests establish that changing the
+private seed changes membership in every hidden stratum without changing public
+cases. Public candidate pools are still known: this reduces targeted tuning
+opportunities but does not make the underlying scripture unseen training data.
 
-“Famous” is an editorial label and should eventually be backed by a documented
-quotation-frequency dataset. “Translation-sensitive”, “short”, and “long” are
-mechanically reproducible labels. No verse is currently labeled “obscure” without
-external evidence.
+## Provenance and reproducibility
+
+Source archives are not committed. Archive bytes, USFM members, and imported
+corpora have SHA-256 locks in `data/locks`; reconstruction rejects changed source
+or corpus bytes. The v0.2 release manifest records the selection policy, counts,
+source-corpus hashes, public case digest, and hidden case-file commitment.
+
+Run `./scripts/build-dataset.ps1` twice. The retained ignored secret at
+`data/hidden/sampling-secret.txt` must produce the same hidden commitment. Back
+that secret up securely. A fresh seed intentionally makes a different hidden set;
+it must not be presented as the committed evaluation release. The public manifest
+commits to the ordered case file, not to a claim of training-data cleanliness.
+
+The v0.1 public cases, references, catalog, and example responses are preserved in
+`data/releases/v0.1/dev`. Its original release manifest and sampling configuration
+remain available. Scores from the two dataset versions must not be pooled.
+Schema-1 sampling retains its original selection algorithm for reconstruction.
+
+## Diagnostic tracks
+
+`prepare-pilot` selects public anchors round-robin across observed strata and
+creates separate canonical, concise, word-for-word, and copy-control datasets.
+The first four tracks share references and differ only in prompt treatment.
+Copy controls explicitly supply the passage and are open-book diagnostics.
+
+The passage track selects nonoverlapping three-verse spans from public development
+anchors with complete coverage in every edition. Verses are joined with one ASCII
+space, without verse numbers, and never cross chapter boundaries. Passage results
+stay separate from single-verse results. This is a diagnostic sample, not a matched
+length experiment; a passage score change alone cannot be attributed to length.
