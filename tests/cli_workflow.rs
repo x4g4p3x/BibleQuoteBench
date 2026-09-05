@@ -207,6 +207,19 @@ fn diagnostic_tracks_synthetic_pilot_and_validated_analysis_work_end_to_end() {
         "100",
     ]);
     assert!(analyzed.join("analysis.md").exists());
+    assert!(analyzed.join("analysis.html").exists());
+    let interactive = temp.path().join("standalone/report.html");
+    run(&[
+        "visualize",
+        "--analysis",
+        analyzed.join("analysis.json").to_str().unwrap(),
+        "--output",
+        interactive.to_str().unwrap(),
+    ]);
+    let html = fs::read_to_string(&interactive).unwrap();
+    assert!(html.contains("Recall by model configuration"));
+    assert!(html.contains("connect-src 'none'"));
+    assert!(output.join("index.html").exists());
     let copy = datasets.join("copy_control");
     let first: Value = serde_json::from_str(
         fs::read_to_string(copy.join("cases.jsonl"))
@@ -353,4 +366,98 @@ fn live_runner_manifest_and_copy_boundary_are_checked_over_loopback_only() {
         assert!(!analysis.status.success());
         assert!(String::from_utf8_lossy(&analysis.stderr).contains("incomplete"));
     }
+}
+
+#[test]
+fn killed_runner_resumes_without_replaying_an_uncertain_paid_request() {
+    use std::{
+        io::Read as _,
+        net::TcpListener,
+        process::Stdio,
+        time::{Duration, Instant},
+    };
+    let temp = TempDir::new().unwrap();
+    let (catalog, cases, references) = diagnostic_fixture(temp.path());
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    let output = temp.path().join("interrupted.jsonl");
+    let command = || {
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_biblequotebench"));
+        cmd.current_dir(project_root()).args([
+            "run",
+            "--provider",
+            "openai-compatible",
+            "--model",
+            "fixture",
+            "--base-url",
+            &url,
+            "--run-id",
+            "interruption-test",
+            "--case-limit",
+            "1",
+            "--translations",
+            catalog.to_str().unwrap(),
+            "--cases",
+            cases.to_str().unwrap(),
+            "--references",
+            references.to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ]);
+        cmd
+    };
+    let mut child = command()
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let deadline = Instant::now() + Duration::from_secs(20);
+    let mut stream = loop {
+        if let Ok((stream, _)) = listener.accept() {
+            break stream;
+        }
+        if Instant::now() >= deadline {
+            let _ = child.kill();
+            panic!("runner did not issue the expected loopback request");
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    };
+    stream.set_nonblocking(false).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(5)))
+        .unwrap();
+    let mut bytes = [0; 4096];
+    assert!(stream.read(&mut bytes).unwrap() > 0);
+    child.kill().unwrap();
+    child.wait().unwrap();
+    drop(stream);
+    drop(listener);
+    let resumed = command().arg("--resume").output().unwrap();
+    assert!(
+        resumed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&resumed.stderr)
+    );
+    let records: Vec<biblequotebench::ResponseRecord> =
+        biblequotebench::io::read_jsonl(&output).unwrap();
+    assert_eq!(records.len(), 1);
+    assert!(
+        records[0]
+            .error
+            .as_deref()
+            .unwrap()
+            .contains("not replayed")
+    );
+    assert!(records[0].execution.as_ref().unwrap().reservation_retained);
+    assert!(
+        records[0]
+            .execution
+            .as_ref()
+            .unwrap()
+            .accounted_nanoeur
+            .unwrap()
+            > 0
+    );
+    assert!(biblequotebench::study::manifest_path(&output).exists());
 }

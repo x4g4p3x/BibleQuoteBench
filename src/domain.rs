@@ -157,6 +157,20 @@ pub struct CorpusLock {
     pub corpus_sha256: String,
 }
 
+/// Provider-reported billable usage. Output includes thinking tokens.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExecutionMetadata {
+    pub input_tokens: Option<u64>,
+    pub output_tokens: Option<u64>,
+    pub stop_reason: Option<String>,
+    pub truncated: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accounted_nanoeur: Option<u64>,
+    #[serde(default)]
+    pub reservation_retained: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ResponseRecord {
@@ -179,6 +193,8 @@ pub struct ResponseRecord {
     pub provider_request_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub system_fingerprint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<ExecutionMetadata>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -190,6 +206,7 @@ pub enum Classification {
     Refusal,
     Empty,
     ProviderError,
+    Truncated,
     Partial,
 }
 

@@ -19,6 +19,7 @@ pub mod security;
 pub mod statistics;
 pub mod study;
 pub mod validation;
+pub mod visualization;
 
 pub use domain::{
     BenchmarkCase, BibleReference, CaseStratum, Classification, CorpusLock, LicenseKind,
@@ -28,3 +29,5 @@ pub use domain::{
 pub use prompt::render_prompt;
 pub use scoring::{ScoreSummary, aggregate_scores, score_response};
 pub use validation::validate_dataset;
+
+pub mod execution;

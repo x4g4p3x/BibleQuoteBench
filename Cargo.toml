@@ -7,6 +7,7 @@ description = "A reproducible benchmark for exact, closed-book Bible quotation r
 license = "MIT"
 
 [dependencies]
+fs2 = "0.4"
 anyhow = "1.0"
 clap = { version = "4.5", features = ["derive"] }
 regex = "1.11"

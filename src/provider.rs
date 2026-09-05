@@ -1,10 +1,10 @@
 //! Closed-book HTTP adapters for supported model providers.
 
-use std::{env, thread, time::Duration};
+use std::{env, time::Duration};
 
 use anyhow::{Context, Result, bail};
 use clap::ValueEnum;
-use reqwest::{StatusCode, blocking::Client};
+use reqwest::blocking::Client;
 use serde_json::{Value, json};
 
 use crate::{
@@ -72,6 +72,43 @@ struct Completion {
     request_id: Option<String>,
     resolved_model: Option<String>,
     system_fingerprint: Option<String>,
+    execution: crate::domain::ExecutionMetadata,
+}
+
+/// Validates execution settings without accessing credentials or the network.
+///
+/// # Errors
+/// Rejects empty identities and unsupported parameter combinations.
+pub fn validate_config(config: &ProviderConfig) -> Result<()> {
+    if config.run_id.trim().is_empty() || config.model.trim().is_empty() {
+        bail!("run_id and model must not be empty");
+    }
+    if config.reasoning_effort.is_some()
+        && !matches!(
+            config.kind,
+            ProviderKind::Openai | ProviderKind::Xai | ProviderKind::Anthropic
+        )
+    {
+        bail!("explicit reasoning effort is supported only by Responses and Anthropic adapters");
+    }
+    if config.max_output_tokens == 0 {
+        bail!("max_output_tokens must be positive");
+    }
+    if config.kind == ProviderKind::Anthropic {
+        if let Some(effort) = &config.reasoning_effort {
+            if !["low", "medium", "high", "xhigh", "max"].contains(&effort.as_str()) {
+                bail!("unsupported Claude effort: {effort}");
+            }
+        }
+        if config.model.starts_with("claude-fable-5")
+            && config
+                .temperature
+                .is_some_and(|t| (t - 1.0).abs() > f32::EPSILON)
+        {
+            bail!("Fable requires temperature 1.0 or an omitted temperature");
+        }
+    }
+    Ok(())
 }
 
 /// Executes closed-book prompts against one provider, retaining per-case errors.
@@ -101,17 +138,7 @@ pub fn run_cases_with_supplied(
     catalog: &TranslationCatalog,
     supplied: &[ReferenceRecord],
 ) -> Result<Vec<ResponseRecord>> {
-    if config.run_id.trim().is_empty() || config.model.trim().is_empty() {
-        bail!("run_id and model must not be empty");
-    }
-    if config.reasoning_effort.is_some()
-        && !matches!(config.kind, ProviderKind::Openai | ProviderKind::Xai)
-    {
-        bail!("explicit reasoning effort is supported only by the Responses adapters");
-    }
-    if config.max_output_tokens == 0 {
-        bail!("max_output_tokens must be positive");
-    }
+    validate_config(config)?;
     let key_name = config
         .api_key_env
         .as_deref()
@@ -128,6 +155,7 @@ pub fn run_cases_with_supplied(
         .trim_end_matches('/');
     let client = Client::builder()
         .timeout(Duration::from_secs(180))
+        .redirect(reqwest::redirect::Policy::none())
         .user_agent(concat!("BibleQuoteBench/", env!("CARGO_PKG_VERSION")))
         .build()?;
     let limit = config.case_limit.unwrap_or(cases.len()).min(cases.len());
@@ -154,13 +182,18 @@ pub fn run_cases_with_supplied(
                 provider: config.kind.name().to_owned(),
                 model: config.model.clone(),
                 resolved_model: completion.resolved_model,
+                error: if completion.text.is_empty() && !completion.execution.truncated {
+                    Some("provider returned no visible text".into())
+                } else {
+                    None
+                },
                 output: completion.text,
-                error: None,
                 temperature: config.temperature,
                 reasoning_effort: config.reasoning_effort.clone(),
                 seed: None,
                 provider_request_id: completion.request_id,
                 system_fingerprint: completion.system_fingerprint,
+                execution: Some(completion.execution),
             }),
             Err(error) if config.fail_fast => {
                 return Err(error).with_context(|| case.case_id.clone());
@@ -178,6 +211,7 @@ pub fn run_cases_with_supplied(
                 seed: None,
                 provider_request_id: None,
                 system_fingerprint: None,
+                execution: None,
             }),
         }
     }
@@ -232,7 +266,7 @@ fn complete_responses(
         &[("Authorization", format!("Bearer {api_key}"))],
         &body,
     )?;
-    let text = extract_responses_text(&value)?;
+    let text = extract_responses_text(&value).unwrap_or_default();
     Ok(completion_metadata(&value, text))
 }
 
@@ -267,16 +301,19 @@ fn complete_anthropic(
         "messages": [{"role": "user", "content": prompt}]
     });
     insert_temperature(&mut body, config.temperature);
+    if let Some(effort) = &config.reasoning_effort {
+        body["output_config"] = json!({"effort": effort});
+    }
     let value = post_json(
         client,
         &format!("{base_url}/messages"),
         &[
-            ("Authorization", format!("Bearer {api_key}")),
+            ("x-api-key", api_key.to_owned()),
             ("anthropic-version", "2023-06-01".to_owned()),
         ],
         &body,
     )?;
-    let text = extract_anthropic_text(&value)?;
+    let text = extract_anthropic_text(&value).unwrap_or_default();
     Ok(completion_metadata(&value, text))
 }
 
@@ -325,7 +362,7 @@ fn complete_gemini(
         &[("x-goog-api-key", api_key.to_owned())],
         &body,
     )?;
-    let text = extract_gemini_text(&value)?;
+    let text = extract_gemini_text(&value).unwrap_or_default();
     Ok(Completion {
         text,
         request_id: value
@@ -337,6 +374,7 @@ fn complete_gemini(
             .and_then(Value::as_str)
             .map(str::to_owned),
         system_fingerprint: None,
+        execution: execution_metadata(&value),
     })
 }
 
@@ -391,28 +429,60 @@ fn post_json(
     headers: &[(&str, String)],
     body: &Value,
 ) -> Result<Value> {
-    for attempt in 0..3_u32 {
-        let mut request = client.post(url).json(body);
-        for (name, value) in headers {
-            request = request.header(*name, value);
-        }
-        let response = request.send().with_context(|| format!("POST {url}"))?;
-        let status = response.status();
-        let text = response.text().context("reading provider response")?;
-        if status.is_success() {
-            return serde_json::from_str(&text).context("parsing provider JSON response");
-        }
-        if attempt < 2 && (status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()) {
-            thread::sleep(Duration::from_secs(1_u64 << attempt));
-            continue;
-        }
+    // One attempt only: transport failures may already have incurred a charge.
+    let mut request = client.post(url).json(body);
+    for (name, value) in headers {
+        request = request.header(*name, value);
+    }
+    let response = request.send().with_context(|| format!("POST {url}"))?;
+    let status = response.status();
+    let text = response.text().context("reading provider response")?;
+    if !status.is_success() {
         bail!("provider returned HTTP {status}: {}", truncate_error(&text));
     }
-    unreachable!("retry loop always returns or errors")
+    serde_json::from_str(&text).context("parsing provider JSON response")
+}
+
+fn execution_metadata(value: &Value) -> crate::domain::ExecutionMetadata {
+    let number = |path| value.pointer(path).and_then(Value::as_u64);
+    let input = number("/usage/input_tokens")
+        .map(|n| {
+            n.saturating_add(number("/usage/cache_read_input_tokens").unwrap_or(0))
+                .saturating_add(number("/usage/cache_creation_input_tokens").unwrap_or(0))
+        })
+        .or_else(|| number("/usage/prompt_tokens"))
+        .or_else(|| number("/usageMetadata/promptTokenCount"));
+    let output = number("/usage/output_tokens")
+        .or_else(|| number("/usage/completion_tokens"))
+        .or_else(|| {
+            number("/usageMetadata/candidatesTokenCount")
+                .map(|n| n.saturating_add(number("/usageMetadata/thoughtsTokenCount").unwrap_or(0)))
+        });
+    let reason = [
+        "/incomplete_details/reason",
+        "/stop_reason",
+        "/choices/0/finish_reason",
+        "/candidates/0/finishReason",
+        "/status",
+    ]
+    .iter()
+    .find_map(|path| value.pointer(path).and_then(Value::as_str))
+    .map(str::to_owned);
+    let truncated = reason
+        .as_deref()
+        .is_some_and(|r| ["max_tokens", "max_output_tokens", "length", "MAX_TOKENS"].contains(&r));
+    crate::domain::ExecutionMetadata {
+        input_tokens: input,
+        output_tokens: output,
+        stop_reason: reason,
+        truncated,
+        ..Default::default()
+    }
 }
 
 fn completion_metadata(value: &Value, text: String) -> Completion {
     Completion {
+        execution: execution_metadata(value),
         text,
         request_id: value.get("id").and_then(Value::as_str).map(str::to_owned),
         resolved_model: value
@@ -597,7 +667,7 @@ mod tests {
         assert_eq!(completion.text, "answer");
         let request = request.recv().unwrap().to_ascii_lowercase();
         assert!(request.starts_with("post /messages http/1.1"));
-        assert!(request.contains("authorization: bearer test-key"));
+        assert!(request.contains("x-api-key: test-key"));
         assert!(request.contains("anthropic-version: 2023-06-01"));
         server.join().unwrap();
 
@@ -612,6 +682,51 @@ mod tests {
         assert!(request.starts_with("post /models/fixture-model:generatecontent http/1.1"));
         assert!(request.contains("x-goog-api-key: test-key"));
         server.join().unwrap();
+    }
+
+    #[test]
+    fn claude_effort_and_thinking_only_cutoff_keep_usage() {
+        let (base_url, request, server) = mock_server(
+            r#"{"model":"claude-fable-5-1","stop_reason":"max_tokens","content":[{"type":"thinking","thinking":""}],"usage":{"input_tokens":80,"output_tokens":4096}}"#,
+        );
+        let mut config = fixture_config(ProviderKind::Anthropic, base_url.clone());
+        config.model = "claude-fable-5-1".into();
+        config.reasoning_effort = Some("max".into());
+        config.temperature = None;
+        validate_config(&config).unwrap();
+        let result =
+            complete_anthropic(&client(), &config, &base_url, "test-key", "prompt").unwrap();
+        assert!(result.text.is_empty());
+        assert!(result.execution.truncated);
+        assert_eq!(result.execution.output_tokens, Some(4096));
+        let request = request.recv().unwrap();
+        let body: Value = serde_json::from_str(request.split("\r\n\r\n").nth(1).unwrap()).unwrap();
+        assert_eq!(body["output_config"]["effort"], "max");
+        assert!(body.get("temperature").is_none());
+        server.join().unwrap();
+        config.reasoning_effort = Some("ultra".into());
+        assert!(validate_config(&config).is_err());
+        config.reasoning_effort = Some("high".into());
+        config.temperature = Some(0.0);
+        assert!(validate_config(&config).is_err());
+        config.temperature = Some(1.0);
+        validate_config(&config).unwrap();
+    }
+
+    #[test]
+    fn all_adapters_capture_token_limits_and_billable_usage_without_double_counting_thinking() {
+        for value in [
+            json!({"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"usage":{"input_tokens":80,"output_tokens":100,"output_tokens_details":{"reasoning_tokens":90}}}),
+            json!({"choices":[{"finish_reason":"length"}],"usage":{"prompt_tokens":80,"completion_tokens":100}}),
+            json!({"candidates":[{"finishReason":"MAX_TOKENS"}],"usageMetadata":{"promptTokenCount":80,"candidatesTokenCount":10,"thoughtsTokenCount":90}}),
+            json!({"stop_reason":"max_tokens","usage":{"input_tokens":50,"cache_read_input_tokens":20,"cache_creation_input_tokens":10,"output_tokens":100}}),
+        ] {
+            let metadata = execution_metadata(&value);
+            assert!(metadata.truncated);
+            assert_eq!(metadata.input_tokens, Some(80));
+            assert_eq!(metadata.output_tokens, Some(100));
+        }
+        assert_eq!(execution_metadata(&json!({})).input_tokens, None);
     }
 
     #[test]

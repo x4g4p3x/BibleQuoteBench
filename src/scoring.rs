@@ -52,8 +52,12 @@ pub fn score_response(
     let output_chars: Vec<char> = output_text.chars().collect();
     let character_edits = edit_counts(&expected_chars, &output_chars).total();
 
-    let exact_text = response.error.is_none() && output_text == expected_text;
-    let exact_words = response.error.is_none() && output_words == expected_words;
+    let truncated = response
+        .execution
+        .as_ref()
+        .is_some_and(|meta| meta.truncated);
+    let exact_text = !truncated && response.error.is_none() && output_text == expected_text;
+    let exact_words = !truncated && response.error.is_none() && output_words == expected_words;
     let refusal = looks_like_refusal(&output_text);
     let extraneous_text = !exact_text
         && ((!expected_text.is_empty() && output_text.contains(&expected_text))
@@ -83,7 +87,7 @@ pub fn score_response(
     }
     closest_translations.sort();
     closest_translations.dedup();
-    if output_words.is_empty() || refusal || response.error.is_some() {
+    if output_words.is_empty() || refusal || response.error.is_some() || truncated {
         closest_translations.clear();
     }
     let closest_translation = closest_translations.first().cloned();
@@ -100,6 +104,8 @@ pub fn score_response(
 
     let classification = if response.error.is_some() {
         Classification::ProviderError
+    } else if truncated {
+        Classification::Truncated
     } else if output_text.is_empty() {
         Classification::Empty
     } else if refusal {
@@ -410,6 +416,7 @@ const fn classification_name(classification: Classification) -> &'static str {
         Classification::Refusal => "refusal",
         Classification::Empty => "empty",
         Classification::ProviderError => "provider_error",
+        Classification::Truncated => "truncated",
         Classification::Partial => "partial",
     }
 }
@@ -449,6 +456,7 @@ mod tests {
             seed: None,
             provider_request_id: None,
             system_fingerprint: None,
+            execution: None,
         }
     }
 
@@ -458,6 +466,27 @@ mod tests {
             reference: case().reference,
             text: text.to_owned(),
         }
+    }
+
+    #[test]
+    fn cutoff_is_an_execution_outcome_even_if_visible_text_matches() {
+        let mut output = response("Exact words.");
+        output.execution = Some(crate::domain::ExecutionMetadata {
+            truncated: true,
+            stop_reason: Some("max_tokens".into()),
+            ..Default::default()
+        });
+        let score = score_response(
+            &case(),
+            &output,
+            &reference("requested", "Exact words."),
+            &[],
+        );
+        assert_eq!(score.classification, Classification::Truncated);
+        assert!(!score.exact_text && !score.exact_words);
+        let report = crate::report::build_report(&[score]);
+        assert_eq!(report.overall.classifications["truncated"], 1);
+        assert_eq!(report.requested_to_resembles["requested"]["_truncated"], 1);
     }
 
     #[test]

@@ -12,6 +12,8 @@ The two synthetic generators deliberately exercise exact recall, punctuation cha
 | [copy_control](copy_control/analysis.md) | 36 | 12 | 91.67% | 91.67% |
 | [passage](passage/analysis.md) | 36 | 12 | 40.74% | 34.26% |
 
+[Open the interactive results report](index.html) for model comparisons, edition diagnostics, and annotated failure exploration. It is self-contained and works offline.
+
 Each linked analysis includes cluster-bootstrap intervals, paired differences, edition-differing subsets, translation-by-stratum breakdowns, provider-error accounting, and annotated failures. Raw synthetic responses and manifest hashes permit independent reconstruction.
 
-Live pilot: prepared but held by user. Requested target: GPT-6 Astra (max reasoning); budget ceiling: EUR 20; spent: EUR 0. The documented API model is gpt-6-astra; the requested max reasoning level is documented. Account access, current pricing, and a budget-enforcing runner must be verified before any later live execution.
+Live pilot: prepared but held by user. Requested target: GPT-6 Astra (max reasoning); budget ceiling: EUR 20; spent: EUR 0. The documented API model is gpt-6-astra; the requested max reasoning level is documented. Account access, current pricing, and an explicitly enabled budget policy must be verified before any later live execution.

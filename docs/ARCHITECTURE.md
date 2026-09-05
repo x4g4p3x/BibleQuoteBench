@@ -29,10 +29,14 @@ reference text ─────────────────────�
 - `prompt` renders fixed, edition-pinned instructions without reference text.
 - `provider` executes stateless closed-book requests and retains provider
   metadata and per-case failures.
+- `execution` locks a shared campaign budget, reserves each request, and saves
+  resumable checkpoints with token and completion accounting.
 - `scoring` implements the normative exact and edit-distance metrics.
 - `report` produces grouped summaries, translation resemblance, and stability.
 - `study` binds complete runs to manifests and rejects incomparable observations.
 - `statistics` bootstraps stratified reference clusters and paired differences.
+- `visualization` embeds analyses into an offline HTML viewer with inline assets;
+  it displays precomputed statistics and keeps each track separate.
 - `pilot` prepares separate diagnostic tracks and synthetic release evidence.
 - `validation` enforces cross-file, licensing, and markup-cleanliness invariants.
 - `security` prevents private evaluation material and credentials from entering

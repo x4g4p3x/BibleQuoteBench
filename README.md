@@ -17,10 +17,12 @@ The v0.2 implementation includes:
 - provenance-preserving USFM zip/directory imports with SHA-256 locks;
 - a deterministic shared-reference sampler and 20/80 public/hidden split;
 - live OpenAI, Anthropic, Gemini, xAI, and OpenAI-compatible adapters;
+- budgeted execution, durable progress, resume, token accounting, and cutoff detection;
 - per-model, translation, and stratum reporting, a requested-to-resembles
   matrix, and repeated-run stability statistics;
 - complete-run manifests, configuration checks, and paired cluster-bootstrap intervals;
 - separate copy controls, fixed prompt variants, and three-verse passage diagnostics;
+- offline interactive HTML reports with uncertainty charts and a failure explorer;
 - a reproducible [synthetic pilot with annotated failures](docs/pilot/v0.2/README.md).
 
 This measures edition-specific quotation reliability under closed-book prompting.
@@ -43,6 +45,24 @@ The example report is descriptive. For full model comparisons, use `analyze`
 with response files and their companion manifests; see [scoring](docs/SCORING.md).
 No live GPT-6 pilot has been run. The saved EUR 20 pilot plan is held at the user's
 request, with zero spend.
+
+Open the [interactive synthetic pilot](docs/pilot/v0.2/index.html) by downloading
+the HTML file and opening it in your browser. Each `analyze` run also writes
+`analysis.html`. Combine existing analyses into one portable report with:
+
+```console
+cargo run -- visualize --analysis docs/pilot/v0.2/canonical/analysis.json --analysis docs/pilot/v0.2/copy_control/analysis.json --output results/report.html
+```
+
+The report works without a server or an internet connection. See
+[result visualization](docs/VISUALIZATION.md) for controls and interpretation.
+
+Before a paid run, read [budgeted execution](docs/EXECUTION.md). The prepared
+Fable validation preview is offline and keeps spending disabled:
+
+```powershell
+./scripts/preview-fable-pilot.ps1
+```
 
 Run the quality gates with:
 

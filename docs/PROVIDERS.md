@@ -14,7 +14,7 @@ Example:
 
 ```console
 cargo run --release -- run --provider openai --model MODEL_ID \
-  --run-id MODEL_ID-run-1 --temperature 0 --output results/responses.jsonl
+  --run-id MODEL_ID-run-1 --budget results/approved-budget.json --allow-paid --output results/responses.jsonl
 ```
 
 `--case-limit` supports small smoke runs. `--base-url` and `--api-key-env`
@@ -27,10 +27,13 @@ OpenAI and xAI requests explicitly set `store=false` and provide an empty
 tool list. Provider request IDs, resolved model identifiers, OpenAI-compatible
 system fingerprints, requested temperature, and per-case errors are retained.
 
-The Responses adapters also accept `--reasoning-effort` and retain the exact
-requested setting. Other adapters reject that flag rather than silently dropping
-it. Verify model support before using it; settings are never automatically
-substituted. Runs refuse to overwrite existing response files or manifests.
+The Responses and Anthropic adapters accept `--reasoning-effort` and retain the
+exact requested setting. Anthropic sends it as `output_config.effort`; unsupported
+effort names and non-default Fable temperature settings fail locally. Other adapters reject
+that flag rather than silently dropping it. Verify model support before using it; settings are never automatically
+substituted. Existing runs require `--resume`, which verifies the checkpoint
+before continuing. See [budgeted execution](EXECUTION.md) for spending controls,
+interruption recovery, usage accounting, and the offline Fable pilot preview.
 
 Every successful run command writes `NAME.manifest.json` next to `NAME.jsonl`.
 It binds all intended cases even when `--case-limit` produces only a subset.
@@ -63,6 +66,7 @@ As checked on 2026-09-05, the [official model page](https://developers.openai.co
 documents `gpt-6-astra` and reasoning levels `low`, `medium`, `high`, `xhigh`, and
 `max`. The saved plan uses the user-selected `max` level. The [model guide](https://developers.openai.com/api/docs/guides/latest-model)
 also says to omit `temperature` for Astra. Account access has not been verified.
-Before any later paid execution, verify pricing,
-and add a runner that enforces the remaining EUR budget. The saved ceiling is a
-plan constraint, not a claim that the generic `run` command enforces billing limits.
+Before any later paid execution, verify pricing and provide an explicitly
+approved, enabled budget policy. The generic `run` command now requires that
+policy and `--allow-paid` for live endpoints. The saved GPT-6 plan remains a held
+planning artifact; it is not an enabled budget policy.

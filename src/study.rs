@@ -144,8 +144,40 @@ fn prompt_digest(
     Ok(digest(&prompts?))
 }
 
-#[derive(Debug, Serialize)]
+/// Usage reported by the provider and conservative campaign cost accounting.
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct ExecutionSummary {
+    pub known_usage_responses: usize,
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub accounted_nanoeur: u64,
+    pub accounted_responses: usize,
+    pub uncertain_billing_responses: usize,
+}
+
+fn execution_summary(responses: &[ResponseRecord]) -> Option<ExecutionSummary> {
+    let mut summary = ExecutionSummary::default();
+    let mut present = false;
+    for meta in responses.iter().filter_map(|r| r.execution.as_ref()) {
+        present = true;
+        if let Some((input, output)) = meta.input_tokens.zip(meta.output_tokens) {
+            summary.known_usage_responses += 1;
+            summary.input_tokens = summary.input_tokens.saturating_add(input);
+            summary.output_tokens = summary.output_tokens.saturating_add(output);
+        }
+        summary.accounted_responses += usize::from(meta.accounted_nanoeur.is_some());
+        summary.accounted_nanoeur = summary
+            .accounted_nanoeur
+            .saturating_add(meta.accounted_nanoeur.unwrap_or(0));
+        summary.uncertain_billing_responses += usize::from(meta.reservation_retained);
+    }
+    present.then_some(summary)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ModelAnalysis {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<ExecutionSummary>,
     pub repetitions: usize,
     pub completed_cases_per_run: usize,
     pub exact_text: Interval,
@@ -157,7 +189,7 @@ pub struct ModelAnalysis {
     pub report: BenchmarkReport,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PairComparison {
     pub left: String,
     pub right: String,
@@ -165,7 +197,7 @@ pub struct PairComparison {
     pub reason: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Example {
     pub model: String,
     pub run_id: String,
@@ -183,7 +215,7 @@ pub struct Example {
     pub alternative_edition_token_overlap: Option<f64>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StudyReport {
     pub schema_version: u16,
     pub track: String,
@@ -306,6 +338,7 @@ pub fn analyze(
         analyses.insert(
             name.clone(),
             ModelAnalysis {
+                execution: execution_summary(&observations.responses),
                 repetitions: observations.runs.len(),
                 completed_cases_per_run: cases.len(),
                 exact_text: bootstrap(&cluster_values(scores, false), resamples),
@@ -686,7 +719,8 @@ pub fn write_study(output: &Path, report: &StudyReport) -> Result<()> {
     std::fs::create_dir_all(output)?;
     write_json(&output.join("analysis.json"), report)?;
     write_jsonl(Some(&output.join("examples.jsonl")), &report.examples)?;
-    write_text(&output.join("analysis.md"), &study_markdown(report))
+    write_text(&output.join("analysis.md"), &study_markdown(report))?;
+    crate::visualization::write_html(&output.join("analysis.html"), std::slice::from_ref(report))
 }
 
 fn study_markdown(report: &StudyReport) -> String {
@@ -880,6 +914,7 @@ mod tests {
                     seed: None,
                     provider_request_id: None,
                     system_fingerprint: None,
+                    execution: None,
                 });
             }
         }
@@ -1111,6 +1146,41 @@ mod tests {
         assert!(model.recall_given_provider_success.is_none());
         assert!(model.report.stability.is_empty());
         assert!(study_markdown(&report).contains("undefined (no successful requests)"));
+    }
+
+    #[test]
+    fn analysis_retains_cutoffs_usage_and_uncertain_cost_accounting() {
+        let (cases, references, catalog, config, mut responses) = fixture();
+        responses[0].execution = Some(crate::domain::ExecutionMetadata {
+            input_tokens: Some(80),
+            output_tokens: Some(4096),
+            truncated: true,
+            stop_reason: Some("max_tokens".into()),
+            accounted_nanoeur: Some(200_000_000),
+            reservation_retained: false,
+        });
+        responses[1].error = Some("interrupted request".into());
+        responses[1].output.clear();
+        responses[1].execution = Some(crate::domain::ExecutionMetadata {
+            accounted_nanoeur: Some(250_000_000),
+            reservation_retained: true,
+            ..Default::default()
+        });
+        let first = input(&config, &cases, &references, &catalog, responses);
+        let report = analyze(&cases, &references, &catalog, &[first], 100).unwrap();
+        let model = report.models.values().next().unwrap();
+        assert_eq!(model.report.overall.classifications["truncated"], 1);
+        assert!((model.exact_text.estimate - 0.75).abs() < f64::EPSILON);
+        let usage = model.execution.as_ref().unwrap();
+        assert_eq!(usage.known_usage_responses, 1);
+        assert_eq!(usage.accounted_responses, 2);
+        assert_eq!(usage.input_tokens, 80);
+        assert_eq!(usage.output_tokens, 4096);
+        assert_eq!(usage.accounted_nanoeur, 450_000_000);
+        assert_eq!(usage.uncertain_billing_responses, 1);
+        let html = crate::visualization::render_html(&[report]).unwrap();
+        assert!(html.contains("Usage and cost accounting"));
+        assert!(html.contains("Token-limit cutoff"));
     }
 
     #[test]

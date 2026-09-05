@@ -59,6 +59,12 @@ recall excludes only provider failures and is undefined when no requests succeed
 Refusals and empty successful responses remain recall failures. Repeated provider
 errors cannot inflate output stability; duplicate run IDs are not repetitions.
 
+Provider token-limit cutoffs are classified as `truncated`, separately from recall
+errors and transport/provider errors. Both exact metrics fail for a cutoff. Cutoffs
+remain in end-to-end and provider-success-conditional recall denominators, but are
+excluded from output stability and receive a dedicated resemblance-matrix column.
+See [execution accounting](EXECUTION.md) for resume and budget semantics.
+
 Reports include edition-differing subsets, translation-by-stratum breakdowns,
 and deterministic illustrative failures with display-level word diffs. Reference
 and output examples are suppressed for hidden IDs or private licensed catalogs.

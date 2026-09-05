@@ -1,0 +1,10 @@
+{
+  "provider": "anthropic",
+  "model": "claude-fable-5-1",
+  "execution_enabled": false,
+  "limit_nanoeur": 5000000000,
+  "input_nanoeur_per_token": 10000,
+  "output_nanoeur_per_token": 50000,
+  "pricing_source": "https://platform.claude.com/docs/en/models/fable-5-1/overview ; $10/$50 per million tokens, conservatively reserved at EUR/USD parity, before tax/fees",
+  "pricing_checked": "2026-09-05"
+}

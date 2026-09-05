@@ -10,7 +10,7 @@ use biblequotebench::{
     aggregate_scores,
     importer::import_usfm,
     io::{ensure_nonempty, read_json, read_jsonl, write_json, write_jsonl, write_text},
-    provider::{ProviderConfig, ProviderKind, run_cases_with_supplied},
+    provider::{ProviderConfig, ProviderKind},
     report::{build_report, render_markdown},
     sampling::{CuratedReference, SamplingConfig, sample_dataset},
     score_response,
@@ -93,15 +93,26 @@ enum Command {
         base_url: Option<String>,
         #[arg(long)]
         temperature: Option<f32>,
-        /// Explicit Responses API reasoning level; recorded without substitution.
+        /// Explicit Responses or Claude effort; recorded without substitution.
         #[arg(long)]
         reasoning_effort: Option<String>,
-        #[arg(long, default_value_t = 512)]
+        #[arg(long, default_value_t = 4096)]
         max_output_tokens: u32,
         #[arg(long)]
         case_limit: Option<usize>,
         #[arg(long)]
         fail_fast: bool,
+        /// Price assumptions and a shared campaign ceiling; mandatory for live endpoints.
+        #[arg(long)]
+        budget: Option<PathBuf>,
+        /// Explicitly authorize an enabled live policy.
+        #[arg(long)]
+        allow_paid: bool,
+        #[arg(long)]
+        resume: bool,
+        /// Check inputs and estimate reservations without credentials or network access.
+        #[arg(long)]
+        dry_run: bool,
         #[arg(long)]
         output: PathBuf,
     },
@@ -138,6 +149,13 @@ enum Command {
         output_dir: PathBuf,
         #[arg(long, default_value_t = 2000)]
         resamples: usize,
+    },
+    /// Render validated analysis JSON files as one portable, offline interactive report.
+    Visualize {
+        #[arg(long, required = true)]
+        analysis: Vec<PathBuf>,
+        #[arg(long, default_value = "results/report.html")]
+        output: PathBuf,
     },
     /// Prepare public prompt controls and three-verse passage diagnostics.
     PreparePilot {
@@ -233,6 +251,10 @@ fn main() -> Result<()> {
             max_output_tokens,
             case_limit,
             fail_fast,
+            budget,
+            allow_paid,
+            resume,
+            dry_run,
             output,
         } => run_command(
             &paths,
@@ -249,6 +271,12 @@ fn main() -> Result<()> {
                 fail_fast,
             },
             &output,
+            &biblequotebench::execution::RunOptions {
+                budget,
+                allow_paid,
+                resume,
+                dry_run,
+            },
         ),
         Command::Score {
             dataset: paths,
@@ -276,6 +304,13 @@ fn main() -> Result<()> {
                 &output_dir,
                 resamples,
             )
+        }
+        Command::Visualize { analysis, output } => {
+            let reports = analysis
+                .iter()
+                .map(|path| read_json(path))
+                .collect::<Result<Vec<_>>>()?;
+            biblequotebench::visualization::write_html(&output, &reports)
         }
         Command::PreparePilot {
             dataset,
@@ -450,44 +485,21 @@ fn prompt_command(paths: &DatasetPaths, case_id: &str) -> Result<()> {
     Ok(())
 }
 
-fn run_command(paths: &DatasetPaths, config: &ProviderConfig, output: &Path) -> Result<()> {
+fn run_command(
+    paths: &DatasetPaths,
+    config: &ProviderConfig,
+    output: &Path,
+    options: &biblequotebench::execution::RunOptions,
+) -> Result<()> {
     let dataset = load_dataset(paths)?;
-    validate_dataset(&dataset.catalog, &dataset.cases, &dataset.references)?;
-    if output.exists() || biblequotebench::study::manifest_path(output).exists() {
-        bail!("run output or manifest already exists; use a new output path");
-    }
-    biblequotebench::study::make_manifest(
+    biblequotebench::execution::execute(
         config,
         &dataset.cases,
         &dataset.references,
         &dataset.catalog,
-        &[],
-    )?;
-    let records = run_cases_with_supplied(
-        config,
-        &dataset.cases,
-        &dataset.catalog,
-        &dataset.references,
-    )?;
-    let manifest = biblequotebench::study::make_manifest(
-        config,
-        &dataset.cases,
-        &dataset.references,
-        &dataset.catalog,
-        &records,
-    )?;
-    ensure_parent(output)?;
-    write_jsonl(Some(output), &records)?;
-    write_json(&biblequotebench::study::manifest_path(output), &manifest)?;
-    let failures = records
-        .iter()
-        .filter(|record| record.error.is_some())
-        .count();
-    println!(
-        "wrote {} responses ({failures} provider errors)",
-        records.len()
-    );
-    Ok(())
+        output,
+        options,
+    )
 }
 
 fn score_command(paths: &DatasetPaths, responses: &Path, output: Option<&Path>) -> Result<()> {
@@ -642,6 +654,7 @@ mod tests {
             seed: None,
             provider_request_id: None,
             system_fingerprint: None,
+            execution: None,
         };
         let error = score_all(&cases, &references, &[response.clone(), response]).unwrap_err();
         assert!(error.to_string().contains("duplicate response"));

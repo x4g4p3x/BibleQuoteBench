@@ -7,3 +7,8 @@
 .env
 .env.*
 !.env.example
+
+*.ledger.json
+*.ledger.lock
+*.output.lock
+*.checkpoint.tmp

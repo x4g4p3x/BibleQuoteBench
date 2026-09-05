@@ -124,6 +124,8 @@ fn confusion_matrix(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String,
     for score in scores {
         let resembles = if score.classification == Classification::ProviderError {
             "_provider_error"
+        } else if score.classification == Classification::Truncated {
+            "_truncated"
         } else if score.classification == Classification::Empty {
             "_empty"
         } else if score.classification == Classification::Refusal {
@@ -177,7 +179,10 @@ fn exact_matches(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String, us
 fn stability(scores: &[ScoreRecord]) -> BTreeMap<String, StabilitySummary> {
     let mut cases: BTreeMap<(String, String), Vec<&ScoreRecord>> = BTreeMap::new();
     for score in scores {
-        if score.classification == Classification::ProviderError {
+        if matches!(
+            score.classification,
+            Classification::ProviderError | Classification::Truncated
+        ) {
             continue;
         }
         cases

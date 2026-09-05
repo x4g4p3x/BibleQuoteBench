@@ -220,6 +220,7 @@ pub fn synthetic(dataset_root: &Path, output: &Path) -> Result<()> {
     let mut summary = String::from(
         "# BibleQuoteBench v0.2 synthetic pilot\n\n**Synthetic validation only. These are constructed responses, not measurements of GPT-6 or any live model. No paid calls were made.**\n\nThe two synthetic generators deliberately exercise exact recall, punctuation changes, edition substitution, mixed wording, refusal, empty output, and provider failure. Their names and rates have no model-performance meaning. Three repetitions per generator are evaluated with complete coverage.\n\n| Track | Cases/run | Reference clusters | Synthetic A ExactText | Synthetic B ExactText |\n| --- | ---: | ---: | ---: | ---: |\n",
     );
+    let mut study_reports = Vec::new();
     for name in TRACKS {
         let root = dataset_root.join(name);
         let cases: Vec<BenchmarkCase> = read_jsonl(&root.join("cases.jsonl"))?;
@@ -269,8 +270,11 @@ pub fn synthetic(dataset_root: &Path, output: &Path) -> Result<()> {
             values[1].exact_text.estimate * 100.0
         );
         write_study(&target, &report)?;
+        study_reports.push(report);
     }
-    summary.push_str("\nEach linked analysis includes cluster-bootstrap intervals, paired differences, edition-differing subsets, translation-by-stratum breakdowns, provider-error accounting, and annotated failures. Raw synthetic responses and manifest hashes permit independent reconstruction.\n\nLive pilot: prepared but held by user. Requested target: GPT-6 Astra (max reasoning); budget ceiling: EUR 20; spent: EUR 0. The documented API model is gpt-6-astra; the requested max reasoning level is documented. Account access, current pricing, and a budget-enforcing runner must be verified before any later live execution.\n");
+    crate::visualization::write_html(&output.join("index.html"), &study_reports)?;
+    summary.push_str("\n[Open the interactive results report](index.html) for model comparisons, edition diagnostics, and annotated failure exploration. It is self-contained and works offline.\n");
+    summary.push_str("\nEach linked analysis includes cluster-bootstrap intervals, paired differences, edition-differing subsets, translation-by-stratum breakdowns, provider-error accounting, and annotated failures. Raw synthetic responses and manifest hashes permit independent reconstruction.\n\nLive pilot: prepared but held by user. Requested target: GPT-6 Astra (max reasoning); budget ceiling: EUR 20; spent: EUR 0. The documented API model is gpt-6-astra; the requested max reasoning level is documented. Account access, current pricing, and an explicitly enabled budget policy must be verified before any later live execution.\n");
     write_text(&output.join("README.md"), &summary)
 }
 
@@ -334,5 +338,6 @@ fn synthetic_response(
         seed: None,
         provider_request_id: None,
         system_fingerprint: None,
+        execution: None,
     }
 }
