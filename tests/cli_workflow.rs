@@ -217,7 +217,7 @@ fn diagnostic_tracks_synthetic_pilot_and_validated_analysis_work_end_to_end() {
         interactive.to_str().unwrap(),
     ]);
     let html = fs::read_to_string(&interactive).unwrap();
-    assert!(html.contains("Recall by model configuration"));
+    assert!(html.contains("Quotation accuracy by model"));
     assert!(html.contains("connect-src 'none'"));
     assert!(output.join("index.html").exists());
     let copy = datasets.join("copy_control");

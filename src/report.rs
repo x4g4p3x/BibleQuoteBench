@@ -119,31 +119,36 @@ fn grouped_summary(
         .collect()
 }
 
+/// Shared destination for aggregate matrix cells and illustrative drilldowns.
+pub(crate) fn resemblance(score: &ScoreRecord) -> &str {
+    if score.classification == Classification::ProviderError {
+        "_provider_error"
+    } else if score.classification == Classification::Truncated {
+        "_truncated"
+    } else if score.classification == Classification::Empty {
+        "_empty"
+    } else if score.classification == Classification::Refusal {
+        "_refusal"
+    } else if score.classification == Classification::ExactRequested {
+        score.requested_translation.as_str()
+    } else if score.exact_other_translations.len() > 1 {
+        "_ambiguous_exact"
+    } else if let Some(translation) = score.exact_other_translation.as_deref() {
+        translation
+    } else if score.closest_translations.len() > 1 {
+        "_ambiguous_closest"
+    } else {
+        score
+            .closest_translation
+            .as_deref()
+            .unwrap_or("_unclassified")
+    }
+}
+
 fn confusion_matrix(scores: &[ScoreRecord]) -> BTreeMap<String, BTreeMap<String, usize>> {
     let mut matrix: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
     for score in scores {
-        let resembles = if score.classification == Classification::ProviderError {
-            "_provider_error"
-        } else if score.classification == Classification::Truncated {
-            "_truncated"
-        } else if score.classification == Classification::Empty {
-            "_empty"
-        } else if score.classification == Classification::Refusal {
-            "_refusal"
-        } else if score.classification == Classification::ExactRequested {
-            score.requested_translation.as_str()
-        } else if score.exact_other_translations.len() > 1 {
-            "_ambiguous_exact"
-        } else if let Some(translation) = score.exact_other_translation.as_deref() {
-            translation
-        } else if score.closest_translations.len() > 1 {
-            "_ambiguous_closest"
-        } else {
-            score
-                .closest_translation
-                .as_deref()
-                .unwrap_or("_unclassified")
-        };
+        let resembles = resemblance(score);
         *matrix
             .entry(score.requested_translation.clone())
             .or_default()

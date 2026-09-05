@@ -206,6 +206,9 @@ pub struct Example {
     pub requested_translation: String,
     pub classification: Classification,
     pub diagnostic: String,
+    /// Scorer-derived matrix destination; absent in older v0.2 exports.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resembles: Option<String>,
     pub expected: String,
     pub output: String,
     pub word_diff: String,
@@ -616,18 +619,11 @@ fn failure_examples(
                 requested_translation: score.requested_translation.clone(),
                 classification: score.classification,
                 diagnostic: example_kind(score),
+                resembles: Some(crate::report::resemblance(score).into()),
                 word_diff: word_diff(&expected, &response.output),
                 expected,
                 output: response.output.clone(),
-                exact_alternative_editions: references
-                    .iter()
-                    .filter(|record| {
-                        record.reference == score.reference
-                            && record.translation != score.requested_translation
-                            && record.text == response.output
-                    })
-                    .map(|record| record.translation.clone())
-                    .collect(),
+                exact_alternative_editions: score.exact_other_translations.clone(),
                 closer_alternative: score.closest_translation.clone(),
                 closer_alternatives: score.closest_translations.clone(),
                 alternative_edition_token_overlap: score.translation_contamination_rate,
@@ -1209,6 +1205,51 @@ mod tests {
         assert_eq!(word_diff("one two", ""), "[-one] [-two]");
         assert_eq!(word_diff("", "one"), "[+one]");
         assert_eq!(word_diff("one two", "one"), "one [-two]");
+    }
+
+    #[test]
+    fn example_drilldowns_share_normalized_matches_and_matrix_destinations() {
+        let (cases, mut references, catalog, config, mut responses) = fixture();
+        references[1].text = "The b\nverse 1.".into();
+        responses[0].output = "The b\r\nverse 1.".into();
+        responses[2].output.clear();
+        responses[4].error = Some("request failed".into());
+        responses[4].output.clear();
+        let value = input(&config, &cases, &references, &catalog, responses);
+        let report = analyze(&cases, &references, &catalog, &[value], 100).unwrap();
+        let alternative = report
+            .examples
+            .iter()
+            .find(|e| e.case_id == cases[0].case_id)
+            .unwrap();
+        assert_eq!(alternative.exact_alternative_editions, vec!["b"]);
+        assert_eq!(alternative.resembles.as_deref(), Some("b"));
+        for example in &report.examples {
+            let matrix = &report.models[&example.model].report.requested_to_resembles;
+            assert!(
+                matrix[&example.requested_translation][example.resembles.as_ref().unwrap()] > 0
+            );
+        }
+        assert!(
+            report
+                .examples
+                .iter()
+                .any(|e| e.resembles.as_deref() == Some("_empty"))
+        );
+        assert!(
+            report
+                .examples
+                .iter()
+                .any(|e| e.resembles.as_deref() == Some("_provider_error"))
+        );
+        let mut legacy = serde_json::to_value(alternative).unwrap();
+        legacy.as_object_mut().unwrap().remove("resembles");
+        assert!(
+            serde_json::from_value::<Example>(legacy)
+                .unwrap()
+                .resembles
+                .is_none()
+        );
     }
 
     #[test]
