@@ -526,6 +526,130 @@ fn upstream_errors_redirects_size_limits_and_header_filtering_fail_closed() {
 }
 
 #[test]
+fn failed_response_reads_preserve_private_bounded_bytes_and_safe_classification() {
+    struct FailedRead {
+        prefix: io::Cursor<Vec<u8>>,
+        kind: io::ErrorKind,
+    }
+    impl Read for FailedRead {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            match self.prefix.read(buffer)? {
+                0 => Err(io::Error::new(self.kind, "CANARY private transport error")),
+                count => Ok(count),
+            }
+        }
+    }
+    for (kind, classification) in [
+        (io::ErrorKind::UnexpectedEof, "stream_read_error"),
+        (io::ErrorKind::TimedOut, "read_timeout"),
+    ] {
+        // Even a complete SSE event cannot be accepted after an HTTP read failure.
+        for prefix in [
+            Vec::new(),
+            b"data: broken\n\n".to_vec(),
+            stream("fixture", json!([])),
+        ] {
+            let temp = TempDir::new().unwrap();
+            let error = read_response(
+                FailedRead {
+                    prefix: io::Cursor::new(prefix.clone()),
+                    kind,
+                },
+                temp.path(),
+            )
+            .unwrap_err()
+            .to_string();
+            assert!(error.contains(classification));
+            assert!(error.contains("no retry"));
+            assert!(!error.contains("CANARY"));
+            assert_eq!(
+                fs::read(temp.path().join("response.partial.sse")).unwrap(),
+                prefix
+            );
+            assert!(!temp.path().join("response.sse").exists());
+            let failure: Value =
+                crate::io::read_json(&temp.path().join("response-failure.json")).unwrap();
+            assert_eq!(failure["classification"], classification);
+            assert_eq!(failure["received_bytes"], prefix.len());
+            assert_eq!(failure["partial_sha256"], hash(&prefix));
+            assert_eq!(failure["accepted"], false);
+            assert_eq!(failure["retry_permitted"], false);
+            assert!(!serde_json::to_string(&failure).unwrap().contains("CANARY"));
+            assert!(read_audit(temp.path(), "prompt", "fixture", ReasoningEffort::Low).is_err());
+        }
+    }
+    let oversized = vec![b' '; usize::try_from(MAX_RESPONSE + 2).unwrap()];
+    assert_eq!(
+        read_response(io::Cursor::new(oversized), TempDir::new().unwrap().path())
+            .unwrap()
+            .len(),
+        usize::try_from(MAX_RESPONSE + 1).unwrap()
+    );
+}
+
+#[test]
+fn interrupted_http_stream_is_rejected_and_retained_without_client_delivery_or_retry() {
+    use std::net::TcpListener;
+    let temp = TempDir::new().unwrap();
+    let program = fake_program(temp.path());
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}/responses", listener.local_addr().unwrap());
+    let partial = stream(
+        "fixture",
+        json!([{"type":"output_text","text":"CANARY text never delivered"}]),
+    );
+    let fixture_bytes = partial.clone();
+    let worker = thread::spawn(move || {
+        let (mut socket, _) = listener.accept().unwrap();
+        socket
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
+        // Consume request headers and its body before truncating the response.
+        let mut received = Vec::new();
+        let mut byte = [0];
+        while !received.ends_with(b"\r\n\r\n") {
+            socket.read_exact(&mut byte).unwrap();
+            received.push(byte[0]);
+        }
+        let header = String::from_utf8(received).unwrap();
+        let length: usize = header
+            .lines()
+            .find_map(|line| {
+                line.to_ascii_lowercase()
+                    .strip_prefix("content-length:")
+                    .map(str::trim)
+                    .map(str::parse)
+            })
+            .unwrap()
+            .unwrap();
+        socket.read_exact(&mut vec![0; length]).unwrap();
+        write!(socket, "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", fixture_bytes.len() + 100).unwrap();
+        socket.write_all(&fixture_bytes).unwrap();
+        drop(socket); // Completed SSE followed by premature HTTP EOF still fails closed.
+        listener.set_nonblocking(true).unwrap();
+        thread::sleep(Duration::from_millis(100));
+        assert_eq!(
+            listener.accept().unwrap_err().kind(),
+            io::ErrorKind::WouldBlock
+        );
+    });
+    let audit = temp.path().join("audit");
+    let error = fake_runner(temp.path(), &program, "fixture", &url)
+        .recall("prompt", &audit)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("stream_read_error"));
+    assert!(!error.contains("CANARY"));
+    assert_eq!(
+        fs::read(audit.join("response.partial.sse")).unwrap(),
+        partial
+    );
+    assert!(!audit.join("response.sse").exists());
+    assert!(read_audit(&audit, "prompt", "fixture", ReasoningEffort::Low).is_err());
+    worker.join().unwrap();
+}
+
+#[test]
 fn runner_configuration_and_executable_changes_fail_before_model_requests() {
     for model in ["", "model with spaces", "model;command"] {
         assert!(

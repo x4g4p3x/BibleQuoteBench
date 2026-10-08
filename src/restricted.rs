@@ -3,7 +3,7 @@
 
 use std::{
     fs,
-    io::{Read, Write},
+    io::{self, Read, Write},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     time::{Duration, Instant},
@@ -595,11 +595,7 @@ fn gated_response(
         "subscription service rejected request (HTTP {}); no retry",
         response.status().as_u16()
     );
-    let mut bytes = Vec::new();
-    response
-        .take(MAX_RESPONSE + 1)
-        .read_to_end(&mut bytes)
-        .context("incomplete subscription response; no retry")?;
+    let bytes = read_response(response, audit)?;
     ensure!(
         u64::try_from(bytes.len())? <= MAX_RESPONSE,
         "subscription response exceeds size limit"
@@ -609,6 +605,42 @@ fn gated_response(
     recall.request_sha256 = hash(&serde_json::to_vec(&canonical)?);
     recall.response_sha256 = hash(&bytes);
     Ok((bytes, recall))
+}
+
+// Retain transport evidence without accepting or forwarding any partial response.
+fn read_response(reader: impl Read, audit: &Path) -> Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    if let Err(error) = reader.take(MAX_RESPONSE + 1).read_to_end(&mut bytes) {
+        let classification = if error.kind() == io::ErrorKind::TimedOut
+            || error.get_ref().is_some_and(|cause| {
+                cause
+                    .downcast_ref::<reqwest::Error>()
+                    .is_some_and(reqwest::Error::is_timeout)
+            }) {
+            "read_timeout"
+        } else {
+            "stream_read_error"
+        };
+        fs::write(audit.join("response.partial.sse"), &bytes)
+            .context("cannot preserve incomplete subscription response; no retry")?;
+        write_json(
+            &audit.join("response-failure.json"),
+            &json!({
+                "schema": "restricted_response_failure_v1",
+                "classification": classification,
+                "phase": "response_body_read",
+                "received_bytes": bytes.len(),
+                "partial_sha256": hash(&bytes),
+                "accepted": false,
+                "retry_permitted": false
+            }),
+        )?;
+        // Underlying service/transport error messages can contain sensitive data.
+        bail!(
+            "incomplete subscription response ({classification}); partial audit retained; no retry"
+        );
+    }
+    Ok(bytes)
 }
 
 fn validate_item(item: &Value) -> Result<()> {

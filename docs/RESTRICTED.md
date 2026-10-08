@@ -104,6 +104,16 @@ Each trial retains the normal responses, scores, and reports, plus:
 - canonical `gate/case-N/request.json` and raw `response.sse` audits;
 - response model identity, token usage, and typed refusals.
 
+If reading the upstream response fails, any bytes received within the response
+limit are retained privately as `response.partial.sse`, alongside a safe
+`response-failure.json` classification (`read_timeout` or `stream_read_error`),
+byte count, and hash. Underlying transport error messages are not copied into
+this summary. Partial streams are never delivered to the CLI or accepted as an
+answer, even if the received prefix contains a completion event. The attempt
+remains blocked and cannot be retried. A complete but malformed or incomplete
+SSE stream is retained in `response.sse` and also rejected. These audit files
+are evidence for operator review, not a route to promote an uncertain answer.
+
 Accepted answers and hashes are checked against their audits during resume.
 Authentication headers and tokens are absent from audit files. Raw service
 responses can contain encrypted reasoning and other subscription metadata;
@@ -111,6 +121,22 @@ keep the ignored `results/` directory private. Temporary credentials are removed
 after the case. Native token refreshes are retained atomically when the source
 credentials still match; cooperating benchmark runners serialize refresh writes.
 Avoid changing accounts or signing in concurrently during a trial.
+
+## Reviewed supplemental recovery
+
+A blocked attempt in its original checkpoint remains non-replayable. After
+explicit operator review, a new, distinct `run_id` may serve only remaining
+unaccepted case IDs as a supplemental source. Preserve the original blocked
+checkpoint and its audits; never regenerate or replace an accepted answer.
+Keep each supplemental source's identity and case mapping rather than editing
+the original attempt ledger or presenting the source as an uninterrupted run.
+
+Any combined report must disclose the additional attempt and retain a
+first-attempt failure view alongside results that include supplemental answers.
+Unknown subscription usage and an uncertain generated answer remain part of
+the original failure evidence. A timeout or quota reset alone does not authorize
+recovery. Keep raw outputs, partial streams, and service metadata private;
+supplemental recovery does not authorize public raw-data publication.
 
 ## Scope and compatibility
 
