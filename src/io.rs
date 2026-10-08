@@ -100,3 +100,89 @@ pub fn ensure_nonempty<T>(records: &[T], kind: &str, path: &Path) -> Result<()> 
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn jsonl_skips_blank_lines_and_reports_physical_line_numbers() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let path = temp.path().join("records.jsonl");
+        std::fs::write(&path, "\n  \r\n{\"value\":1}\r\n\n{\"value\":2}\n").unwrap();
+        let records: Vec<serde_json::Value> = read_jsonl(&path).unwrap();
+        assert_eq!(
+            records,
+            vec![
+                serde_json::json!({"value":1}),
+                serde_json::json!({"value":2})
+            ]
+        );
+        std::fs::write(&path, "\n{\"value\":1}\n\ninvalid\n").unwrap();
+        let error = read_jsonl::<serde_json::Value>(&path).unwrap_err();
+        assert!(error.to_string().contains("records.jsonl:4"));
+        std::fs::write(&path, [b'\n', 0xff]).unwrap();
+        assert!(
+            read_jsonl::<serde_json::Value>(&path)
+                .unwrap_err()
+                .to_string()
+                .contains("records.jsonl:2")
+        );
+    }
+
+    #[test]
+    fn missing_and_malformed_documents_and_empty_collections_have_context() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let path = temp.path().join("missing.json");
+        assert!(
+            read_json::<serde_json::Value>(&path)
+                .unwrap_err()
+                .to_string()
+                .contains("opening")
+        );
+        assert!(read_jsonl::<serde_json::Value>(&path).is_err());
+        std::fs::write(&path, "{ malformed").unwrap();
+        assert!(
+            read_json::<serde_json::Value>(&path)
+                .unwrap_err()
+                .to_string()
+                .contains("parsing JSON")
+        );
+        assert!(
+            ensure_nonempty::<u8>(&[], "responses", &path)
+                .unwrap_err()
+                .to_string()
+                .contains("contains no responses")
+        );
+        let unreachable = temp.path().join("missing-parent/output.json");
+        assert!(write_json(&unreachable, &serde_json::json!({})).is_err());
+        assert!(write_jsonl(Some(&unreachable), &[1]).is_err());
+        assert!(write_text(&unreachable, "text").is_err());
+    }
+
+    struct FailingWriter;
+
+    impl Write for FailingWriter {
+        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("fixture write failure"))
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            Err(std::io::Error::other("fixture flush failure"))
+        }
+    }
+
+    #[test]
+    fn jsonl_writer_propagates_write_and_flush_failures() {
+        assert!(
+            format!("{:#}", write_records(FailingWriter, &[1]).unwrap_err())
+                .contains("fixture write failure")
+        );
+        assert!(
+            write_records(FailingWriter, &[] as &[u8])
+                .unwrap_err()
+                .to_string()
+                .contains("flushing JSONL output")
+        );
+    }
+}

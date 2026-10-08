@@ -165,6 +165,9 @@ pub struct ExecutionMetadata {
     pub output_tokens: Option<u64>,
     pub stop_reason: Option<String>,
     pub truncated: bool,
+    /// An explicit refusal reported by the provider, independent of wording.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub refusal: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub accounted_nanoeur: Option<u64>,
     #[serde(default)]

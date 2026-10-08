@@ -32,8 +32,16 @@ Overlap is evidence of textual resemblance, not evidence of training provenance
 or a causal explanation of an error. Old JSON using
 `translation_contamination_rate` remains readable; new JSON uses the new name.
 
-Refusal detection remains a transparent phrase heuristic, not a semantic
-classifier. All raw responses remain independently auditable.
+Refusal detection uses explicit provider metadata when present and a transparent
+phrase heuristic otherwise. All raw responses remain independently auditable.
+
+Provider-reported typed refusals are retained with their raw refusal text and
+`execution.refusal: true`, even when the text is empty or does not match the
+wording heuristic. A typed refusal earns no exact-match credit and remains a
+recall failure in the successful-request denominator. Transport/provider errors
+and output truncation retain classification precedence. Missing refusal metadata
+on older records defaults to false; false is omitted when serialized so existing
+manifest hashes remain stable.
 
 ## Validated comparisons
 

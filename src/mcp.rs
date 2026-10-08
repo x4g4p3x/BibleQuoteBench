@@ -3,6 +3,7 @@
 //! This transport intentionally never calls a provider or samples a client model.
 //! Reference text and scoring feedback remain private until all answers are locked.
 
+mod selection;
 mod session;
 
 use std::io::{BufRead, Write};
@@ -126,7 +127,7 @@ impl McpServer {
                             "protocolVersion": protocol_version,
                             "capabilities": {"tools": {"listChanged": false}},
                             "serverInfo": {"name": "biblequotebench", "version": env!("CARGO_PKG_VERSION")},
-                            "instructions": "Interactive recall trial. Call benchmark_status, next_case, submit_answer, then finish_run. Answer from recall; do not browse, retrieve Bible text, or inspect local reference files. Submit the exact passage only. Scores are withheld until every case has an immutable answer. Model identity is self-reported; this is not controlled closed-book evidence."
+                            "instructions": "Interactive recall trial. Call begin_trial with a new run_id and your explicit model label, or resume_trial for a saved run. Then call next_case, submit_answer, and finish_run. Answer from recall; do not browse, retrieve Bible text, or inspect local reference files. Submit the exact passage only. Scores are withheld until every case has an immutable answer. Model identity is self-reported; this is not controlled closed-book evidence."
                         }))
                     }
                     Err(_) => Err((-32602, "Invalid initialize parameters")),
@@ -171,6 +172,24 @@ fn rpc_error(id: &Value, code: i32, message: &str) -> Value {
 fn tool_definitions() -> Value {
     let empty = json!({"type": "object", "properties": {}, "additionalProperties": false});
     json!([
+        {
+            "name": "begin_trial",
+            "description": "Start a fresh trial with a unique run ID and explicit self-reported model label. Optional sampling overrides use the operator's dataset. Finish an issued trial before starting another.",
+            "inputSchema": {"type": "object", "properties": {
+                "run_id": {"type":"string", "pattern":"^[A-Za-z0-9_-]{1,64}$"},
+                "model": {"type":"string", "minLength":1, "maxLength":256},
+                "case_limit": {"type":"integer", "minimum":1},
+                "translation": {"type":"string"},
+                "seed": {"type":"string", "minLength":1, "maxLength":256}
+            }, "required":["run_id","model"], "additionalProperties":false},
+            "annotations": {"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false}
+        },
+        {
+            "name": "resume_trial",
+            "description": "Resume a saved run using its original model label, dataset commitments, sampling settings, and immutable answers.",
+            "inputSchema": {"type":"object","properties":{"run_id":{"type":"string","pattern":"^[A-Za-z0-9_-]{1,64}$"}},"required":["run_id"],"additionalProperties":false},
+            "annotations": {"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false}
+        },
         {
             "name": "benchmark_status",
             "description": "Read run identity and progress without answers or scoring feedback.",

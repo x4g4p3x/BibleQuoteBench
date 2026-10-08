@@ -74,7 +74,10 @@ The optional [MCP workflow](MCP.md) carries prompts through a connected assistan
 instead of stateless provider requests. It keeps reference text inside the
 evaluator but cannot enforce conversation isolation or prohibit other client
 tools. Its `interactive_mcp` trials have separate metadata and descriptive reports;
-they are not accepted as controlled provider evidence by `analyze`.
+they are not accepted as controlled provider evidence by `analyze`. Fresh trials
+use recorded, seeded stratified selection with complete edition groups. One
+connection can start or resume multiple trials, with one active trial at a time;
+legacy checkpoints preserve their original case order.
 
 The pre-commit and CI publication guards inspect Git-indexed bytes rather than
 only working-tree filenames. They are defense in depth; evaluator hosts must also

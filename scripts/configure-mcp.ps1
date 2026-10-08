@@ -5,10 +5,12 @@ param(
     [string[]]$Client = @('codex'),
     [string]$Model,
     [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')]
-    [string]$RunIdPrefix = 'interactive-01',
+    [string]$RunIdPrefix,
     [ValidateRange(1, 100000)]
     [int]$CaseLimit = 10,
     [string]$Translation = 'bsb-2025-third-printing',
+    [ValidateNotNullOrEmpty()]
+    [string]$Seed = 'BibleQuoteBench/MCP/stratified-v1',
     # Optional alternate JSON config path, for a single Claude or Cursor client.
     [string]$ConfigPath,
     # Print the new entry and destination without editing app settings.
@@ -28,17 +30,21 @@ if ($ConfigPath -and ($Client.Count -ne 1 -or $Client[0] -eq 'codex')) {
 if ($Model -and [string]::IsNullOrWhiteSpace($Model)) {
     throw '-Model must be a nonempty label.'
 }
+if ([bool]$Model -ne [bool]$RunIdPrefix) {
+    throw '-Model and -RunIdPrefix must be supplied together for an initial trial. Omit both to start trials through MCP tools.'
+}
 
 foreach ($clientName in $Client) {
-    $modelLabel = if ($Model) { $Model } else { "$clientName (model unspecified)" }
     $serverArguments = @(
-        'mcp', '--run-id', "$RunIdPrefix-$clientName", '--model', $modelLabel,
-        '--case-limit', "$CaseLimit", '--translation', $Translation,
+        'mcp', '--case-limit', "$CaseLimit", '--translation', $Translation, '--seed', $Seed,
         '--translations', (Join-Path $projectRoot 'data/dev/translations.json'),
         '--cases', (Join-Path $projectRoot 'data/dev/cases.jsonl'),
         '--references', (Join-Path $projectRoot 'data/dev/references.jsonl'),
         '--output-dir', (Join-Path $projectRoot 'results/mcp')
     )
+    if ($RunIdPrefix) {
+        $serverArguments += @('--run-id', "$RunIdPrefix-$clientName", '--model', $Model)
+    }
     $entry = @{ command = $executablePath; args = $serverArguments }
     if ($clientName -eq 'codex') {
         if ($Preview) {

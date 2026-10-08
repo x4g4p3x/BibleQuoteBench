@@ -341,3 +341,178 @@ fn synthetic_response(
         execution: None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fixture(anchors: &[u16]) -> (Vec<BenchmarkCase>, Vec<ReferenceRecord>, TranslationCatalog) {
+        let mut catalog: TranslationCatalog =
+            read_json(&Path::new(env!("CARGO_MANIFEST_DIR")).join("data/dev/translations.json"))
+                .unwrap();
+        catalog.translations.truncate(2);
+        let mut references = Vec::new();
+        let mut cases = Vec::new();
+        for spec in &catalog.translations {
+            for verse in (1..=12).chain(anchors.iter().copied().filter(|verse| *verse > 12)) {
+                let reference = crate::BibleReference {
+                    book: "John".into(),
+                    chapter: 1,
+                    verse_start: verse,
+                    verse_end: None,
+                };
+                references.push(ReferenceRecord {
+                    translation: spec.id.clone(),
+                    reference: reference.clone(),
+                    text: format!("Verse {verse}, {}.", spec.id),
+                });
+                if anchors.contains(&verse) {
+                    cases.push(BenchmarkCase {
+                        case_id: format!("BQ-DEV-{verse}-{}", spec.id),
+                        translation: spec.id.clone(),
+                        reference,
+                        stratum: CaseStratum::Random,
+                        prompt_variant: PromptVariant::Canonical,
+                    });
+                }
+            }
+        }
+        (cases, references, catalog)
+    }
+
+    #[test]
+    fn pilot_requires_public_development_data_and_enough_distinct_anchors() {
+        let temp = tempfile::tempdir().unwrap();
+        let output = temp.path().join("pilot");
+        let (cases, references, catalog) = fixture(&[1, 4]);
+        assert!(
+            prepare(&cases, &references, &catalog, 1, &output)
+                .unwrap_err()
+                .to_string()
+                .contains("at least two public development")
+        );
+        let mut private = catalog.clone();
+        private.translations[0].license_kind = LicenseKind::LicensedPrivate;
+        private.translations[0].redistribute_reference_text = false;
+        assert!(
+            prepare(&cases, &references, &private, 2, &output)
+                .unwrap_err()
+                .to_string()
+                .contains("redistributable editions")
+        );
+        let mut renamed = cases.clone();
+        renamed[0].case_id = "other".into();
+        assert!(
+            prepare(&renamed, &references, &catalog, 2, &output)
+                .unwrap_err()
+                .to_string()
+                .contains("public development")
+        );
+        assert!(
+            prepare(&cases, &references, &catalog, 3, &output)
+                .unwrap_err()
+                .to_string()
+                .contains("not enough public pilot references")
+        );
+        assert!(!output.exists());
+    }
+
+    #[test]
+    fn passages_skip_overlaps_and_missing_edition_coverage() {
+        let temp = tempfile::tempdir().unwrap();
+        let (cases, references, catalog) = fixture(&[1, 2, 4, 7]);
+        prepare(
+            &cases,
+            &references,
+            &catalog,
+            2,
+            &temp.path().join("complete"),
+        )
+        .unwrap();
+        let passages: Vec<BenchmarkCase> =
+            read_jsonl(&temp.path().join("complete/passage/cases.jsonl")).unwrap();
+        assert_eq!(passages.len(), 4);
+        assert!(
+            passages
+                .iter()
+                .all(|case| [1, 4].contains(&case.reference.verse_start))
+        );
+        assert!(
+            passages
+                .iter()
+                .all(|case| case.reference.end_verse() == case.reference.verse_start + 2)
+        );
+        let reduced: Vec<_> = references
+            .into_iter()
+            .filter(|record| {
+                !(record.translation == catalog.translations[1].id
+                    && record.reference.verse_start == 5)
+            })
+            .collect();
+        prepare(&cases, &reduced, &catalog, 2, &temp.path().join("fallback")).unwrap();
+        let fallback: Vec<BenchmarkCase> =
+            read_jsonl(&temp.path().join("fallback/passage/cases.jsonl")).unwrap();
+        assert!(
+            fallback
+                .iter()
+                .all(|case| [1, 7].contains(&case.reference.verse_start))
+        );
+        assert_eq!(fallback.len(), 4);
+    }
+
+    #[test]
+    fn insufficient_nonoverlapping_spans_and_verse_overflow_are_rejected() {
+        let temp = tempfile::tempdir().unwrap();
+        for anchors in [vec![1, 2], vec![1, 2, u16::MAX]] {
+            let (cases, references, catalog) = fixture(&anchors);
+            assert!(
+                prepare(
+                    &cases,
+                    &references,
+                    &catalog,
+                    2,
+                    &temp.path().join(format!("attempt-{}", anchors.len()))
+                )
+                .unwrap_err()
+                .to_string()
+                .contains("insufficient nonoverlapping three-verse passages")
+            );
+        }
+    }
+
+    #[test]
+    fn synthetic_empty_and_failure_records_remain_distinct_in_scoring() {
+        let (cases, references, _) = fixture(&[1, 4]);
+        let config = ProviderConfig {
+            kind: ProviderKind::OpenaiCompatible,
+            model: "synthetic-a".into(),
+            run_id: "synthetic-run".into(),
+            api_key_env: None,
+            base_url: Some("http://synthetic.invalid".into()),
+            temperature: Some(0.0),
+            reasoning_effort: None,
+            max_output_tokens: 512,
+            case_limit: None,
+            fail_fast: false,
+        };
+        let requested = references
+            .iter()
+            .find(|record| {
+                record.translation == cases[0].translation && record.reference == cases[0].reference
+            })
+            .unwrap();
+        for (index, classification) in [
+            (9, crate::Classification::Empty),
+            (10, crate::Classification::ProviderError),
+        ] {
+            let response = synthetic_response(&config, &cases[0], &references, index, 0);
+            assert!(response.output.is_empty());
+            assert_eq!(response.error.is_some(), index == 10);
+            assert_eq!(response.resolved_model.as_deref(), Some("synthetic-a"));
+            assert_eq!(
+                crate::score_response(&cases[0], &response, requested, &[]).classification,
+                classification
+            );
+        }
+    }
+}

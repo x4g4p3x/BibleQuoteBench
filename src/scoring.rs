@@ -52,13 +52,14 @@ pub fn score_response(
     let output_chars: Vec<char> = output_text.chars().collect();
     let character_edits = edit_counts(&expected_chars, &output_chars).total();
 
-    let truncated = response
+    let (truncated, typed_refusal) = response
         .execution
         .as_ref()
-        .is_some_and(|meta| meta.truncated);
-    let exact_text = !truncated && response.error.is_none() && output_text == expected_text;
-    let exact_words = !truncated && response.error.is_none() && output_words == expected_words;
-    let refusal = looks_like_refusal(&output_text);
+        .map_or((false, false), |meta| (meta.truncated, meta.refusal));
+    let exact_allowed = !truncated && !typed_refusal && response.error.is_none();
+    let exact_text = exact_allowed && output_text == expected_text;
+    let exact_words = exact_allowed && output_words == expected_words;
+    let refusal = typed_refusal || looks_like_refusal(&output_text);
     let extraneous_text = !exact_text
         && ((!expected_text.is_empty() && output_text.contains(&expected_text))
             || (output_words.len() > expected_words.len()
@@ -102,14 +103,10 @@ pub fn score_response(
             .as_slice(),
     );
 
-    let classification = if response.error.is_some() {
-        Classification::ProviderError
-    } else if truncated {
-        Classification::Truncated
+    let classification = if let Some(outcome) = execution_outcome(response, refusal) {
+        outcome
     } else if output_text.is_empty() {
         Classification::Empty
-    } else if refusal {
-        Classification::Refusal
     } else if exact_text {
         Classification::ExactRequested
     } else if exact_other_translation.is_some() {
@@ -149,6 +146,22 @@ pub fn score_response(
         closest_translation,
         closest_translations,
         translation_contamination_rate,
+    }
+}
+
+fn execution_outcome(response: &ResponseRecord, refusal: bool) -> Option<Classification> {
+    if response.error.is_some() {
+        Some(Classification::ProviderError)
+    } else if response
+        .execution
+        .as_ref()
+        .is_some_and(|meta| meta.truncated)
+    {
+        Some(Classification::Truncated)
+    } else if refusal {
+        Some(Classification::Refusal)
+    } else {
+        None
     }
 }
 
@@ -466,6 +479,32 @@ mod tests {
             reference: case().reference,
             text: text.to_owned(),
         }
+    }
+
+    #[test]
+    fn explicit_refusal_prevents_exact_credit_and_survives_empty_text() {
+        for text in ["Exact words.", "", "Declined."] {
+            let mut output = response(text);
+            output.execution = Some(crate::domain::ExecutionMetadata {
+                refusal: true,
+                ..Default::default()
+            });
+            let score = score_response(
+                &case(),
+                &output,
+                &reference("requested", "Exact words."),
+                &[],
+            );
+            assert_eq!(score.classification, Classification::Refusal);
+            assert!(score.refusal);
+            assert!(!score.exact_text && !score.exact_words);
+            assert!(score.closest_translation.is_none());
+        }
+        let legacy = serde_json::json!({"input_tokens":1,"output_tokens":2,"stop_reason":null,"truncated":false,"reservation_retained":false});
+        let metadata: crate::domain::ExecutionMetadata =
+            serde_json::from_value(legacy.clone()).unwrap();
+        assert!(!metadata.refusal);
+        assert_eq!(serde_json::to_value(metadata).unwrap(), legacy);
     }
 
     #[test]

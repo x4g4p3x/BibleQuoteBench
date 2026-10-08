@@ -931,6 +931,55 @@ mod tests {
     }
 
     #[test]
+    fn invalid_resampling_limits_evidence_and_run_configuration_are_rejected() {
+        let (cases, references, catalog, config, responses) = fixture();
+        let run = input(&config, &cases, &references, &catalog, responses);
+        for count in [0, 99, 100_001] {
+            assert!(
+                analyze(
+                    &cases,
+                    &references,
+                    &catalog,
+                    std::slice::from_ref(&run),
+                    count
+                )
+                .unwrap_err()
+                .to_string()
+                .contains("100..100000 bootstrap")
+            );
+        }
+        assert!(
+            analyze(&cases, &references, &catalog, &[], 100)
+                .unwrap_err()
+                .to_string()
+                .contains("provide runs")
+        );
+        let mut invalid = run.clone();
+        invalid.0.evidence = "unknown".into();
+        assert!(
+            analyze(&cases, &references, &catalog, &[invalid], 100)
+                .unwrap_err()
+                .to_string()
+                .contains("unknown evidence kind")
+        );
+        for field in ["run_id", "model", "max_output_tokens"] {
+            let mut value = serde_json::to_value(&run.0).unwrap();
+            value[field] = if field == "max_output_tokens" {
+                serde_json::json!(0)
+            } else {
+                serde_json::json!(" ")
+            };
+            let invalid = (serde_json::from_value(value).unwrap(), run.1.clone());
+            assert!(
+                analyze(&cases, &references, &catalog, &[invalid], 100)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("invalid run configuration")
+            );
+        }
+    }
+
+    #[test]
     fn paired_analysis_keeps_translations_and_repetitions_in_four_clusters() {
         let (cases, references, catalog, config, responses) = fixture();
         let first = input(&config, &cases, &references, &catalog, responses.clone());
@@ -1145,9 +1194,26 @@ mod tests {
     }
 
     #[test]
+    fn typed_refusals_remain_in_the_successful_request_denominator() {
+        let (cases, references, catalog, config, mut responses) = fixture();
+        responses[0].output = "Declined.".into();
+        responses[0].execution = Some(crate::domain::ExecutionMetadata {
+            refusal: true,
+            ..Default::default()
+        });
+        let run = input(&config, &cases, &references, &catalog, responses);
+        let report = analyze(&cases, &references, &catalog, &[run], 100).unwrap();
+        let model = report.models.values().next().unwrap();
+        assert!((model.recall_given_provider_success.unwrap() - 0.875).abs() < f64::EPSILON);
+        assert!(model.provider_error_rate.abs() < f64::EPSILON);
+        assert_eq!(model.report.overall.classifications["refusal"], 1);
+    }
+
+    #[test]
     fn analysis_retains_cutoffs_usage_and_uncertain_cost_accounting() {
         let (cases, references, catalog, config, mut responses) = fixture();
         responses[0].execution = Some(crate::domain::ExecutionMetadata {
+            refusal: false,
             input_tokens: Some(80),
             output_tokens: Some(4096),
             truncated: true,

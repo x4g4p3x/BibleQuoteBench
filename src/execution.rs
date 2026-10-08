@@ -541,6 +541,390 @@ mod tests {
     const ANSWER: &str = r#"{"model":"fixture","choices":[{"message":{"content":"answer"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10}}"#;
 
     #[test]
+    fn invalid_budget_identity_prices_and_provenance_prevent_execution() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let config = config("https://example.invalid/v1");
+        let budget = temp.path().join("budget.json");
+        let output = temp.path().join("run.jsonl");
+        let options = RunOptions {
+            budget: Some(budget.clone()),
+            dry_run: true,
+            ..Default::default()
+        };
+        for (field, value, expected) in [
+            ("provider", serde_json::json!("other"), "does not match"),
+            ("model", serde_json::json!("other"), "does not match"),
+            ("limit_nanoeur", serde_json::json!(0), "positive ceiling"),
+            (
+                "input_nanoeur_per_token",
+                serde_json::json!(0),
+                "positive ceiling",
+            ),
+            (
+                "output_nanoeur_per_token",
+                serde_json::json!(0),
+                "positive ceiling",
+            ),
+            (
+                "pricing_source",
+                serde_json::json!(""),
+                "pricing provenance",
+            ),
+            (
+                "pricing_checked",
+                serde_json::json!(""),
+                "pricing provenance",
+            ),
+        ] {
+            let mut value_json = serde_json::to_value(policy(&config, 10000)).unwrap();
+            value_json[field] = value;
+            write_json(&budget, &value_json).unwrap();
+            assert!(
+                execute(&config, &cases, &refs, &catalog, &output, &options)
+                    .unwrap_err()
+                    .to_string()
+                    .contains(expected),
+                "{field}"
+            );
+            assert!(!output.exists());
+            assert!(!budget.with_extension("ledger.json").exists());
+        }
+    }
+
+    #[test]
+    fn invalid_outputs_endpoints_empty_runs_and_missing_credentials_stop_before_requests() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let mut config = config("http://127.0.0.1:1");
+        let output = temp.path().join("run.jsonl");
+        let options = RunOptions::default();
+        assert!(
+            execute(
+                &config,
+                &cases,
+                &refs,
+                &catalog,
+                &temp.path().join("run.json"),
+                &options
+            )
+            .unwrap_err()
+            .to_string()
+            .contains(".jsonl extension")
+        );
+        config.base_url = Some("http://example.invalid/v1".into());
+        assert!(
+            execute(&config, &cases, &refs, &catalog, &output, &options)
+                .unwrap_err()
+                .to_string()
+                .contains("require HTTPS")
+        );
+        config.base_url = Some("http://127.0.0.1:1".into());
+        config.case_limit = Some(0);
+        assert!(
+            execute(&config, &cases, &refs, &catalog, &output, &options)
+                .unwrap_err()
+                .to_string()
+                .contains("at least one case")
+        );
+        config.case_limit = Some(2);
+        let missing = format!("BQB_TEST_ABSENT_CREDENTIAL_{}", std::process::id());
+        assert!(std::env::var(&missing).is_err());
+        config.api_key_env = Some(missing);
+        assert!(
+            execute(&config, &cases, &refs, &catalog, &output, &options)
+                .unwrap_err()
+                .to_string()
+                .contains("is not configured")
+        );
+        assert!(!output.exists());
+        assert!(!output.with_extension("ledger.json").exists());
+    }
+
+    #[test]
+    fn existing_exports_missing_resume_and_budget_manifest_collisions_are_rejected() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let config = config("http://127.0.0.1:1");
+        let output = temp.path().canonicalize().unwrap().join("run.jsonl");
+        for path in [&output, &manifest_path(&output)] {
+            fs::write(path, "preserve this artifact").unwrap();
+            assert!(
+                execute(
+                    &config,
+                    &cases,
+                    &refs,
+                    &catalog,
+                    &output,
+                    &RunOptions::default()
+                )
+                .unwrap_err()
+                .to_string()
+                .contains("already exists")
+            );
+            assert_eq!(fs::read_to_string(path).unwrap(), "preserve this artifact");
+            fs::remove_file(path).unwrap();
+        }
+        assert!(
+            execute(
+                &config,
+                &cases,
+                &refs,
+                &catalog,
+                &output,
+                &RunOptions {
+                    resume: true,
+                    ..Default::default()
+                }
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("no saved run")
+        );
+        let budget = manifest_path(&output);
+        write_json(&budget, &policy(&config, 10000)).unwrap();
+        let before = fs::read(&budget).unwrap();
+        assert!(
+            execute(
+                &config,
+                &cases,
+                &refs,
+                &catalog,
+                &output,
+                &RunOptions {
+                    budget: Some(budget.clone()),
+                    ..Default::default()
+                }
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("must not overwrite")
+        );
+        assert_eq!(fs::read(budget).unwrap(), before);
+    }
+
+    fn invalid_checkpoint_edits() -> Vec<(&'static str, serde_json::Value, &'static str)> {
+        vec![
+            (
+                "schema_version",
+                serde_json::json!(2),
+                "budget policy differs",
+            ),
+            (
+                "policy_sha256",
+                serde_json::json!("changed"),
+                "budget policy differs",
+            ),
+            (
+                "charged_nanoeur",
+                serde_json::json!(1),
+                "accounting mismatch",
+            ),
+            (
+                "charges_nanoeur",
+                serde_json::json!([]),
+                "invalid checkpoint charges",
+            ),
+            (
+                "records",
+                serde_json::json!([]),
+                "invalid checkpoint charges",
+            ),
+            (
+                "pending",
+                serde_json::json!({"case_id":"unknown","reserved_nanoeur":0}),
+                "invalid pending checkpoint",
+            ),
+            (
+                "case_id",
+                serde_json::json!("unknown"),
+                "invalid checkpoint response sequence",
+            ),
+            (
+                "run_id",
+                serde_json::json!("changed"),
+                "invalid checkpoint response sequence",
+            ),
+            (
+                "model",
+                serde_json::json!("changed"),
+                "invalid checkpoint response sequence",
+            ),
+        ]
+    }
+
+    #[test]
+    fn corrupt_budget_checkpoints_fail_closed_and_preserve_existing_output() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let config = config("http://127.0.0.1:1");
+        let output = temp.path().canonicalize().unwrap().join("run.jsonl");
+        fs::write(&output, "preserve existing export").unwrap();
+        let budget = temp.path().join("budget.json");
+        let approved = policy(&config, 10000);
+        write_json(&budget, &approved).unwrap();
+        let key = format!("{} / {}", config.kind.name(), config.run_id);
+        let ledger = Ledger {
+            schema_version: 1,
+            policy_sha256: digest(&approved),
+            charged_nanoeur: 0,
+            runs: BTreeMap::from([(
+                key.clone(),
+                SavedRun {
+                    manifest: make_manifest(&config, &cases, &refs, &catalog, &[]).unwrap(),
+                    output: output.clone(),
+                    limit: 2,
+                    records: vec![error_record(&config, &cases[0].case_id, "fixture".into())],
+                    charges_nanoeur: vec![0],
+                    pending: None,
+                },
+            )]),
+        };
+        let options = RunOptions {
+            budget: Some(budget.clone()),
+            resume: true,
+            ..Default::default()
+        };
+        let original = serde_json::to_value(ledger).unwrap();
+        for (field, value, expected) in invalid_checkpoint_edits() {
+            let mut corrupt = original.clone();
+            match field {
+                "schema_version" | "policy_sha256" | "charged_nanoeur" => corrupt[field] = value,
+                "case_id" | "run_id" | "model" => {
+                    corrupt["runs"][&key]["records"][0][field] = value;
+                }
+                _ => corrupt["runs"][&key][field] = value,
+            }
+            let path = budget.with_extension("ledger.json");
+            write_json(&path, &corrupt).unwrap();
+            assert!(
+                execute(&config, &cases, &refs, &catalog, &output, &options)
+                    .unwrap_err()
+                    .to_string()
+                    .contains(expected),
+                "{field}"
+            );
+            assert_eq!(read_json::<serde_json::Value>(&path).unwrap(), corrupt);
+            assert_eq!(
+                fs::read_to_string(&output).unwrap(),
+                "preserve existing export"
+            );
+        }
+        write_json(&budget.with_extension("ledger.json"), &original).unwrap();
+        assert!(
+            execute(
+                &config,
+                &cases,
+                &refs,
+                &catalog,
+                &output,
+                &RunOptions {
+                    resume: false,
+                    ..options
+                }
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("use --resume")
+        );
+    }
+
+    #[test]
+    fn fail_fast_retains_failure_accounting_and_resume_continues_with_next_case() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let (url, worker) = server(vec!["{broken", ANSWER]);
+        let mut config = config(&url);
+        config.fail_fast = true;
+        let budget = temp.path().join("budget.json");
+        write_json(&budget, &policy(&config, 100_000)).unwrap();
+        let options = RunOptions {
+            budget: Some(budget.clone()),
+            ..Default::default()
+        };
+        let output = temp.path().join("run.jsonl");
+        assert!(
+            execute(&config, &cases, &refs, &catalog, &output, &options)
+                .unwrap_err()
+                .to_string()
+                .contains("provider failed; response and budget saved")
+        );
+        let records: Vec<ResponseRecord> = read_jsonl(&output).unwrap();
+        assert_eq!(records.len(), 1);
+        assert!(
+            records[0]
+                .error
+                .as_ref()
+                .unwrap()
+                .contains("parsing provider JSON")
+        );
+        let meta = records[0].execution.as_ref().unwrap();
+        assert!(meta.reservation_retained);
+        assert!(meta.accounted_nanoeur.unwrap() > 0);
+        assert!(!manifest_path(&output).exists());
+        execute(
+            &config,
+            &cases,
+            &refs,
+            &catalog,
+            &output,
+            &RunOptions {
+                resume: true,
+                ..options
+            },
+        )
+        .unwrap();
+        worker.join().unwrap();
+        let final_records: Vec<ResponseRecord> = read_jsonl(&output).unwrap();
+        assert_eq!(final_records[0], records[0]);
+        assert_eq!(final_records[1].case_id, cases[1].case_id);
+        assert!(final_records[1].error.is_none());
+        assert!(manifest_path(&output).exists());
+    }
+
+    #[test]
+    fn usage_above_reservation_is_retained_and_stops_the_campaign() {
+        let temp = tempfile::tempdir().unwrap();
+        let (catalog, cases, refs) = dataset();
+        let (url, worker) = server(vec![
+            r#"{"choices":[{"message":{"content":"retained answer"}}],"usage":{"prompt_tokens":10000,"completion_tokens":1000}}"#,
+        ]);
+        let config = config(&url);
+        let budget = temp.path().join("budget.json");
+        write_json(&budget, &policy(&config, 100_000)).unwrap();
+        let output = temp.path().join("run.jsonl");
+        assert!(
+            execute(
+                &config,
+                &cases,
+                &refs,
+                &catalog,
+                &output,
+                &RunOptions {
+                    budget: Some(budget.clone()),
+                    ..Default::default()
+                }
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("exceeded the conservative reservation")
+        );
+        worker.join().unwrap();
+        let records: Vec<ResponseRecord> = read_jsonl(&output).unwrap();
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].output, "retained answer");
+        assert_eq!(
+            records[0].execution.as_ref().unwrap().accounted_nanoeur,
+            Some(20000)
+        );
+        assert!(!records[0].execution.as_ref().unwrap().reservation_retained);
+        let ledger: Ledger = read_json(&budget.with_extension("ledger.json")).unwrap();
+        assert_eq!(ledger.charged_nanoeur, 20000);
+        assert!(ledger.runs.values().all(|run| run.pending.is_none()));
+        assert!(!manifest_path(&output).exists());
+    }
+
+    #[test]
     fn observed_usage_releases_reservation_and_completed_resume_sends_nothing() {
         let temp = tempfile::tempdir().unwrap();
         let (catalog, cases, refs) = dataset();

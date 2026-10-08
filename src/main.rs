@@ -75,17 +75,19 @@ enum Command {
         #[command(flatten)]
         dataset: DatasetPaths,
         /// A unique local run label; restart with the same settings to resume.
-        #[arg(long)]
-        run_id: String,
+        #[arg(long, requires = "model")]
+        run_id: Option<String>,
         /// Self-reported model label from the connected assistant.
-        #[arg(long)]
-        model: String,
+        #[arg(long, requires = "run_id")]
+        model: Option<String>,
         #[arg(long, default_value = "results/mcp")]
         output_dir: PathBuf,
         #[arg(long)]
         case_limit: Option<usize>,
         #[arg(long)]
         translation: Option<String>,
+        #[arg(long, default_value = "BibleQuoteBench/MCP/stratified-v1")]
+        seed: String,
     },
     /// Render the exact prompt for one benchmark case.
     Prompt {
@@ -259,6 +261,7 @@ fn main() -> Result<()> {
             output_dir,
             case_limit,
             translation,
+            seed,
         } => {
             let dataset = load_dataset(&paths)?;
             let mut server = biblequotebench::mcp::McpServer::open(
@@ -266,8 +269,9 @@ fn main() -> Result<()> {
                 dataset.cases,
                 dataset.references,
                 &biblequotebench::mcp::McpConfig {
-                    run_id,
-                    model,
+                    run_id: run_id.unwrap_or_default(),
+                    model: model.unwrap_or_default(),
+                    seed,
                     output_dir,
                     case_limit,
                     translation,

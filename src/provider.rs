@@ -176,25 +176,7 @@ pub fn run_cases_with_supplied(
         let prompt = execution_prompt(case, translation, text)?;
         let result = complete(&client, config, base_url, api_key.as_deref(), &prompt);
         match result {
-            Ok(completion) => records.push(ResponseRecord {
-                case_id: case.case_id.clone(),
-                run_id: config.run_id.clone(),
-                provider: config.kind.name().to_owned(),
-                model: config.model.clone(),
-                resolved_model: completion.resolved_model,
-                error: if completion.text.is_empty() && !completion.execution.truncated {
-                    Some("provider returned no visible text".into())
-                } else {
-                    None
-                },
-                output: completion.text,
-                temperature: config.temperature,
-                reasoning_effort: config.reasoning_effort.clone(),
-                seed: None,
-                provider_request_id: completion.request_id,
-                system_fingerprint: completion.system_fingerprint,
-                execution: Some(completion.execution),
-            }),
+            Ok(completion) => records.push(retain_completion(case, config, completion)),
             Err(error) if config.fail_fast => {
                 return Err(error).with_context(|| case.case_id.clone());
             }
@@ -216,6 +198,35 @@ pub fn run_cases_with_supplied(
         }
     }
     Ok(records)
+}
+
+fn retain_completion(
+    case: &BenchmarkCase,
+    config: &ProviderConfig,
+    completion: Completion,
+) -> ResponseRecord {
+    ResponseRecord {
+        case_id: case.case_id.clone(),
+        run_id: config.run_id.clone(),
+        provider: config.kind.name().to_owned(),
+        model: config.model.clone(),
+        resolved_model: completion.resolved_model,
+        error: if completion.text.is_empty()
+            && !completion.execution.truncated
+            && !completion.execution.refusal
+        {
+            Some("provider returned no visible text".into())
+        } else {
+            None
+        },
+        output: completion.text,
+        temperature: config.temperature,
+        reasoning_effort: config.reasoning_effort.clone(),
+        seed: None,
+        provider_request_id: completion.request_id,
+        system_fingerprint: completion.system_fingerprint,
+        execution: Some(completion.execution),
+    }
 }
 
 fn complete(
@@ -278,8 +289,11 @@ fn extract_responses_text(value: &Value) -> Result<String> {
         .flatten()
         .filter_map(|item| item.get("content").and_then(Value::as_array))
         .flatten()
-        .filter(|part| part.get("type").and_then(Value::as_str) == Some("output_text"))
-        .filter_map(|part| part.get("text").and_then(Value::as_str))
+        .filter_map(|part| match part.get("type").and_then(Value::as_str) {
+            Some("output_text") => part.get("text").and_then(Value::as_str),
+            Some("refusal") => part.get("refusal").and_then(Value::as_str),
+            _ => None,
+        })
         .collect::<Vec<_>>()
         .join("");
     if text.is_empty() {
@@ -415,11 +429,16 @@ fn complete_chat_completions(
         &headers,
         &body,
     )?;
-    let text = value
+    let content = value
         .pointer("/choices/0/message/content")
-        .and_then(Value::as_str)
-        .context("provider response contained no choices[0].message.content")?
-        .to_owned();
+        .and_then(Value::as_str);
+    let refusal = value
+        .pointer("/choices/0/message/refusal")
+        .and_then(Value::as_str);
+    if content.is_none() && refusal.is_none() {
+        bail!("provider response contained no choices[0].message content or refusal");
+    }
+    let text = content.into_iter().chain(refusal).collect();
     Ok(completion_metadata(&value, text))
 }
 
@@ -472,6 +491,17 @@ fn execution_metadata(value: &Value) -> crate::domain::ExecutionMetadata {
         .as_deref()
         .is_some_and(|r| ["max_tokens", "max_output_tokens", "length", "MAX_TOKENS"].contains(&r));
     crate::domain::ExecutionMetadata {
+        refusal: value
+            .get("output")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|item| item.get("content").and_then(Value::as_array))
+            .flatten()
+            .any(|part| part.get("type").and_then(Value::as_str) == Some("refusal"))
+            || value
+                .pointer("/choices/0/message/refusal")
+                .is_some_and(Value::is_string),
         input_tokens: input,
         output_tokens: output,
         stop_reason: reason,
@@ -540,7 +570,16 @@ mod tests {
         }
     }
 
-    fn mock_server(body: &'static str) -> (String, Receiver<String>, JoinHandle<()>) {
+    fn mock_server(body: &str) -> (String, Receiver<String>, JoinHandle<()>) {
+        mock_server_with_status(body, "200 OK")
+    }
+
+    fn mock_server_with_status(
+        body: &str,
+        status: &str,
+    ) -> (String, Receiver<String>, JoinHandle<()>) {
+        let body = body.to_owned();
+        let status = status.to_owned();
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
         let (sender, receiver) = mpsc::channel();
@@ -574,7 +613,7 @@ mod tests {
             sender.send(String::from_utf8(request).unwrap()).unwrap();
             write!(
                 stream,
-                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
                 body.len()
             )
             .unwrap();
@@ -587,6 +626,138 @@ mod tests {
             .timeout(Duration::from_secs(5))
             .build()
             .unwrap()
+    }
+
+    #[test]
+    fn provider_failures_are_retained_or_fail_fast_without_retries() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let catalog: TranslationCatalog =
+            crate::io::read_json(&root.join("data/dev/translations.json")).unwrap();
+        let cases: Vec<BenchmarkCase> =
+            crate::io::read_jsonl(&root.join("data/dev/cases.jsonl")).unwrap();
+        for fail_fast in [false, true] {
+            for (body, status, expected) in [
+                ("local rate limit", "429 Too Many Requests", "HTTP 429"),
+                ("{broken", "200 OK", "parsing provider JSON"),
+                (
+                    r#"{"choices":[{"message":{}}]}"#,
+                    "200 OK",
+                    "message content or refusal",
+                ),
+            ] {
+                let (base_url, request, server) = mock_server_with_status(body, status);
+                let mut config = fixture_config(ProviderKind::OpenaiCompatible, base_url);
+                config.fail_fast = fail_fast;
+                let result = run_cases(&config, &cases[..1], &catalog);
+                request.recv().unwrap();
+                server.join().unwrap();
+                if fail_fast {
+                    let error = result.unwrap_err();
+                    assert!(error.to_string().contains(&cases[0].case_id));
+                    assert!(format!("{error:#}").contains(expected));
+                } else {
+                    let records = result.unwrap();
+                    assert_eq!(records.len(), 1);
+                    assert_eq!(records[0].case_id, cases[0].case_id);
+                    assert!(records[0].output.is_empty());
+                    assert!(records[0].error.as_ref().unwrap().contains(expected));
+                    assert!(records[0].execution.is_none());
+                    assert!(records[0].resolved_model.is_none());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn empty_success_and_long_unicode_http_errors_remain_auditable() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let catalog: TranslationCatalog =
+            crate::io::read_json(&root.join("data/dev/translations.json")).unwrap();
+        let cases: Vec<BenchmarkCase> =
+            crate::io::read_jsonl(&root.join("data/dev/cases.jsonl")).unwrap();
+        let (base_url, request, server) = mock_server(
+            r#"{"choices":[{"message":{"content":""}}],"usage":{"prompt_tokens":8,"completion_tokens":2}}"#,
+        );
+        let records = run_cases(
+            &fixture_config(ProviderKind::OpenaiCompatible, base_url),
+            &cases[..1],
+            &catalog,
+        )
+        .unwrap();
+        assert_eq!(
+            records[0].error.as_deref(),
+            Some("provider returned no visible text")
+        );
+        assert_eq!(
+            records[0].execution.as_ref().unwrap().output_tokens,
+            Some(2)
+        );
+        assert!(!records[0].execution.as_ref().unwrap().refusal);
+        request.recv().unwrap();
+        server.join().unwrap();
+        let (base_url, request, server) = mock_server_with_status(
+            &format!("{}TAIL", "é".repeat(1200)),
+            "503 Service Unavailable",
+        );
+        let mut config = fixture_config(ProviderKind::OpenaiCompatible, base_url);
+        config.fail_fast = false;
+        let records = run_cases(&config, &cases[..1], &catalog).unwrap();
+        let error = records[0].error.as_ref().unwrap();
+        assert_eq!(error.chars().count(), 1000);
+        assert!(error.contains("HTTP 503"));
+        assert!(error.contains('é'));
+        assert!(!error.contains("TAIL"));
+        request.recv().unwrap();
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn invalid_provider_settings_and_unsafe_model_paths_fail_before_http() {
+        let base = fixture_config(ProviderKind::OpenaiCompatible, "http://127.0.0.1:1".into());
+        for config in [
+            ProviderConfig {
+                run_id: " ".into(),
+                ..base.clone()
+            },
+            ProviderConfig {
+                model: " ".into(),
+                ..base.clone()
+            },
+            ProviderConfig {
+                max_output_tokens: 0,
+                ..base.clone()
+            },
+            ProviderConfig {
+                reasoning_effort: Some("high".into()),
+                ..base.clone()
+            },
+            ProviderConfig {
+                kind: ProviderKind::Gemini,
+                reasoning_effort: Some("high".into()),
+                ..base.clone()
+            },
+        ] {
+            assert!(validate_config(&config).is_err());
+        }
+        let config = ProviderConfig {
+            model: "../unsafe?key=value".into(),
+            kind: ProviderKind::Gemini,
+            ..base
+        };
+        assert!(
+            complete_gemini(
+                &client(),
+                &config,
+                "http://127.0.0.1:1",
+                "fixture",
+                "prompt"
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("unsupported URL characters")
+        );
+        assert!(complete(&client(), &config, "http://127.0.0.1:1", None, "prompt").is_err());
+        assert!(extract_gemini_text(&json!({"candidates":[]})).is_err());
     }
 
     #[test]
@@ -617,7 +788,8 @@ mod tests {
             ]},
             {"type":"message","content":[{"type":"output_text","text":" second"}]}
         ]});
-        assert_eq!(extract_responses_text(&value).unwrap(), "First second");
+        assert_eq!(extract_responses_text(&value).unwrap(), "Firstno second");
+        assert!(execution_metadata(&value).refusal);
     }
 
     #[test]
@@ -636,6 +808,54 @@ mod tests {
             {"text":"First"}, {"text":" second"}
         ]}}]});
         assert_eq!(extract_gemini_text(&value).unwrap(), "First second");
+    }
+
+    #[test]
+    fn typed_refusals_retain_text_usage_and_successful_execution() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let cases: Vec<BenchmarkCase> =
+            crate::io::read_jsonl(&root.join("data/dev/cases.jsonl")).unwrap();
+        for (kind, body, expected) in [
+            (
+                ProviderKind::Openai,
+                r#"{"output":[{"content":[{"type":"refusal","refusal":"Declined."}]}],"usage":{"input_tokens":8,"output_tokens":2}}"#,
+                "Declined.",
+            ),
+            (
+                ProviderKind::Openai,
+                r#"{"output":[{"content":[{"type":"refusal","refusal":""}]}],"usage":{"input_tokens":8,"output_tokens":2}}"#,
+                "",
+            ),
+            (
+                ProviderKind::OpenaiCompatible,
+                r#"{"choices":[{"message":{"content":null,"refusal":"Declined."}}],"usage":{"prompt_tokens":8,"completion_tokens":2}}"#,
+                "Declined.",
+            ),
+            (
+                ProviderKind::OpenaiCompatible,
+                r#"{"choices":[{"message":{"content":"","refusal":"Declined."}}],"usage":{"prompt_tokens":8,"completion_tokens":2}}"#,
+                "Declined.",
+            ),
+            (
+                ProviderKind::OpenaiCompatible,
+                r#"{"choices":[{"message":{"content":"Prefix ","refusal":"Declined."}}],"usage":{"prompt_tokens":8,"completion_tokens":2}}"#,
+                "Prefix Declined.",
+            ),
+        ] {
+            let (base_url, request, server) = mock_server(body);
+            let config = fixture_config(kind, base_url.clone());
+            let completion =
+                complete(&client(), &config, &base_url, Some("test-key"), "prompt").unwrap();
+            let record = retain_completion(&cases[0], &config, completion);
+            assert_eq!(record.output, expected);
+            assert!(record.error.is_none());
+            let metadata = record.execution.unwrap();
+            assert!(metadata.refusal);
+            assert_eq!(metadata.input_tokens, Some(8));
+            assert_eq!(metadata.output_tokens, Some(2));
+            request.recv().unwrap();
+            server.join().unwrap();
+        }
     }
 
     #[test]

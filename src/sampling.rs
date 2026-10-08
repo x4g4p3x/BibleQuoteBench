@@ -501,6 +501,201 @@ fn stratum_counts(selected: &HashMap<BibleReference, CaseStratum>) -> BTreeMap<S
 mod tests {
     use super::*;
 
+    fn rejection_fixture() -> (
+        SamplingConfig,
+        Vec<String>,
+        Vec<ReferenceRecord>,
+        Vec<CorpusLock>,
+    ) {
+        let config = SamplingConfig {
+            schema_version: 2,
+            release_id: "fixture".into(),
+            seed: "public".into(),
+            total_references: 6,
+            dev_references: 2,
+            famous_references: 0,
+            translation_sensitive_references: 0,
+            short_references: 0,
+            long_references: 0,
+        };
+        let translations: Vec<String> = vec!["a".into(), "b".into()];
+        let references: Vec<_> = (1..=10)
+            .flat_map(|verse| {
+                translations.iter().map(move |translation| ReferenceRecord {
+                    translation: translation.clone(),
+                    reference: BibleReference {
+                        book: "John".into(),
+                        chapter: 1,
+                        verse_start: verse,
+                        verse_end: None,
+                    },
+                    text: format!("{translation} words {verse}"),
+                })
+            })
+            .collect();
+        let locks = translations
+            .iter()
+            .map(|translation| CorpusLock {
+                schema_version: 1,
+                translation: translation.clone(),
+                edition: "1".into(),
+                source_url: "https://example.test".into(),
+                source_sha256: "fixture".into(),
+                importer_version: "fixture".into(),
+                artifacts: vec![],
+                reference_count: 10,
+                corpus_sha256: digest_jsonl(
+                    &references
+                        .iter()
+                        .filter(|record| &record.translation == translation)
+                        .collect::<Vec<_>>(),
+                ),
+            })
+            .collect();
+        (config, translations, references, locks)
+    }
+
+    #[test]
+    fn sampling_rejects_invalid_quotas_missing_locks_and_empty_private_seed() {
+        let (config, translations, references, locks) = rejection_fixture();
+        for (changed, expected) in [
+            (
+                SamplingConfig {
+                    schema_version: 3,
+                    ..config.clone()
+                },
+                "unsupported sampling schema",
+            ),
+            (
+                SamplingConfig {
+                    dev_references: 6,
+                    ..config.clone()
+                },
+                "must be smaller",
+            ),
+            (
+                SamplingConfig {
+                    long_references: 7,
+                    ..config.clone()
+                },
+                "quotas exceed",
+            ),
+            (
+                SamplingConfig {
+                    total_references: 11,
+                    ..config.clone()
+                },
+                "only 10 single-verse references",
+            ),
+        ] {
+            assert!(
+                sample_dataset(&changed, &translations, &references, &locks, &[], "private")
+                    .unwrap_err()
+                    .to_string()
+                    .contains(expected)
+            );
+        }
+        assert!(
+            sample_dataset(
+                &config,
+                &translations[..1],
+                &references,
+                &locks,
+                &[],
+                "private"
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("at least two translations")
+        );
+        assert!(
+            sample_dataset(
+                &config,
+                &translations,
+                &references,
+                &locks[..1],
+                &[],
+                "private"
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("missing corpus lock for b")
+        );
+        assert!(
+            sample_dataset(&config, &translations, &references, &locks, &[], " \n")
+                .unwrap_err()
+                .to_string()
+                .contains("seed must not be empty")
+        );
+    }
+
+    #[test]
+    fn private_candidate_pools_require_enough_distinct_references() {
+        let (config, translations, references, locks) = rejection_fixture();
+        let config = SamplingConfig {
+            total_references: 10,
+            dev_references: 5,
+            ..config
+        };
+        for quota in [
+            "translation_sensitive_references",
+            "short_references",
+            "long_references",
+        ] {
+            let mut value = serde_json::to_value(&config).unwrap();
+            value[quota] = serde_json::json!(8);
+            let changed = serde_json::from_value(value).unwrap();
+            assert!(
+                sample_dataset(&changed, &translations, &references, &locks, &[], "private")
+                    .unwrap_err()
+                    .to_string()
+                    .contains("candidate pool must exceed quota"),
+                "{quota}"
+            );
+        }
+        let curated: Vec<_> = references
+            .iter()
+            .filter(|record| record.translation == "a")
+            .take(4)
+            .map(|record| CuratedReference {
+                reference: record.reference.clone(),
+                stratum: CaseStratum::WellKnown,
+            })
+            .collect();
+        let changed = SamplingConfig {
+            famous_references: 8,
+            ..config
+        };
+        assert!(
+            sample_dataset(
+                &changed,
+                &translations,
+                &references,
+                &locks,
+                &curated,
+                "private"
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("famous pool must contain at least twice")
+        );
+        let mut duplicate = curated.clone();
+        duplicate.push(curated[0].clone());
+        assert!(
+            sample_dataset(
+                &changed,
+                &translations,
+                &references,
+                &locks,
+                &duplicate,
+                "private"
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("duplicate curated reference")
+        );
+    }
+
     #[test]
     fn stable_key_is_repeatable_and_purpose_separated() {
         let reference = BibleReference {

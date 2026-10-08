@@ -307,6 +307,99 @@ fn ratio(numerator: usize, denominator: usize) -> f64 {
 mod tests {
     use super::*;
 
+    fn scores() -> Vec<ScoreRecord> {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("data/dev");
+        let cases: Vec<crate::BenchmarkCase> =
+            crate::io::read_jsonl(&root.join("cases.jsonl")).unwrap();
+        let references: Vec<crate::ReferenceRecord> =
+            crate::io::read_jsonl(&root.join("references.jsonl")).unwrap();
+        let responses: Vec<crate::ResponseRecord> =
+            crate::io::read_jsonl(&root.join("responses.example.jsonl")).unwrap();
+        responses
+            .iter()
+            .map(|response| {
+                let case = cases
+                    .iter()
+                    .find(|case| case.case_id == response.case_id)
+                    .unwrap();
+                let requested = references
+                    .iter()
+                    .find(|record| {
+                        record.reference == case.reference && record.translation == case.translation
+                    })
+                    .unwrap();
+                let alternatives: Vec<_> = references
+                    .iter()
+                    .filter(|record| {
+                        record.reference == case.reference && record.translation != case.translation
+                    })
+                    .collect();
+                crate::score_response(case, response, requested, &alternatives)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn legacy_singular_alternative_matches_preserve_confusion_reporting() {
+        let mut score = scores()
+            .into_iter()
+            .find(|score| score.classification == Classification::TranslationConfusion)
+            .unwrap();
+        let original = build_report(std::slice::from_ref(&score));
+        let mut legacy = serde_json::to_value(&score).unwrap();
+        legacy
+            .as_object_mut()
+            .unwrap()
+            .remove("exact_other_translations");
+        score = serde_json::from_value(legacy).unwrap();
+        assert!(score.exact_other_translations.is_empty());
+        assert!(score.exact_other_translation.is_some());
+        let restored = build_report(&[score]);
+        assert_eq!(
+            original.exact_alternative_matches,
+            restored.exact_alternative_matches
+        );
+        assert_eq!(
+            original.requested_to_resembles,
+            restored.requested_to_resembles
+        );
+        assert_eq!(original.overall, restored.overall);
+    }
+
+    #[test]
+    fn report_groups_all_supported_strata_without_pooling_their_rates() {
+        let score = scores().into_iter().find(|score| score.exact_text).unwrap();
+        let strata = [
+            CaseStratum::ExtremelyFamous,
+            CaseStratum::WellKnown,
+            CaseStratum::Moderate,
+            CaseStratum::Random,
+            CaseStratum::Obscure,
+            CaseStratum::VeryObscure,
+            CaseStratum::TranslationSensitive,
+            CaseStratum::SimilarTranslations,
+            CaseStratum::ShortVerse,
+            CaseStratum::LongVerse,
+            CaseStratum::Passage,
+        ];
+        let selected: Vec<_> = strata
+            .into_iter()
+            .map(|stratum| ScoreRecord {
+                stratum,
+                ..score.clone()
+            })
+            .collect();
+        let report = build_report(&selected);
+        assert_eq!(report.by_stratum.len(), 11);
+        assert_eq!(report.overall.responses, 11);
+        for stratum in strata {
+            let label = serde_json::to_value(stratum).unwrap();
+            let summary = &report.by_stratum[label.as_str().unwrap()];
+            assert_eq!(summary.responses, 1);
+            assert!((summary.exact_text_rate - 1.0).abs() < f64::EPSILON);
+        }
+    }
+
     #[test]
     fn empty_report_renders() {
         let report = build_report(&[]);

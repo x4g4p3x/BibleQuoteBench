@@ -9,6 +9,7 @@ use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
+use super::selection::{SelectionSpec, select};
 use crate::{
     BenchmarkCase, PromptVariant, ReferenceRecord, ResponseRecord, TranslationCatalog,
     aggregate_scores,
@@ -28,10 +29,12 @@ pub struct McpConfig {
     pub model: String,
     /// Parent directory for `run-<run_id>` artifacts, selected outside MCP tools.
     pub output_dir: PathBuf,
-    /// Optional positive prefix size after translation filtering.
+    /// Maximum number of cases, keeping reference groups complete.
     pub case_limit: Option<usize>,
     /// Optional translation identifier to select before limiting cases.
     pub translation: Option<String>,
+    /// Seed for reproducible, stratified reference selection and presentation.
+    pub seed: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +51,8 @@ struct TrialMetadata {
     catalog_sha256: String,
     prompts_sha256: String,
     expected_case_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    selection: Option<SelectionSpec>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -60,7 +65,7 @@ struct Session {
 }
 
 /// A single dataset-bound trial. Holds an exclusive output lock until dropped.
-pub struct McpServer {
+struct Trial {
     catalog: TranslationCatalog,
     cases: Vec<BenchmarkCase>,
     references: Vec<ReferenceRecord>,
@@ -76,7 +81,203 @@ struct Answer {
     output: String,
 }
 
+/// Local trial manager with an operator-selected dataset and output directory.
+pub struct McpServer {
+    catalog: TranslationCatalog,
+    cases: Vec<BenchmarkCase>,
+    references: Vec<ReferenceRecord>,
+    defaults: McpConfig,
+    active: Option<Trial>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BeginTrial {
+    run_id: String,
+    model: String,
+    case_limit: Option<usize>,
+    translation: Option<String>,
+    seed: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ResumeTrial {
+    run_id: String,
+}
+
 impl McpServer {
+    /// Validates the dataset and optionally opens an initial trial.
+    /// Empty run and model labels start an idle server.
+    ///
+    /// # Errors
+    /// Rejects invalid datasets, selection settings, labels, or saved progress.
+    pub fn open(
+        catalog: TranslationCatalog,
+        cases: Vec<BenchmarkCase>,
+        references: Vec<ReferenceRecord>,
+        config: &McpConfig,
+    ) -> Result<Self> {
+        validate_dataset(&catalog, &cases, &references)?;
+        let mut validation = config.clone();
+        if config.run_id.is_empty() && config.model.is_empty() {
+            validation.run_id = "validation".into();
+            validation.model = "validation".into();
+        }
+        validate_config(&validation)?;
+        let active = if config.run_id.is_empty() && config.model.is_empty() {
+            None
+        } else {
+            Some(Trial::open(
+                catalog.clone(),
+                cases.clone(),
+                references.clone(),
+                config,
+            )?)
+        };
+        if active.is_none() {
+            select(&cases, &selection_spec(config))?;
+        }
+        Ok(Self {
+            catalog,
+            cases,
+            references,
+            defaults: config.clone(),
+            active,
+        })
+    }
+
+    pub(super) fn call_tool(&mut self, name: &str, arguments: Value) -> Result<Value> {
+        match name {
+            "begin_trial" => {
+                self.begin(serde_json::from_value(arguments).context("invalid trial arguments")?)
+            }
+            "resume_trial" => {
+                self.resume(serde_json::from_value(arguments).context("invalid resume arguments")?)
+            }
+            "benchmark_status" if self.active.is_none() && arguments == json!({}) => Ok(json!({
+                "active_trial": false, "provider_api_calls": 0, "evidence": "interactive_mcp", "selection_defaults": selection_spec(&self.defaults)
+            })),
+            _ => self
+                .active
+                .as_mut()
+                .context("no active trial; call begin_trial or resume_trial first")?
+                .call_tool(name, arguments),
+        }
+    }
+
+    fn begin(&mut self, request: BeginTrial) -> Result<Value> {
+        let config = McpConfig {
+            run_id: request.run_id,
+            model: request.model,
+            case_limit: request.case_limit.or(self.defaults.case_limit),
+            translation: request
+                .translation
+                .or_else(|| self.defaults.translation.clone()),
+            seed: request.seed.unwrap_or_else(|| self.defaults.seed.clone()),
+            output_dir: self.defaults.output_dir.clone(),
+        };
+        validate_config(&config)?;
+        if config.model.contains("model unspecified") {
+            bail!("provide an explicit model label");
+        }
+        if let Some(active) = &self.active {
+            if active.session.identity.run_id == config.run_id {
+                if active.session.identity.model == config.model
+                    && active.session.identity.selection.as_ref() == Some(&selection_spec(&config))
+                {
+                    return Ok(active.status());
+                }
+                bail!("active trial settings differ; use a new run_id");
+            }
+        }
+        self.check_switch()?;
+        if config
+            .output_dir
+            .join(format!("run-{}/session.json", config.run_id))
+            .exists()
+        {
+            bail!("run_id already exists; call resume_trial");
+        }
+        self.activate(&config)
+    }
+
+    fn resume(&mut self, request: ResumeTrial) -> Result<Value> {
+        let mut config = self.defaults.clone();
+        config.run_id = request.run_id;
+        config.model = "validation".into();
+        validate_config(&config)?;
+        if let Some(active) = &self.active {
+            if active.session.identity.run_id == config.run_id {
+                return Ok(active.status());
+            }
+        }
+        self.check_switch()?;
+        let saved: Session = read_json(
+            &config
+                .output_dir
+                .join(format!("run-{}/session.json", config.run_id)),
+        )?;
+        config.model = saved.identity.model;
+        if let Some(selection) = saved.identity.selection {
+            if selection.method != "stratified_reference_v1" {
+                bail!("unsupported selection method");
+            }
+            config.case_limit = selection.case_limit;
+            config.translation = selection.translation;
+            config.seed = selection.seed;
+        } else {
+            let selected: Vec<_> = self
+                .cases
+                .iter()
+                .filter(|case| saved.identity.expected_case_ids.contains(&case.case_id))
+                .collect();
+            config.case_limit = Some(saved.identity.expected_case_ids.len());
+            config.translation = selected
+                .first()
+                .filter(|first| {
+                    selected
+                        .iter()
+                        .all(|case| case.translation == first.translation)
+                })
+                .map(|case| case.translation.clone());
+        }
+        self.activate(&config)
+    }
+
+    fn check_switch(&self) -> Result<()> {
+        if self.active.as_ref().is_some_and(|trial| {
+            !trial.session.finished
+                && (trial.session.pending || !trial.session.responses.is_empty())
+        }) {
+            bail!("finish the active trial before switching runs");
+        }
+        Ok(())
+    }
+
+    fn activate(&mut self, config: &McpConfig) -> Result<Value> {
+        let trial = Trial::open(
+            self.catalog.clone(),
+            self.cases.clone(),
+            self.references.clone(),
+            config,
+        )?;
+        let status = trial.status();
+        self.active = Some(trial);
+        Ok(status)
+    }
+}
+
+fn selection_spec(config: &McpConfig) -> SelectionSpec {
+    SelectionSpec {
+        method: "stratified_reference_v1".into(),
+        seed: config.seed.clone(),
+        case_limit: config.case_limit,
+        translation: config.translation.clone(),
+    }
+}
+
+impl Trial {
     /// Validates a recall dataset and creates or resumes a settings-bound trial.
     ///
     /// # Errors
@@ -85,20 +286,48 @@ impl McpServer {
     ///
     /// # Panics
     /// Panics if a validated case has no translation, violating dataset invariants.
-    pub fn open(
+    fn open(
         catalog: TranslationCatalog,
-        mut cases: Vec<BenchmarkCase>,
+        cases: Vec<BenchmarkCase>,
         references: Vec<ReferenceRecord>,
         config: &McpConfig,
     ) -> Result<Self> {
         validate_config(config)?;
         validate_dataset(&catalog, &cases, &references)?;
-        if let Some(translation) = &config.translation {
-            cases.retain(|case| &case.translation == translation);
-        }
-        if let Some(limit) = config.case_limit {
-            cases.truncate(limit);
-        }
+        let output = config.output_dir.join(format!("run-{}", config.run_id));
+        fs::create_dir_all(&output)?;
+        let lock = OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .write(true)
+            .open(output.join("session.lock"))?;
+        lock.try_lock_exclusive()
+            .context("another MCP server owns this run")?;
+        let path = output.join("session.json");
+        let saved: Option<Session> = path.exists().then(|| read_json(&path)).transpose()?;
+        let legacy = saved
+            .as_ref()
+            .is_some_and(|session| session.identity.schema_version == 1);
+        let selection = (!legacy).then(|| SelectionSpec {
+            method: "stratified_reference_v1".into(),
+            seed: config.seed.clone(),
+            case_limit: config.case_limit,
+            translation: config.translation.clone(),
+        });
+        let cases = if let Some(spec) = &selection {
+            select(&cases, spec)?
+        } else {
+            cases
+                .into_iter()
+                .filter(|case| {
+                    config
+                        .translation
+                        .as_ref()
+                        .is_none_or(|id| id == &case.translation)
+                })
+                .take(config.case_limit.unwrap_or(usize::MAX))
+                .collect()
+        };
         validate_dataset(&catalog, &cases, &references)?;
         if cases
             .iter()
@@ -107,7 +336,7 @@ impl McpServer {
             bail!("MCP recall trials do not expose copy-control reference text");
         }
         let identity = TrialMetadata {
-            schema_version: 1,
+            schema_version: if legacy { 1 } else { 2 },
             engine_version: env!("CARGO_PKG_VERSION").into(),
             evidence: "interactive_mcp".into(),
             run_id: config.run_id.clone(),
@@ -130,20 +359,9 @@ impl McpServer {
                     .collect::<Vec<_>>(),
             ),
             expected_case_ids: cases.iter().map(|case| case.case_id.clone()).collect(),
+            selection,
         };
-        fs::create_dir_all(&config.output_dir)?;
-        let output = config.output_dir.join(format!("run-{}", config.run_id));
-        fs::create_dir_all(&output)?;
-        let lock = OpenOptions::new()
-            .create(true)
-            .truncate(false)
-            .write(true)
-            .open(output.join("session.lock"))?;
-        lock.try_lock_exclusive()
-            .context("another MCP server owns this run")?;
-        let path = output.join("session.json");
-        let session = if path.exists() {
-            let saved: Session = read_json(&path)?;
+        let session = if let Some(saved) = saved {
             if saved.identity != identity {
                 bail!("resume settings or dataset changed; use a new run_id");
             }
@@ -195,7 +413,10 @@ impl McpServer {
             "answered_cases": self.session.responses.len(),
             "pending_case_id": self.pending_case().map(|case| &case.case_id),
             "finished": self.session.finished,
-            "provider_api_calls": 0
+            "provider_api_calls": 0,
+            "active_trial": true,
+            "selection": self.session.identity.selection,
+            "needs_model_label": self.session.identity.model.contains("model unspecified")
         })
     }
 
@@ -207,6 +428,9 @@ impl McpServer {
     }
 
     fn next_case(&mut self) -> Result<Value> {
+        if self.session.identity.model.contains("model unspecified") {
+            bail!("begin_trial requires an explicit model label before issuing prompts");
+        }
         if self.session.finished || self.session.responses.len() == self.cases.len() {
             return Ok(json!({"complete": true, "progress": self.status()}));
         }
@@ -311,7 +535,7 @@ impl McpServer {
         write_text(
             &self.output.join("report.md"),
             &format!(
-                "# Interactive MCP trial\n\nEvidence: `interactive_mcp`. Model identity is self-reported. Context isolation, sampling settings, and absence of retrieval are not verified. Do not treat this as a controlled closed-book provider run.\n\n{}",
+                "# Interactive MCP trial\n\nEvidence: `interactive_mcp`. Model identity is self-reported. Context isolation, model sampling settings, and absence of retrieval are not verified. Do not treat this as a controlled closed-book provider run.\n\n{}",
                 render_markdown(&report)
             ),
         )?;
@@ -322,7 +546,7 @@ impl McpServer {
                 "responses_sha256": digest(&self.session.responses),
                 "scores_sha256": digest(&scores),
                 "provider_api_calls": 0,
-                "limitations": ["self-reported model identity", "shared conversation context", "client-side retrieval restrictions are not enforced", "sampling settings and usage are unknown"]
+                "limitations": ["self-reported model identity", "shared conversation context", "client-side retrieval restrictions are not enforced", "model sampling settings and usage are unknown"]
             }),
         )?;
         let mut updated = self.session.clone();

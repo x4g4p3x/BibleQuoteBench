@@ -140,6 +140,140 @@ fn diagnostic_fixture(root: &std::path::Path) -> (PathBuf, PathBuf, PathBuf) {
     (translations, cases_path, references_path)
 }
 
+fn sampling_arguments(root: &std::path::Path) -> Vec<String> {
+    let (catalog, _, references) = diagnostic_fixture(root);
+    let records: Vec<biblequotebench::ReferenceRecord> =
+        biblequotebench::io::read_jsonl(&references).unwrap();
+    let config = root.join("sampling.json");
+    fs::write(&config, serde_json::json!({"schema_version":2,"release_id":"fixture","seed":"public-seed","total_references":6,"dev_references":2,"famous_references":0,"translation_sensitive_references":0,"short_references":0,"long_references":0}).to_string()).unwrap();
+    let curated = root.join("curated.jsonl");
+    fs::write(&curated, "\n").unwrap();
+    let mut arguments = vec!["sample".into()];
+    for (flag, path) in [
+        ("--config", config),
+        ("--translations", catalog),
+        ("--curated", curated),
+        ("--hidden-seed-file", root.join("private-seed.txt")),
+        ("--dev-cases", root.join("dev/cases.jsonl")),
+        ("--dev-references", root.join("dev/references.jsonl")),
+        ("--hidden-cases", root.join("hidden/cases.jsonl")),
+        ("--hidden-references", root.join("hidden/references.jsonl")),
+        ("--manifest", root.join("release/manifest.json")),
+    ] {
+        arguments.extend([flag.into(), path.to_str().unwrap().into()]);
+    }
+    for translation in ["a", "b"] {
+        let corpus = root.join(format!("corpus-{translation}.jsonl"));
+        let selected: Vec<_> = records
+            .iter()
+            .filter(|record| record.translation == translation)
+            .collect();
+        biblequotebench::io::write_jsonl(Some(&corpus), &selected).unwrap();
+        let lock = root.join(format!("lock-{translation}.json"));
+        fs::write(&lock, serde_json::json!({"schema_version":1,"translation":translation,"edition":"1","source_url":"https://example.test/fixture","source_sha256":"fixture","importer_version":"fixture","artifacts":[],"reference_count":12,"corpus_sha256":biblequotebench::importer::sha256_hex(&fs::read(&corpus).unwrap())}).to_string()).unwrap();
+        arguments.extend([
+            "--corpus".into(),
+            corpus.to_str().unwrap().into(),
+            "--lock".into(),
+            lock.to_str().unwrap().into(),
+        ]);
+    }
+    arguments
+}
+
+#[test]
+fn sampling_command_preserves_public_split_and_private_seed_boundaries() {
+    let temp = TempDir::new().unwrap();
+    let arguments = sampling_arguments(temp.path());
+    let args: Vec<_> = arguments.iter().map(String::as_str).collect();
+    let missing = Command::new(env!("CARGO_BIN_EXE_biblequotebench"))
+        .args(&arguments)
+        .output()
+        .unwrap();
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("reading private hidden seed"));
+    assert!(!temp.path().join("dev").exists());
+    let seed = temp.path().join("private-seed.txt");
+    fs::write(&seed, "private-first\n").unwrap();
+    run(&args);
+    let manifest_path = temp.path().join("release/manifest.json");
+    let first: Value = biblequotebench::io::read_json(&manifest_path).unwrap();
+    assert_eq!(first["dev_case_count"], 4);
+    assert_eq!(first["hidden_case_count"], 8);
+    let public: Vec<biblequotebench::BenchmarkCase> =
+        biblequotebench::io::read_jsonl(&temp.path().join("dev/cases.jsonl")).unwrap();
+    let hidden: Vec<biblequotebench::BenchmarkCase> =
+        biblequotebench::io::read_jsonl(&temp.path().join("hidden/cases.jsonl")).unwrap();
+    assert!(
+        public
+            .iter()
+            .all(|case| hidden.iter().all(|other| case.reference != other.reference))
+    );
+    assert!(!first.to_string().contains("private-first"));
+    run(&args);
+    assert_eq!(
+        first,
+        biblequotebench::io::read_json::<Value>(&manifest_path).unwrap()
+    );
+    fs::write(&seed, "private-second\n").unwrap();
+    run(&args);
+    let second: Value = biblequotebench::io::read_json(&manifest_path).unwrap();
+    assert_eq!(first["dev_cases_sha256"], second["dev_cases_sha256"]);
+    assert_ne!(first["hidden_cases_sha256"], second["hidden_cases_sha256"]);
+}
+
+#[test]
+fn scoring_to_stdout_and_invalid_inputs_have_useful_diagnostics() {
+    let scored = run(&["score", "--responses", "data/dev/responses.example.jsonl"]);
+    let lines: Vec<Value> = String::from_utf8(scored.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(lines.len(), 3);
+    assert_eq!(lines[0]["classification"], "exact_requested");
+    let temp = TempDir::new().unwrap();
+    let empty = temp.path().join("empty.jsonl");
+    fs::write(&empty, "\n").unwrap();
+    for args in [
+        vec!["score", "--responses", empty.to_str().unwrap()],
+        vec!["summarize", "--scores", empty.to_str().unwrap()],
+        vec!["report", "--scores", empty.to_str().unwrap()],
+        vec!["prompt", "--case-id", "unknown-case"],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_biblequotebench"))
+            .current_dir(project_root())
+            .args(&args)
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        let message = String::from_utf8_lossy(&output.stderr);
+        if args[0] == "prompt" {
+            assert!(message.contains("unknown case_id"));
+        } else {
+            assert!(message.contains("contains no"));
+        }
+    }
+    let unknown = temp.path().join("unknown.jsonl");
+    let mut response: Value = serde_json::from_str(
+        fs::read_to_string(project_root().join("data/dev/responses.example.jsonl"))
+            .unwrap()
+            .lines()
+            .next()
+            .unwrap(),
+    )
+    .unwrap();
+    response["case_id"] = serde_json::json!("unknown-case");
+    fs::write(&unknown, response.to_string()).unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_biblequotebench"))
+        .current_dir(project_root())
+        .args(["score", "--responses", unknown.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("unknown case_id"));
+}
+
 #[test]
 #[allow(clippy::too_many_lines)]
 fn diagnostic_tracks_synthetic_pilot_and_validated_analysis_work_end_to_end() {

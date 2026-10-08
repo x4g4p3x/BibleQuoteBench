@@ -199,6 +199,28 @@ mod tests {
     use super::*;
 
     #[test]
+    fn credential_paths_and_key_material_are_rejected_without_exposing_values() {
+        for path in [
+            ".env",
+            "ops/credentials.json",
+            "ops/service-account.json",
+            "ops/key.pem",
+            "ops/key.p12",
+            "ops/key.pfx",
+            "ops/key.key",
+            "DATA\\HIDDEN\\cases.jsonl",
+        ] {
+            assert!(blocked_path_reason(path).is_some(), "{path}");
+        }
+        let marker = ["-----BEGIN RSA ", "PRIVATE KEY-----"].concat();
+        let violations = inspect_entry("notes.txt", marker.as_bytes());
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].reason, "private key material detected");
+        assert!(!format!("{violations:?}").contains(&marker));
+        assert!(inspect_entry("binary.bin", &[0xff, 0xfe]).is_empty());
+    }
+
+    #[test]
     fn hidden_identifiers_in_renamed_outputs_are_blocked() {
         let identifier = ["BQ-", "HID-", "1234567890ABCDEF"].concat();
         let text = serde_json::json!({"expected_case_ids": [identifier]}).to_string();

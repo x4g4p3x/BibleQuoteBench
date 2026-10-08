@@ -206,6 +206,180 @@ mod tests {
     }
 
     #[test]
+    fn catalog_identity_provenance_and_container_requirements_are_enforced() {
+        let (catalog, cases, references) = fixture();
+        let mut changed = catalog.clone();
+        changed.schema_version = 2;
+        assert!(
+            validate_dataset(&changed, &cases, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("unsupported translation catalog")
+        );
+        changed = catalog.clone();
+        changed.translations.clear();
+        assert!(
+            validate_dataset(&changed, &cases, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("at least one translation")
+        );
+        assert!(
+            validate_dataset(&catalog, &[], &references)
+                .unwrap_err()
+                .to_string()
+                .contains("at least one case")
+        );
+        changed = catalog.clone();
+        changed.translations.push(changed.translations[0].clone());
+        assert!(
+            validate_dataset(&changed, &cases, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("duplicate translation id")
+        );
+        for (field, expected) in [
+            ("id", "id must not be empty"),
+            ("edition", "no pinned edition"),
+            ("license_url", "must declare"),
+            ("source_url", "must declare"),
+        ] {
+            let mut value = serde_json::to_value(&catalog).unwrap();
+            value["translations"][0][field] = serde_json::json!(" ");
+            let changed = serde_json::from_value(value).unwrap();
+            assert!(
+                validate_dataset(&changed, &cases, &references)
+                    .unwrap_err()
+                    .to_string()
+                    .contains(expected),
+                "{field}"
+            );
+        }
+    }
+
+    #[test]
+    fn invalid_corpus_records_report_translation_text_and_reference_failures() {
+        let (catalog, cases, references) = fixture();
+        let mut changed = references.clone();
+        changed[0].translation = "unknown".into();
+        assert!(
+            validate_dataset(&catalog, &cases, &changed)
+                .unwrap_err()
+                .to_string()
+                .contains("corpus uses unknown translation")
+        );
+        for text in ["", " leading", "trailing\n", "text lemma=word"] {
+            let mut changed = references.clone();
+            changed[0].text = text.into();
+            let error = validate_dataset(&catalog, &cases, &changed)
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains(if text.is_empty() {
+                "empty reference text"
+            } else if text.contains("lemma=") {
+                "residual USFM"
+            } else {
+                "leading or trailing whitespace"
+            }));
+        }
+        let mut changed = references.clone();
+        changed.push(changed[0].clone());
+        assert!(
+            validate_dataset(&catalog, &cases, &changed)
+                .unwrap_err()
+                .to_string()
+                .contains("duplicate corpus record")
+        );
+        for reference in [
+            crate::BibleReference {
+                book: " ".into(),
+                ..references[0].reference.clone()
+            },
+            crate::BibleReference {
+                chapter: 0,
+                ..references[0].reference.clone()
+            },
+            crate::BibleReference {
+                verse_start: 0,
+                ..references[0].reference.clone()
+            },
+            crate::BibleReference {
+                verse_end: Some(15),
+                ..references[0].reference.clone()
+            },
+        ] {
+            let mut changed = references.clone();
+            changed[0].reference = reference;
+            assert!(
+                validate_dataset(&catalog, &cases, &changed)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("invalid corpus reference")
+            );
+        }
+    }
+
+    #[test]
+    fn invalid_case_identity_coverage_and_duplicate_requests_are_rejected() {
+        let (catalog, cases, references) = fixture();
+        for (field, value, expected) in [
+            ("case_id", " ", "case_id must not be empty"),
+            ("translation", "unknown", "uses unknown translation"),
+        ] {
+            let mut value_json = serde_json::to_value(&cases).unwrap();
+            value_json[0][field] = serde_json::json!(value);
+            let changed: Vec<BenchmarkCase> = serde_json::from_value(value_json).unwrap();
+            assert!(
+                validate_dataset(&catalog, &changed, &references)
+                    .unwrap_err()
+                    .to_string()
+                    .contains(expected)
+            );
+        }
+        let mut changed = cases.clone();
+        changed.push(changed[0].clone());
+        assert!(
+            validate_dataset(&catalog, &changed, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("duplicate case_id")
+        );
+        changed[1].case_id = "BQ-other".into();
+        assert!(
+            validate_dataset(&catalog, &changed, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("multiple cases request")
+        );
+        changed = cases.clone();
+        changed[0].reference.chapter = 0;
+        assert!(
+            validate_dataset(&catalog, &changed, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("invalid case BQ-1")
+        );
+        changed[0].reference.chapter = 4;
+        assert!(
+            validate_dataset(&catalog, &changed, &references)
+                .unwrap_err()
+                .to_string()
+                .contains("has no reference text")
+        );
+    }
+
+    #[test]
+    fn private_evaluator_corpus_and_valid_passages_are_accepted() {
+        let (mut catalog, mut cases, mut references) = fixture();
+        catalog.translations[0].license_kind = LicenseKind::LicensedPrivate;
+        catalog.translations[0].redistribute_reference_text = false;
+        cases[0].reference.verse_end = Some(18);
+        references[0].reference = cases[0].reference.clone();
+        assert_eq!(cases[0].reference.to_string(), "John 3:16-18");
+        validate_dataset(&catalog, &cases, &references).unwrap();
+    }
+
+    #[test]
     fn accepts_complete_dataset() {
         let (catalog, cases, references) = fixture();
         validate_dataset(&catalog, &cases, &references).unwrap();

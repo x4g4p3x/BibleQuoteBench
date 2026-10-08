@@ -424,7 +424,128 @@ const BOOKS: [(&str, &str); 66] = [
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
     use super::*;
+
+    fn translation() -> TranslationSpec {
+        crate::io::read_json::<crate::TranslationCatalog>(
+            &Path::new(env!("CARGO_MANIFEST_DIR")).join("data/dev/translations.json"),
+        )
+        .unwrap()
+        .translations
+        .remove(0)
+    }
+
+    #[test]
+    fn zip_and_nested_directory_imports_match_with_byte_level_provenance() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let directory = temp.path().join("source");
+        fs::create_dir_all(directory.join("books")).unwrap();
+        let sources = [
+            ("books/02EXO.SFM", "\\id EXO\n\\c 1\n\\v 1 Exodus text."),
+            ("books/01GEN.usfm", "\\id GEN\n\\c 1\n\\v 1 Genesis text."),
+            ("README.txt", "ignored metadata"),
+        ];
+        let archive_path = temp.path().join("source.zip");
+        let mut archive = zip::ZipWriter::new(File::create(&archive_path).unwrap());
+        archive
+            .add_directory("books/", zip::write::SimpleFileOptions::default())
+            .unwrap();
+        for (name, text) in sources {
+            fs::write(directory.join(name), text).unwrap();
+            archive
+                .start_file(name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            archive.write_all(text.as_bytes()).unwrap();
+        }
+        archive.finish().unwrap();
+        let from_zip = import_usfm(
+            &archive_path,
+            &translation(),
+            "https://example.test/source.zip",
+        )
+        .unwrap();
+        let from_directory =
+            import_usfm(&directory, &translation(), "https://example.test/source/").unwrap();
+        assert_eq!(from_zip.records, from_directory.records);
+        assert_eq!(
+            from_zip.lock.corpus_sha256,
+            from_directory.lock.corpus_sha256
+        );
+        assert_eq!(from_zip.lock.artifacts, from_directory.lock.artifacts);
+        assert_eq!(
+            from_zip.lock.source_sha256,
+            sha256_hex(&fs::read(&archive_path).unwrap())
+        );
+        assert_eq!(from_zip.lock.reference_count, 2);
+        assert_eq!(from_zip.records[0].reference.book, "Genesis");
+        assert_eq!(from_zip.records[1].reference.book, "Exodus");
+        assert_eq!(from_zip.lock.artifacts[0].path, "books/01GEN.usfm");
+        assert_eq!(
+            from_zip.lock.artifacts[0].sha256,
+            sha256_hex(sources[1].1.as_bytes())
+        );
+        assert_eq!(from_zip.lock.artifacts[0].bytes, sources[1].1.len() as u64);
+    }
+
+    #[test]
+    fn import_rejects_missing_corrupt_empty_and_non_utf8_sources() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let spec = translation();
+        let missing = temp.path().join("missing.zip");
+        assert!(
+            format!("{:#}", import_usfm(&missing, &spec, "fixture").unwrap_err())
+                .contains("opening")
+        );
+        fs::write(&missing, b"not a zip").unwrap();
+        assert!(
+            format!("{:#}", import_usfm(&missing, &spec, "fixture").unwrap_err())
+                .contains("reading")
+        );
+        let directory = temp.path().join("directory");
+        fs::create_dir(&directory).unwrap();
+        assert!(
+            import_usfm(&directory, &spec, "fixture")
+                .unwrap_err()
+                .to_string()
+                .contains("contains no .usfm")
+        );
+        let book = directory.join("book.usfm");
+        fs::write(&book, "\\id FRT\n\\c 1\n\\v 1 Front matter.").unwrap();
+        assert!(
+            import_usfm(&directory, &spec, "fixture")
+                .unwrap_err()
+                .to_string()
+                .contains("yielded no verse")
+        );
+        fs::write(&book, [0xff, 0xfe]).unwrap();
+        assert!(
+            format!(
+                "{:#}",
+                import_usfm(&directory, &spec, "fixture").unwrap_err()
+            )
+            .contains("book.usfm is not valid UTF-8")
+        );
+    }
+
+    #[test]
+    fn continuation_lines_preserve_verse_text_and_exclude_headings_and_notes() {
+        let input = "\\id GEN\n\\c 1\n\\v 1 First\ncontinuation\n\\s1 A heading\n\n\\q1 poetic line\n\\p prefix \\v 2 Second \\w word|lemma=word\\w* \\x + reference\\x*\n\\c 2\n\\v 1 Next chapter.";
+        let records = parse_usfm(input, "fixture").unwrap();
+        assert_eq!(records.len(), 3);
+        assert_eq!(records[0].text, "First continuation poetic line prefix");
+        assert_eq!(records[1].text, "Second word");
+        assert_eq!(records[2].reference.to_string(), "Genesis 2:1");
+        assert!(
+            parse_usfm("\\id GEN\n\\v 1 No chapter.", "fixture")
+                .unwrap_err()
+                .to_string()
+                .contains("before \\c")
+        );
+        assert!(parse_usfm("\\id GEN\n\\c invalid", "fixture").is_err());
+        assert!(parse_verse_number("65536").is_err());
+    }
 
     #[test]
     fn parses_and_cleans_usfm() {

@@ -23,7 +23,8 @@ fn config(temp: &TempDir) -> McpConfig {
         model: "fixture-assistant".into(),
         output_dir: temp.path().into(),
         case_limit: Some(2),
-        translation: None,
+        translation: Some("bsb-2025-third-printing".into()),
+        seed: "test-seed".into(),
     }
 }
 
@@ -98,7 +99,18 @@ fn recall_answers_are_immutable_and_feedback_is_withheld() {
     let expected = &references
         .iter()
         .find(|record| {
-            record.translation == cases[0].translation && record.reference == cases[0].reference
+            record.translation
+                == cases
+                    .iter()
+                    .find(|case| case.case_id == case_id)
+                    .unwrap()
+                    .translation
+                && record.reference
+                    == cases
+                        .iter()
+                        .find(|case| case.case_id == case_id)
+                        .unwrap()
+                        .reference
         })
         .unwrap()
         .text;
@@ -109,7 +121,7 @@ fn recall_answers_are_immutable_and_feedback_is_withheld() {
         &[
             call(
                 "submit_answer",
-                json!({"case_id":cases[1].case_id,"output":"out of order"}),
+                json!({"case_id":"not-issued","output":"out of order"}),
             ),
             call("finish_run", json!({})),
             call("submit_answer", answer.clone()),
@@ -158,10 +170,13 @@ fn restarts_resume_pending_cases_and_export_existing_formats() {
             json!({"case_id":case_id,"output":""}),
         )],
     );
+    let next = tools(&mut resumed, &[call("next_case", json!({}))]);
+    let next_id = data(&next[0])["case_id"].clone();
     let (_, cases, references) = dataset();
+    let selected = cases.iter().find(|case| case.case_id == next_id).unwrap();
     let expected = &references
         .iter()
-        .find(|r| r.translation == cases[1].translation && r.reference == cases[1].reference)
+        .find(|r| r.translation == selected.translation && r.reference == selected.reference)
         .unwrap()
         .text;
     let replies = tools(
@@ -170,7 +185,7 @@ fn restarts_resume_pending_cases_and_export_existing_formats() {
             call("next_case", json!({})),
             call(
                 "submit_answer",
-                json!({"case_id":cases[1].case_id,"output":expected}),
+                json!({"case_id":next_id,"output":expected}),
             ),
             call("next_case", json!({})),
             call("finish_run", json!({})),
@@ -256,6 +271,10 @@ fn invalid_config_changed_inputs_corrupt_progress_and_concurrent_writers_are_rej
             case_limit: Some(1),
             ..base.clone()
         },
+        McpConfig {
+            seed: "changed-seed".into(),
+            ..base.clone()
+        },
     ] {
         let (catalog, cases, references) = dataset();
         assert!(McpServer::open(catalog, cases, references, &cfg).is_err());
@@ -314,7 +333,7 @@ fn protocol_handshake_negotiation_errors_and_notifications_follow_mcp() {
     assert_eq!(replies[2]["result"]["protocolVersion"], "2025-11-25");
     assert_eq!(replies[3]["error"]["code"], -32000);
     assert_eq!(replies[4]["id"], "list");
-    assert_eq!(replies[4]["result"]["tools"].as_array().unwrap().len(), 4);
+    assert_eq!(replies[4]["result"]["tools"].as_array().unwrap().len(), 6);
     assert_eq!(replies[5]["result"], json!({}));
     assert_eq!(replies[6]["error"]["code"], -32601);
     assert_eq!(replies[7]["error"]["code"], -32602);
@@ -357,36 +376,349 @@ fn translation_selection_submission_limits_and_no_issued_case_are_enforced() {
     cfg.translation = Some("asv-1901".into());
     cfg.case_limit = Some(1);
     let mut server = server(&cfg);
-    let (_, cases, _) = dataset();
+    let first = tools(&mut server, &[call("next_case", json!({}))]);
+    let case_id = data(&first[0])["case_id"].clone();
     let replies = tools(
         &mut server,
         &[
             call(
                 "submit_answer",
-                json!({"case_id":cases[1].case_id,"output":"too early"}),
+                json!({"case_id":"not-issued","output":"too early"}),
             ),
             call("next_case", json!({})),
             call(
                 "submit_answer",
-                json!({"case_id":cases[1].case_id,"output":"x".repeat(16385)}),
+                json!({"case_id":case_id,"output":"x".repeat(16385)}),
             ),
             call(
                 "submit_answer",
-                json!({"case_id":cases[1].case_id,"output":"unknown"}),
+                json!({"case_id":case_id,"output":"unknown"}),
             ),
             call("finish_run", json!({})),
             call("next_case", json!({})),
         ],
     );
     assert_eq!(replies[0]["result"]["isError"], true);
-    assert_eq!(data(&replies[1])["case_id"], cases[1].case_id);
+    assert_eq!(data(&replies[1])["case_id"], case_id);
     assert_eq!(replies[2]["result"]["isError"], true);
     assert_eq!(data(&replies[5])["complete"], true);
 }
 
+fn idle_config(temp: &TempDir) -> McpConfig {
+    McpConfig {
+        run_id: String::new(),
+        model: String::new(),
+        ..config(temp)
+    }
+}
+
+#[test]
+fn idle_server_runs_multiple_trials_and_resumes_original_settings() {
+    let temp = TempDir::new().unwrap();
+    let mut server = server(&idle_config(&temp));
+    let initial = tools(
+        &mut server,
+        &[
+            call("benchmark_status", json!({})),
+            call("next_case", json!({})),
+        ],
+    );
+    assert_eq!(data(&initial[0])["active_trial"], false);
+    assert_eq!(initial[1]["result"]["isError"], true);
+    assert_eq!(fs::read_dir(temp.path()).unwrap().count(), 0);
+    let begin =
+        json!({"run_id":"first","model":"selected-model-1","case_limit":1,"seed":"trial-seed"});
+    let started = tools(
+        &mut server,
+        &[
+            call("begin_trial", begin.clone()),
+            call("begin_trial", begin),
+            call("resume_trial", json!({"run_id":"first"})),
+        ],
+    );
+    assert_eq!(started[0], started[1]);
+    assert_eq!(started[0], started[2]);
+    assert_eq!(data(&started[0])["selection"]["seed"], "trial-seed");
+    let issued = tools(&mut server, &[call("next_case", json!({}))]);
+    let blocked = tools(
+        &mut server,
+        &[
+            call(
+                "begin_trial",
+                json!({"run_id":"second","model":"selected-model-2"}),
+            ),
+            call("resume_trial", json!({"run_id":"missing"})),
+            call("begin_trial", json!({"run_id":"first","model":"changed"})),
+        ],
+    );
+    assert!(
+        blocked
+            .iter()
+            .all(|reply| reply["result"]["isError"] == true)
+    );
+    drop(server);
+    let mut defaults = idle_config(&temp);
+    defaults.seed = "other-default".into();
+    let mut resumed = self::server(&defaults);
+    let status = tools(
+        &mut resumed,
+        &[
+            call("resume_trial", json!({"run_id":"first"})),
+            call("next_case", json!({})),
+        ],
+    );
+    assert_eq!(data(&status[0])["model"], "selected-model-1");
+    assert_eq!(data(&status[0])["total_cases"], 1);
+    assert_eq!(issued[0], status[1]);
+    let completed = tools(
+        &mut resumed,
+        &[
+            call(
+                "submit_answer",
+                json!({"case_id":data(&issued[0])["case_id"],"output":""}),
+            ),
+            call("finish_run", json!({})),
+            call(
+                "begin_trial",
+                json!({"run_id":"second","model":"selected-model-2","case_limit":1}),
+            ),
+        ],
+    );
+    assert!(
+        completed
+            .iter()
+            .all(|reply| reply["result"]["isError"] == false)
+    );
+    assert_eq!(data(&completed[2])["answered_cases"], 0);
+    assert_eq!(data(&completed[2])["model"], "selected-model-2");
+    let repeated = tools(
+        &mut resumed,
+        &[
+            call(
+                "begin_trial",
+                json!({"run_id":"first","model":"selected-model-1"}),
+            ),
+            call("resume_trial", json!({"run_id":"first"})),
+        ],
+    );
+    assert_eq!(repeated[0]["result"]["isError"], true);
+    assert_eq!(data(&repeated[1])["finished"], true);
+    assert!(temp.path().join("run-second/session.json").exists());
+}
+
+#[test]
+fn lifecycle_rejects_unsafe_labels_missing_runs_and_failed_switches_without_losing_active_trial() {
+    let temp = TempDir::new().unwrap();
+    let cfg = idle_config(&temp);
+    let mut manager = server(&cfg);
+    for arguments in [
+        json!({"run_id":"../escape","model":"model"}),
+        json!({"run_id":"test","model":" "}),
+        json!({"run_id":"test","model":"client (model unspecified)"}),
+        json!({"run_id":"test","model":"model","seed":" "}),
+        json!({"run_id":"test","model":"model","extra":true}),
+    ] {
+        assert_eq!(
+            tools(&mut manager, &[call("begin_trial", arguments)])[0]["result"]["isError"],
+            true
+        );
+    }
+    assert_eq!(
+        tools(
+            &mut manager,
+            &[call("resume_trial", json!({"run_id":"../escape"}))]
+        )[0]["result"]["isError"],
+        true
+    );
+    tools(
+        &mut manager,
+        &[call(
+            "begin_trial",
+            json!({"run_id":"active","model":"original"}),
+        )],
+    );
+    let owner = self::server(&McpConfig {
+        run_id: "locked".into(),
+        model: "other".into(),
+        ..config(&temp)
+    });
+    let failures = tools(
+        &mut manager,
+        &[
+            call("resume_trial", json!({"run_id":"locked"})),
+            call("resume_trial", json!({"run_id":"missing"})),
+            call("benchmark_status", json!({})),
+        ],
+    );
+    assert_eq!(failures[0]["result"]["isError"], true);
+    assert_eq!(failures[1]["result"]["isError"], true);
+    assert_eq!(data(&failures[2])["run_id"], "active");
+    drop(owner);
+}
+
+#[test]
+fn schema_one_checkpoints_keep_original_prefix_prompts_and_pending_progress() {
+    let temp = TempDir::new().unwrap();
+    let cfg = config(&temp);
+    drop(server(&cfg));
+    let (catalog, cases, _) = dataset();
+    let original: Vec<_> = cases
+        .into_iter()
+        .filter(|case| Some(&case.translation) == cfg.translation.as_ref())
+        .take(2)
+        .collect();
+    let path = temp.path().join("run-test/session.json");
+    let mut saved: Value = read_json(&path).unwrap();
+    let identity = saved["identity"].as_object_mut().unwrap();
+    identity.remove("selection");
+    identity.insert("schema_version".into(), json!(1));
+    identity.insert(
+        "cases_sha256".into(),
+        json!(biblequotebench::study::digest(&original)),
+    );
+    identity.insert(
+        "expected_case_ids".into(),
+        json!(
+            original
+                .iter()
+                .map(|case| &case.case_id)
+                .collect::<Vec<_>>()
+        ),
+    );
+    let prompts: Vec<_> = original
+        .iter()
+        .map(|case| {
+            biblequotebench::render_prompt(
+                case,
+                catalog
+                    .translations
+                    .iter()
+                    .find(|spec| spec.id == case.translation)
+                    .unwrap(),
+            )
+        })
+        .collect();
+    identity.insert(
+        "prompts_sha256".into(),
+        json!(biblequotebench::study::digest(&prompts)),
+    );
+    saved["pending"] = json!(true);
+    fs::write(&path, saved.to_string()).unwrap();
+    let mut manager = server(&idle_config(&temp));
+    let replies = tools(
+        &mut manager,
+        &[
+            call("resume_trial", json!({"run_id":"test"})),
+            call("next_case", json!({})),
+        ],
+    );
+    assert_eq!(data(&replies[1])["case_id"], original[0].case_id);
+    assert_eq!(data(&replies[1])["prompt"], prompts[0]);
+    assert!(data(&replies[0])["selection"].is_null());
+    let after: Value = read_json(&path).unwrap();
+    assert_eq!(after, saved);
+}
+
+#[test]
+fn resume_rejects_semantically_invalid_saved_responses_without_rewriting_them() {
+    let temp = TempDir::new().unwrap();
+    let cfg = config(&temp);
+    let mut original = server(&cfg);
+    let issued = tools(&mut original, &[call("next_case", json!({}))]);
+    tools(
+        &mut original,
+        &[call(
+            "submit_answer",
+            json!({"case_id":data(&issued[0])["case_id"],"output":"raw answer"}),
+        )],
+    );
+    drop(original);
+    let path = temp.path().join("run-test/session.json");
+    let saved: Value = read_json(&path).unwrap();
+    let mut manager = server(&idle_config(&temp));
+    for (field, value) in [
+        ("case_id", json!("unknown")),
+        ("run_id", json!("other")),
+        ("model", json!("other")),
+        ("provider", json!("openai")),
+        ("resolved_model", json!("model")),
+        ("error", json!("failed")),
+        ("temperature", json!(0)),
+        ("reasoning_effort", json!("high")),
+        ("seed", json!(1)),
+        ("provider_request_id", json!("request")),
+        ("system_fingerprint", json!("fingerprint")),
+        (
+            "execution",
+            json!({"input_tokens":1,"output_tokens":2,"stop_reason":null,"truncated":false}),
+        ),
+        ("output", json!("x".repeat(16385))),
+    ] {
+        let mut corrupt = saved.clone();
+        corrupt["responses"][0][field] = value;
+        fs::write(&path, corrupt.to_string()).unwrap();
+        let result = tools(
+            &mut manager,
+            &[call("resume_trial", json!({"run_id":"test"}))],
+        );
+        assert_eq!(result[0]["result"]["isError"], true, "{field}");
+        assert!(
+            result[0]["result"]["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("saved MCP response does not match")
+        );
+        assert_eq!(read_json::<Value>(&path).unwrap(), corrupt);
+    }
+    fs::write(&path, saved.to_string()).unwrap();
+    let result = tools(
+        &mut manager,
+        &[call("resume_trial", json!({"run_id":"test"}))],
+    );
+    assert_eq!(data(&result[0])["answered_cases"], 1);
+}
+
+#[test]
+fn unsupported_selection_and_unspecified_model_cannot_issue_prompts() {
+    let temp = TempDir::new().unwrap();
+    let cfg = McpConfig {
+        model: "client (model unspecified)".into(),
+        ..config(&temp)
+    };
+    let mut original = server(&cfg);
+    let result = tools(
+        &mut original,
+        &[
+            call("benchmark_status", json!({})),
+            call("next_case", json!({})),
+        ],
+    );
+    assert_eq!(data(&result[0])["needs_model_label"], true);
+    assert_eq!(result[1]["result"]["isError"], true);
+    drop(original);
+    let path = temp.path().join("run-test/session.json");
+    let mut saved: Value = read_json(&path).unwrap();
+    assert_eq!(saved["pending"], false);
+    saved["identity"]["selection"]["method"] = json!("unsupported");
+    fs::write(&path, saved.to_string()).unwrap();
+    let mut manager = server(&idle_config(&temp));
+    let result = tools(
+        &mut manager,
+        &[call("resume_trial", json!({"run_id":"test"}))],
+    );
+    assert_eq!(result[0]["result"]["isError"], true);
+    assert!(
+        result[0]["result"]["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("unsupported selection method")
+    );
+    assert_eq!(read_json::<Value>(&path).unwrap(), saved);
+}
+
 struct Client {
     child: Child,
-    stdin: ChildStdin,
+    stdin: Option<ChildStdin>,
     stdout: BufReader<ChildStdout>,
 }
 
@@ -399,8 +731,9 @@ impl Drop for Client {
 
 impl Client {
     fn request(&mut self, value: &Value) -> Value {
-        writeln!(self.stdin, "{value}").unwrap();
-        self.stdin.flush().unwrap();
+        let stdin = self.stdin.as_mut().unwrap();
+        writeln!(stdin, "{value}").unwrap();
+        stdin.flush().unwrap();
         let mut line = String::new();
         assert!(self.stdout.read_line(&mut line).unwrap() > 0);
         serde_json::from_str(&line).unwrap()
@@ -420,6 +753,8 @@ fn real_stdio_process_exports_scores_without_provider_configuration() {
             "fixture",
             "--case-limit",
             "1",
+            "--translation",
+            "bsb-2025-third-printing",
             "--output-dir",
         ])
         .arg(temp.path())
@@ -437,14 +772,14 @@ fn real_stdio_process_exports_scores_without_provider_configuration() {
     let stdout = BufReader::new(child.stdout.take().unwrap());
     let mut client = Client {
         child,
-        stdin,
+        stdin: Some(stdin),
         stdout,
     };
     assert_eq!(
         client.request(&initialize("2025-11-25"))["result"]["serverInfo"]["name"],
         "biblequotebench"
     );
-    writeln!(client.stdin, "{}", ready()).unwrap();
+    writeln!(client.stdin.as_mut().unwrap(), "{}", ready()).unwrap();
     let issued = data(&client.request(&call("next_case", json!({}))));
     assert_eq!(
         client.request(&call(
@@ -457,4 +792,9 @@ fn real_stdio_process_exports_scores_without_provider_configuration() {
     assert_eq!(finished["summary"]["responses"], 1);
     assert_eq!(finished["progress"]["provider_api_calls"], 0);
     assert!(temp.path().join("run-process/trial.json").exists());
+    drop(client.stdin.take());
+    assert!(
+        client.child.wait().unwrap().success(),
+        "server must exit cleanly on stdin EOF"
+    );
 }
