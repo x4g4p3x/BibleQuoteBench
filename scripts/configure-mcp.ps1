@@ -4,6 +4,10 @@ param(
     [ValidateSet('codex', 'claude', 'cursor')]
     [string[]]$Client = @('codex'),
     [string]$Model,
+    # Optional fixed Codex model for server-side, tool-free subscription recall.
+    [ValidatePattern('^[A-Za-z0-9_.-]{1,256}$')]
+    [string]$RestrictedModel,
+    [string]$CodexBin = 'codex',
     [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')]
     [string]$RunIdPrefix,
     [ValidateRange(1, 100000)]
@@ -33,6 +37,13 @@ if ($Model -and [string]::IsNullOrWhiteSpace($Model)) {
 if ([bool]$Model -ne [bool]$RunIdPrefix) {
     throw '-Model and -RunIdPrefix must be supplied together for an initial trial. Omit both to start trials through MCP tools.'
 }
+if ($RestrictedModel -and $Model -and $RestrictedModel -ne $Model) {
+    throw '-Model must match -RestrictedModel for an initial restricted trial.'
+}
+$serverName = if ($RestrictedModel) { 'biblequotebench-restricted' } else { 'biblequotebench' }
+if ($RestrictedModel) {
+    $CodexBin = (Get-Command $CodexBin -CommandType Application -ErrorAction Stop).Source
+}
 
 foreach ($clientName in $Client) {
     $serverArguments = @(
@@ -45,14 +56,17 @@ foreach ($clientName in $Client) {
     if ($RunIdPrefix) {
         $serverArguments += @('--run-id', "$RunIdPrefix-$clientName", '--model', $Model)
     }
+    if ($RestrictedModel) {
+        $serverArguments += @('--restricted-model', $RestrictedModel, '--codex-bin', $CodexBin)
+    }
     $entry = @{ command = $executablePath; args = $serverArguments }
     if ($clientName -eq 'codex') {
         if ($Preview) {
-            Write-Output 'Codex: server biblequotebench in the shared Codex configuration'
+            Write-Output "Codex: server $serverName in the shared Codex configuration"
             $entry | ConvertTo-Json -Depth 10
             continue
         }
-        & codex mcp add biblequotebench -- $executablePath @serverArguments
+        & codex mcp add $serverName -- $executablePath @serverArguments
         if ($LASTEXITCODE -ne 0) { throw 'Codex MCP registration failed.' }
         Write-Output 'Configured BibleQuoteBench for Codex. Reload its MCP connections or restart the app.'
         continue
@@ -76,7 +90,7 @@ foreach ($clientName in $Client) {
     }
     if ($Preview) {
         Write-Output "$clientName`: $destination"
-        @{ mcpServers = @{ biblequotebench = $entry } } | ConvertTo-Json -Depth 10
+        @{ mcpServers = @{ $serverName = $entry } } | ConvertTo-Json -Depth 10
         continue
     }
     $settings = if (Test-Path -LiteralPath $destination) {
@@ -85,7 +99,7 @@ foreach ($clientName in $Client) {
     if ($settings -isnot [System.Collections.IDictionary]) { throw 'App configuration must be a JSON object.' }
     if (-not $settings.Contains('mcpServers')) { $settings['mcpServers'] = @{} }
     if ($settings['mcpServers'] -isnot [System.Collections.IDictionary]) { throw 'mcpServers must be a JSON object.' }
-    $settings['mcpServers']['biblequotebench'] = $entry
+    $settings['mcpServers'][$serverName] = $entry
     $parentDirectory = Split-Path -Parent $destination
     [System.IO.Directory]::CreateDirectory($parentDirectory) | Out-Null
     if (Test-Path -LiteralPath $destination) {

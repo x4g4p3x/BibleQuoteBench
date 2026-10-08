@@ -15,6 +15,7 @@ use crate::{
     aggregate_scores,
     io::{read_json, write_json, write_jsonl, write_text},
     report::{build_report, render_markdown},
+    restricted::{RestrictedRunner, RunnerIdentity},
     score_response,
     study::digest,
     validate_dataset,
@@ -53,6 +54,17 @@ struct TrialMetadata {
     expected_case_ids: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     selection: Option<SelectionSpec>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    restriction: Option<RunnerIdentity>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Attempt {
+    case_id: String,
+    state: String,
+    request_sha256: Option<String>,
+    response_sha256: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -62,6 +74,8 @@ struct Session {
     responses: Vec<ResponseRecord>,
     pending: bool,
     finished: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    restricted_attempts: Vec<Attempt>,
 }
 
 /// A single dataset-bound trial. Holds an exclusive output lock until dropped.
@@ -72,6 +86,7 @@ struct Trial {
     session: Session,
     output: PathBuf,
     _lock: File,
+    restricted: Option<RestrictedRunner>,
 }
 
 #[derive(Deserialize)]
@@ -88,6 +103,7 @@ pub struct McpServer {
     references: Vec<ReferenceRecord>,
     defaults: McpConfig,
     active: Option<Trial>,
+    restricted: Option<RestrictedRunner>,
 }
 
 #[derive(Deserialize)]
@@ -118,6 +134,30 @@ impl McpServer {
         references: Vec<ReferenceRecord>,
         config: &McpConfig,
     ) -> Result<Self> {
+        Self::open_mode(catalog, cases, references, config, None)
+    }
+
+    /// Opens a subscription-backed trial whose answers must pass the tool-free gate.
+    ///
+    /// # Errors
+    /// Rejects invalid data, model mismatches, and incompatible saved trials.
+    pub fn open_restricted(
+        catalog: TranslationCatalog,
+        cases: Vec<BenchmarkCase>,
+        references: Vec<ReferenceRecord>,
+        config: &McpConfig,
+        runner: RestrictedRunner,
+    ) -> Result<Self> {
+        Self::open_mode(catalog, cases, references, config, Some(runner))
+    }
+
+    fn open_mode(
+        catalog: TranslationCatalog,
+        cases: Vec<BenchmarkCase>,
+        references: Vec<ReferenceRecord>,
+        config: &McpConfig,
+        restricted: Option<RestrictedRunner>,
+    ) -> Result<Self> {
         validate_dataset(&catalog, &cases, &references)?;
         let mut validation = config.clone();
         if config.run_id.is_empty() && config.model.is_empty() {
@@ -133,6 +173,7 @@ impl McpServer {
                 cases.clone(),
                 references.clone(),
                 config,
+                restricted.clone(),
             )?)
         };
         if active.is_none() {
@@ -144,7 +185,31 @@ impl McpServer {
             references,
             defaults: config.clone(),
             active,
+            restricted,
         })
+    }
+
+    pub(super) fn restriction(&self) -> Option<&RunnerIdentity> {
+        self.restricted.as_ref().map(RestrictedRunner::identity)
+    }
+
+    /// Completes a restricted trial using fresh, tool-free requests for each case.
+    ///
+    /// # Errors
+    /// Stops on the first blocked or uncertain attempt; never automatically retries it.
+    pub fn complete_restricted(&mut self) -> Result<Value> {
+        ensure_restricted(self.restricted.as_ref())?;
+        loop {
+            let issued = self.call_tool("next_case", json!({}))?;
+            if issued["complete"] == true {
+                return self.call_tool("finish_run", json!({}));
+            }
+            let progress = self.call_tool("answer_case", json!({"case_id":issued["case_id"]}))?;
+            eprintln!(
+                "Restricted trial: {} of {} answers retained",
+                progress["progress"]["answered_cases"], progress["progress"]["total_cases"]
+            );
+        }
     }
 
     pub(super) fn call_tool(&mut self, name: &str, arguments: Value) -> Result<Value> {
@@ -156,7 +221,9 @@ impl McpServer {
                 self.resume(serde_json::from_value(arguments).context("invalid resume arguments")?)
             }
             "benchmark_status" if self.active.is_none() && arguments == json!({}) => Ok(json!({
-                "active_trial": false, "provider_api_calls": 0, "evidence": "interactive_mcp", "selection_defaults": selection_spec(&self.defaults)
+                "active_trial": false, "provider_api_calls": if self.restricted.is_some() { Value::Null } else { json!(0) }, "paid_api_calls":0,
+                "evidence": if self.restricted.is_some() { "restricted_codex" } else { "interactive_mcp" },
+                "restriction":self.restriction(), "selection_defaults": selection_spec(&self.defaults)
             })),
             _ => self
                 .active
@@ -178,6 +245,21 @@ impl McpServer {
             output_dir: self.defaults.output_dir.clone(),
         };
         validate_config(&config)?;
+        if self.restricted.is_some()
+            && self
+                .defaults
+                .case_limit
+                .is_some_and(|cap| config.case_limit.is_none_or(|limit| limit > cap))
+        {
+            bail!("restricted case_limit exceeds the operator-selected cap");
+        }
+        if self
+            .restricted
+            .as_ref()
+            .is_some_and(|runner| config.model != runner.identity().model)
+        {
+            bail!("model must match the operator-selected restricted model");
+        }
         if config.model.contains("model unspecified") {
             bail!("provide an explicit model label");
         }
@@ -261,11 +343,16 @@ impl McpServer {
             self.cases.clone(),
             self.references.clone(),
             config,
+            self.restricted.clone(),
         )?;
         let status = trial.status();
         self.active = Some(trial);
         Ok(status)
     }
+}
+
+fn ensure_restricted(runner: Option<&RestrictedRunner>) -> Result<&RestrictedRunner> {
+    runner.context("this operation requires the operator-selected restricted runner")
 }
 
 fn selection_spec(config: &McpConfig) -> SelectionSpec {
@@ -286,13 +373,21 @@ impl Trial {
     ///
     /// # Panics
     /// Panics if a validated case has no translation, violating dataset invariants.
+    #[allow(clippy::too_many_lines)]
     fn open(
         catalog: TranslationCatalog,
         cases: Vec<BenchmarkCase>,
         references: Vec<ReferenceRecord>,
         config: &McpConfig,
+        restricted: Option<RestrictedRunner>,
     ) -> Result<Self> {
         validate_config(config)?;
+        if restricted
+            .as_ref()
+            .is_some_and(|runner| config.model != runner.identity().model)
+        {
+            bail!("model must match the operator-selected restricted model");
+        }
         validate_dataset(&catalog, &cases, &references)?;
         let output = config.output_dir.join(format!("run-{}", config.run_id));
         fs::create_dir_all(&output)?;
@@ -305,6 +400,7 @@ impl Trial {
             .context("another MCP server owns this run")?;
         let path = output.join("session.json");
         let saved: Option<Session> = path.exists().then(|| read_json(&path)).transpose()?;
+        let is_new = saved.is_none();
         let legacy = saved
             .as_ref()
             .is_some_and(|session| session.identity.schema_version == 1);
@@ -336,12 +432,28 @@ impl Trial {
             bail!("MCP recall trials do not expose copy-control reference text");
         }
         let identity = TrialMetadata {
-            schema_version: if legacy { 1 } else { 2 },
+            schema_version: if restricted.is_some() {
+                3
+            } else if legacy {
+                1
+            } else {
+                2
+            },
             engine_version: env!("CARGO_PKG_VERSION").into(),
-            evidence: "interactive_mcp".into(),
+            evidence: if restricted.is_some() {
+                "restricted_codex"
+            } else {
+                "interactive_mcp"
+            }
+            .into(),
             run_id: config.run_id.clone(),
             model: config.model.clone(),
-            model_identity: "self_reported".into(),
+            model_identity: if restricted.is_some() {
+                "subscription_response_verified"
+            } else {
+                "self_reported"
+            }
+            .into(),
             cases_sha256: digest(&cases),
             references_sha256: digest(&references),
             catalog_sha256: digest(&catalog),
@@ -360,6 +472,7 @@ impl Trial {
             ),
             expected_case_ids: cases.iter().map(|case| case.case_id.clone()).collect(),
             selection,
+            restriction: restricted.as_ref().map(|runner| runner.identity().clone()),
         };
         let session = if let Some(saved) = saved {
             if saved.identity != identity {
@@ -373,6 +486,7 @@ impl Trial {
                 responses: Vec::new(),
                 pending: false,
                 finished: false,
+                restricted_attempts: Vec::new(),
             }
         };
         let server = Self {
@@ -382,13 +496,30 @@ impl Trial {
             session,
             output,
             _lock: lock,
+            restricted,
         };
-        server.persist(&server.session)?;
+        server.validate_restricted_audits()?;
+        if is_new {
+            server.persist(&server.session)?;
+        }
         Ok(server)
     }
 
     pub(super) fn call_tool(&mut self, name: &str, arguments: Value) -> Result<Value> {
+        if name == "answer_case" {
+            #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct AnswerCase {
+                case_id: String,
+            }
+            let answer: AnswerCase =
+                serde_json::from_value(arguments).context("invalid answer_case arguments")?;
+            return self.answer_case(&answer.case_id);
+        }
         if name == "submit_answer" {
+            if self.restricted.is_some() {
+                bail!("manual answers are disabled in restricted trials; call answer_case");
+            }
             return self
                 .submit(serde_json::from_value(arguments).context("invalid answer arguments")?);
         }
@@ -407,13 +538,16 @@ impl Trial {
         json!({
             "run_id": self.session.identity.run_id,
             "model": self.session.identity.model,
-            "model_identity": "self_reported",
-            "evidence": "interactive_mcp",
+            "model_identity": self.session.identity.model_identity,
+            "evidence": self.session.identity.evidence,
             "total_cases": self.cases.len(),
             "answered_cases": self.session.responses.len(),
             "pending_case_id": self.pending_case().map(|case| &case.case_id),
             "finished": self.session.finished,
-            "provider_api_calls": 0,
+            "provider_api_calls": if self.restricted.is_some() { Value::Null } else { json!(0) },
+            "paid_api_calls": 0,
+            "restriction": self.session.identity.restriction,
+            "blocked": self.session.restricted_attempts.last().is_some_and(|attempt| attempt.state != "accepted"),
             "active_trial": true,
             "selection": self.session.identity.selection,
             "needs_model_label": self.session.identity.model.contains("model unspecified")
@@ -434,10 +568,12 @@ impl Trial {
         if self.session.finished || self.session.responses.len() == self.cases.len() {
             return Ok(json!({"complete": true, "progress": self.status()}));
         }
-        let mut updated = self.session.clone();
-        updated.pending = true;
-        self.persist(&updated)?;
-        self.session = updated;
+        if !self.session.pending {
+            let mut updated = self.session.clone();
+            updated.pending = true;
+            self.persist(&updated)?;
+            self.session = updated;
+        }
         let case = &self.cases[self.session.responses.len()];
         let translation = self
             .catalog
@@ -445,12 +581,133 @@ impl Trial {
             .iter()
             .find(|spec| spec.id == case.translation)
             .expect("validated translation");
-        Ok(json!({
+        let mut result = json!({
             "complete": false,
             "case_id": case.case_id,
             "prompt": crate::render_prompt(case, translation),
             "progress": self.status()
-        }))
+        });
+        if self.restricted.is_some() {
+            result.as_object_mut().expect("object").remove("prompt");
+        }
+        Ok(result)
+    }
+
+    fn answer_case(&mut self, case_id: &str) -> Result<Value> {
+        let runner = ensure_restricted(self.restricted.as_ref())?.clone();
+        if self
+            .session
+            .responses
+            .iter()
+            .any(|record| record.case_id == case_id)
+        {
+            return Ok(json!({"accepted":true,"already_recorded":true,"progress":self.status()}));
+        }
+        let case = self
+            .pending_case()
+            .filter(|case| case.case_id == case_id)
+            .context("answer only the currently issued case; call next_case first")?
+            .clone();
+        if self
+            .session
+            .restricted_attempts
+            .iter()
+            .any(|attempt| attempt.case_id == case_id)
+        {
+            bail!(
+                "this case already has a blocked or uncertain subscription attempt; no automatic retry; preserve this run and start a new run_id"
+            );
+        }
+        let translation = self
+            .catalog
+            .translations
+            .iter()
+            .find(|spec| spec.id == case.translation)
+            .expect("validated translation");
+        let prompt = crate::render_prompt(&case, translation);
+        let mut started = self.session.clone();
+        started.restricted_attempts.push(Attempt {
+            case_id: case_id.into(),
+            state: "started".into(),
+            request_sha256: None,
+            response_sha256: None,
+        });
+        self.persist(&started)?;
+        self.session = started;
+        let audit = self
+            .output
+            .join("gate")
+            .join(format!("case-{}", self.session.responses.len()));
+        let result = match runner.recall(&prompt, &audit) {
+            Ok(result) => result,
+            Err(error) => {
+                let mut blocked = self.session.clone();
+                blocked
+                    .restricted_attempts
+                    .last_mut()
+                    .expect("started attempt")
+                    .state = "blocked".into();
+                self.persist(&blocked)?;
+                self.session = blocked;
+                return Err(error);
+            }
+        };
+        let mut updated = self.session.clone();
+        let attempt = updated
+            .restricted_attempts
+            .last_mut()
+            .expect("started attempt");
+        attempt.state = "accepted".into();
+        attempt.request_sha256 = Some(result.request_sha256);
+        attempt.response_sha256 = Some(result.response_sha256);
+        updated.responses.push(ResponseRecord {
+            case_id: case_id.into(),
+            run_id: self.session.identity.run_id.clone(),
+            provider: "restricted_codex".into(),
+            model: self.session.identity.model.clone(),
+            resolved_model: Some(result.resolved_model),
+            output: result.text,
+            error: None,
+            temperature: None,
+            reasoning_effort: Some("low".into()),
+            seed: None,
+            provider_request_id: None,
+            system_fingerprint: None,
+            execution: Some(result.execution),
+        });
+        updated.pending = false;
+        self.persist(&updated)?;
+        self.session = updated;
+        Ok(json!({"accepted":true,"already_recorded":false,"progress":self.status()}))
+    }
+
+    fn validate_restricted_audits(&self) -> Result<()> {
+        if self.restricted.is_none() {
+            return Ok(());
+        }
+        for (index, response) in self.session.responses.iter().enumerate() {
+            let case = &self.cases[index];
+            let translation = self
+                .catalog
+                .translations
+                .iter()
+                .find(|spec| spec.id == case.translation)
+                .expect("validated translation");
+            let result = crate::restricted::read_audit(
+                &self.output.join("gate").join(format!("case-{index}")),
+                &crate::render_prompt(case, translation),
+                &self.session.identity.model,
+            )?;
+            let attempt = &self.session.restricted_attempts[index];
+            if result.text != response.output
+                || Some(result.execution) != response.execution
+                || attempt.request_sha256.as_ref() != Some(&result.request_sha256)
+                || attempt.response_sha256.as_ref() != Some(&result.response_sha256)
+            {
+                bail!("saved response does not match restricted gate audit");
+            }
+        }
+        Ok(())
     }
 
     fn submit(&mut self, answer: Answer) -> Result<Value> {
@@ -526,6 +783,27 @@ impl Trial {
             })
             .collect();
         let report = build_report(&scores);
+        let (title, limitations) = if self.restricted.is_some() {
+            (
+                "Restricted Codex subscription trial",
+                vec![
+                    "trusted local Codex executable and evaluator",
+                    "subscription service implementation is trusted",
+                    "low reasoning effort; no controlled-provider manifest",
+                    "local audit files are not tamper-proof",
+                ],
+            )
+        } else {
+            (
+                "Interactive MCP trial",
+                vec![
+                    "self-reported model identity",
+                    "shared conversation context",
+                    "client-side retrieval restrictions are not enforced",
+                    "model sampling settings and usage are unknown",
+                ],
+            )
+        };
         write_jsonl(
             Some(&self.output.join("responses.jsonl")),
             &self.session.responses,
@@ -535,7 +813,9 @@ impl Trial {
         write_text(
             &self.output.join("report.md"),
             &format!(
-                "# Interactive MCP trial\n\nEvidence: `interactive_mcp`. Model identity is self-reported. Context isolation, model sampling settings, and absence of retrieval are not verified. Do not treat this as a controlled closed-book provider run.\n\n{}",
+                "# {title}\n\nEvidence: `{}`. Limitations: {}. Do not pool with controlled provider runs.\n\n{}",
+                self.session.identity.evidence,
+                limitations.join("; "),
                 render_markdown(&report)
             ),
         )?;
@@ -545,8 +825,10 @@ impl Trial {
                 "identity": self.session.identity,
                 "responses_sha256": digest(&self.session.responses),
                 "scores_sha256": digest(&scores),
-                "provider_api_calls": 0,
-                "limitations": ["self-reported model identity", "shared conversation context", "client-side retrieval restrictions are not enforced", "model sampling settings and usage are unknown"]
+                "provider_api_calls": if self.restricted.is_some() { Value::Null } else { json!(0) },
+                "paid_api_calls": 0,
+                "restricted_attempts": self.session.restricted_attempts,
+                "limitations": limitations
             }),
         )?;
         let mut updated = self.session.clone();
@@ -596,16 +878,62 @@ fn validate_progress(session: &Session, cases: &[BenchmarkCase]) -> Result<()> {
     {
         bail!("invalid saved MCP progress");
     }
+    let restricted = session.identity.restriction.is_some();
+    if restricted {
+        if session.restricted_attempts.len() < session.responses.len()
+            || session.restricted_attempts.len() > session.responses.len() + 1
+        {
+            bail!("invalid saved restricted attempts");
+        }
+        for (index, attempt) in session.restricted_attempts.iter().enumerate() {
+            let case = cases
+                .get(index)
+                .context("restricted attempt exceeds selected cases")?;
+            if attempt.case_id != case.case_id {
+                bail!("restricted attempt does not match the selected case");
+            }
+            if index < session.responses.len() {
+                if attempt.state != "accepted"
+                    || attempt.request_sha256.is_none()
+                    || attempt.response_sha256.is_none()
+                {
+                    bail!("saved response requires an accepted restricted attempt");
+                }
+            } else if !matches!(attempt.state.as_str(), "started" | "blocked")
+                || !session.pending
+                || session.finished
+                || attempt.request_sha256.is_some()
+                || attempt.response_sha256.is_some()
+            {
+                bail!("invalid pending restricted attempt");
+            }
+        }
+    } else if !session.restricted_attempts.is_empty() {
+        bail!("interactive trials cannot contain restricted attempts");
+    }
     for (response, case) in session.responses.iter().zip(cases) {
         if response.case_id != case.case_id
             || response.run_id != session.identity.run_id
             || response.model != session.identity.model
-            || response.provider != "interactive_mcp"
-            || response.resolved_model.is_some()
+            || response.provider
+                != if restricted {
+                    "restricted_codex"
+                } else {
+                    "interactive_mcp"
+                }
+            || (if restricted {
+                response.resolved_model.as_ref() != Some(&session.identity.model)
+            } else {
+                response.resolved_model.is_some()
+            })
             || response.error.is_some()
-            || response.execution.is_some()
+            || response.execution.is_some() != restricted
             || response.temperature.is_some()
-            || response.reasoning_effort.is_some()
+            || (if restricted {
+                response.reasoning_effort.as_deref() != Some("low")
+            } else {
+                response.reasoning_effort.is_some()
+            })
             || response.seed.is_some()
             || response.provider_request_id.is_some()
             || response.system_fingerprint.is_some()

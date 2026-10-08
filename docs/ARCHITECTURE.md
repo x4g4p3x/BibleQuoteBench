@@ -34,6 +34,9 @@ reference text ─────────────────────�
 - `mcp` serves local interactive trials, issuing prompts and durably retaining
   immutable assistant answers without invoking model APIs. It withholds scores
   until completion and labels this evidence separately from provider execution.
+- `restricted` gates Codex subscription requests with canonical prompt-only
+  context, no tools, buffered response validation, and per-case CLI isolation.
+  The MCP server can use this runner instead of accepting chat-supplied answers.
 - `scoring` implements the normative exact and edit-distance metrics.
 - `report` produces grouped summaries, translation resemblance, and stability.
 - `study` binds complete runs to manifests and rejects incomparable observations.
@@ -78,6 +81,15 @@ they are not accepted as controlled provider evidence by `analyze`. Fresh trials
 use recorded, seeded stratified selection with complete edition groups. One
 connection can start or resume multiple trials, with one active trial at a time;
 legacy checkpoints preserve their original case order.
+
+The [restricted mode](RESTRICTED.md) routes a separate Codex answering process
+through an authoritative Responses gate. The host chat only issues case IDs;
+the gate overwrites request context and rejects tool output before native client
+execution. Schema-three `restricted_codex` checkpoints bind the operator-selected
+model, executable, instructions, request/response audits, and immutable answers.
+Failed or interrupted attempts remain blocked across restarts. The CLI and
+subscription service are trusted, and this evidence remains separate from
+controlled provider manifests.
 
 The pre-commit and CI publication guards inspect Git-indexed bytes rather than
 only working-tree filenames. They are defense in depth; evaluator hosts must also

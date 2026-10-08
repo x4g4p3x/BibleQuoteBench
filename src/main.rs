@@ -88,6 +88,37 @@ enum Command {
         translation: Option<String>,
         #[arg(long, default_value = "BibleQuoteBench/MCP/stratified-v1")]
         seed: String,
+        /// Run answers through the tool-free Codex subscription gate instead of this chat.
+        #[arg(long)]
+        restricted_model: Option<String>,
+        #[arg(long, default_value = "codex")]
+        codex_bin: PathBuf,
+        #[arg(long, default_value_t = 120)]
+        timeout_seconds: u64,
+    },
+    /// Run an entire restricted trial using `ChatGPT` subscription login, without API billing.
+    Restricted {
+        #[command(flatten)]
+        dataset: DatasetPaths,
+        #[arg(long)]
+        run_id: String,
+        #[arg(long)]
+        model: String,
+        #[arg(long, default_value = "codex")]
+        codex_bin: PathBuf,
+        #[arg(long, default_value = "results/restricted")]
+        output_dir: PathBuf,
+        #[arg(long, default_value_t = 10)]
+        case_limit: usize,
+        #[arg(long, default_value = "bsb-2025-third-printing")]
+        translation: String,
+        #[arg(long, default_value = "BibleQuoteBench/MCP/stratified-v1")]
+        seed: String,
+        #[arg(long, default_value_t = 120)]
+        timeout_seconds: u64,
+        /// Explicitly continue a saved trial; uncertain attempts remain blocked.
+        #[arg(long)]
+        resume: bool,
     },
     /// Render the exact prompt for one benchmark case.
     Prompt {
@@ -262,22 +293,95 @@ fn main() -> Result<()> {
             case_limit,
             translation,
             seed,
+            restricted_model,
+            codex_bin,
+            timeout_seconds,
         } => {
             let dataset = load_dataset(&paths)?;
-            let mut server = biblequotebench::mcp::McpServer::open(
+            let config = biblequotebench::mcp::McpConfig {
+                run_id: run_id.unwrap_or_default(),
+                model: model.unwrap_or_default(),
+                seed,
+                output_dir,
+                case_limit: if restricted_model.is_some() {
+                    Some(case_limit.unwrap_or(10))
+                } else {
+                    case_limit
+                },
+                translation,
+            };
+            let mut server = if let Some(model) = restricted_model {
+                let runner = biblequotebench::restricted::RestrictedRunner::prepare(
+                    &biblequotebench::restricted::RunnerConfig {
+                        program: codex_bin,
+                        model,
+                        timeout_seconds,
+                    },
+                )?;
+                biblequotebench::mcp::McpServer::open_restricted(
+                    dataset.catalog,
+                    dataset.cases,
+                    dataset.references,
+                    &config,
+                    runner,
+                )?
+            } else {
+                biblequotebench::mcp::McpServer::open(
+                    dataset.catalog,
+                    dataset.cases,
+                    dataset.references,
+                    &config,
+                )?
+            };
+            server.serve(std::io::stdin().lock(), std::io::stdout().lock())
+        }
+        Command::Restricted {
+            dataset: paths,
+            run_id,
+            model,
+            codex_bin,
+            output_dir,
+            case_limit,
+            translation,
+            seed,
+            timeout_seconds,
+            resume,
+        } => {
+            let dataset = load_dataset(&paths)?;
+            let checkpoint = output_dir
+                .join(format!("run-{run_id}"))
+                .join("session.json");
+            if checkpoint.exists() != resume {
+                bail!(
+                    "saved run requires --resume; a fresh run requires a new run_id without --resume"
+                );
+            }
+            let runner = biblequotebench::restricted::RestrictedRunner::prepare(
+                &biblequotebench::restricted::RunnerConfig {
+                    program: codex_bin,
+                    model: model.clone(),
+                    timeout_seconds,
+                },
+            )?;
+            let mut server = biblequotebench::mcp::McpServer::open_restricted(
                 dataset.catalog,
                 dataset.cases,
                 dataset.references,
                 &biblequotebench::mcp::McpConfig {
-                    run_id: run_id.unwrap_or_default(),
-                    model: model.unwrap_or_default(),
-                    seed,
+                    run_id,
+                    model,
                     output_dir,
-                    case_limit,
-                    translation,
+                    case_limit: Some(case_limit),
+                    translation: Some(translation),
+                    seed,
                 },
+                runner,
             )?;
-            server.serve(std::io::stdin().lock(), std::io::stdout().lock())
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&server.complete_restricted()?)?
+            );
+            Ok(())
         }
         Command::Prompt {
             dataset: paths,

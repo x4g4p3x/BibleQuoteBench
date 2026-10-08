@@ -14,6 +14,7 @@ pub mod pilot;
 pub mod prompt;
 pub mod provider;
 pub mod report;
+pub mod restricted;
 pub mod sampling;
 pub mod scoring;
 pub mod security;

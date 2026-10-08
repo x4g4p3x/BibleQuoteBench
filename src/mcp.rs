@@ -1,8 +1,11 @@
 //! Local, tool-only MCP stdio server for auditable interactive recall trials.
 //!
-//! This transport intentionally never calls a provider or samples a client model.
+//! Ordinary trials never call a provider or sample a client model. Restricted
+//! trials delegate recall to a subscription runner selected by the operator.
 //! Reference text and scoring feedback remain private until all answers are locked.
 
+#[cfg(test)]
+mod restricted_tests;
 mod selection;
 mod session;
 
@@ -127,7 +130,7 @@ impl McpServer {
                             "protocolVersion": protocol_version,
                             "capabilities": {"tools": {"listChanged": false}},
                             "serverInfo": {"name": "biblequotebench", "version": env!("CARGO_PKG_VERSION")},
-                            "instructions": "Interactive recall trial. Call begin_trial with a new run_id and your explicit model label, or resume_trial for a saved run. Then call next_case, submit_answer, and finish_run. Answer from recall; do not browse, retrieve Bible text, or inspect local reference files. Submit the exact passage only. Scores are withheld until every case has an immutable answer. Model identity is self-reported; this is not controlled closed-book evidence."
+                            "instructions": self.restriction().map_or_else(|| "Interactive recall trial. Call begin_trial with a new run_id and your explicit model label, or resume_trial for a saved run. Then call next_case, submit_answer, and finish_run. Answer from recall; do not browse, retrieve Bible text, or inspect local reference files. Submit the exact passage only. Scores are withheld until every case has an immutable answer. Model identity is self-reported; this is not controlled closed-book evidence.".to_owned(), |runner| format!("Restricted subscription trial. The answering model is {}, supplied by the operator, regardless of the model in this chat. Call begin_trial with that model label and a new run_id, or resume_trial. Call next_case, then answer_case with the issued case_id. The server runs a fresh, tool-free recall request; manual answers are disabled. Repeat until complete, then finish_run. Do not answer the verse yourself. Blocked or uncertain attempts cannot be retried automatically.", runner.model))
                         }))
                     }
                     Err(_) => Err((-32602, "Invalid initialize parameters")),
@@ -137,7 +140,7 @@ impl McpServer {
             _ if *lifecycle != Lifecycle::Ready => {
                 Err((-32000, "Complete the MCP initialization handshake first"))
             }
-            "tools/list" => Ok(json!({"tools": tool_definitions()})),
+            "tools/list" => Ok(json!({"tools": tool_definitions(self.restriction().is_some())})),
             "tools/call" => match serde_json::from_value::<CallParams>(params) {
                 Ok(params) if params.arguments.is_object() => {
                     let result = self.call_tool(&params.name, params.arguments);
@@ -169,9 +172,9 @@ fn rpc_error(id: &Value, code: i32, message: &str) -> Value {
     json!({"jsonrpc": "2.0", "id": id, "error": {"code": code, "message": message}})
 }
 
-fn tool_definitions() -> Value {
+fn tool_definitions(restricted: bool) -> Value {
     let empty = json!({"type": "object", "properties": {}, "additionalProperties": false});
-    json!([
+    let mut tools = json!([
         {
             "name": "begin_trial",
             "description": "Start a fresh trial with a unique run ID and explicit self-reported model label. Optional sampling overrides use the operator's dataset. Finish an issued trial before starting another.",
@@ -217,5 +220,25 @@ fn tool_definitions() -> Value {
             "inputSchema": empty,
             "annotations": {"readOnlyHint": false, "destructiveHint": false, "idempotentHint": true, "openWorldHint": false}
         }
-    ])
+    ]);
+    if restricted {
+        let entries = tools.as_array_mut().expect("array");
+        entries[0]["description"] = json!(
+            "Start a restricted trial using the operator-selected Codex model. The model must match that selection and the case limit cannot exceed the operator's cap. Finish an issued trial before starting another."
+        );
+        entries[3]["description"] = json!(
+            "Issue the next case ID for answer_case. The prompt stays inside the recall gate. Repeated calls return the same case until it is answered."
+        );
+        let answer = entries
+            .iter_mut()
+            .find(|tool| tool["name"] == "submit_answer")
+            .expect("answer tool");
+        *answer = json!({
+            "name":"answer_case",
+            "description":"Run the operator-selected Codex model on the issued case using a fresh tool-free request. No answer text is accepted from this chat. Successful retries of an already recorded case are idempotent; failed or uncertain subscription attempts cannot be retried.",
+            "inputSchema":{"type":"object","properties":{"case_id":{"type":"string"}},"required":["case_id"],"additionalProperties":false},
+            "annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":true}
+        });
+    }
+    tools
 }

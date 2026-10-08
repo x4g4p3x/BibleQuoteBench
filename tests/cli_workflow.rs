@@ -42,6 +42,157 @@ fn public_dataset_validates_and_prompts() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
+fn restricted_cli_and_stdio_block_failed_attempts_without_network_or_api_keys() {
+    use std::io::{BufRead, BufReader, Write};
+    use std::process::Stdio;
+    let temp = TempDir::new().unwrap();
+    let program = temp.path().join(if cfg!(windows) {
+        "fixture.exe"
+    } else {
+        "fixture"
+    });
+    assert!(
+        Command::new("rustc")
+            .arg("--edition=2024")
+            .arg(project_root().join("tests/support/restricted_client.rs"))
+            .arg("-o")
+            .arg(&program)
+            .status()
+            .unwrap()
+            .success()
+    );
+    let auth_path = temp.path().join("auth.json");
+    fs::write(
+        &auth_path,
+        r#"{"OPENAI_API_KEY":null,"tokens":{"access_token":"fixture","refresh_token":"fixture"}}"#,
+    )
+    .unwrap();
+    let mut arguments = vec![
+        "restricted",
+        "--model",
+        "fail",
+        "--run-id",
+        "blocked",
+        "--case-limit",
+        "1",
+        "--codex-bin",
+        program.to_str().unwrap(),
+        "--output-dir",
+        temp.path().to_str().unwrap(),
+    ];
+    let invoke = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_biblequotebench"))
+            .current_dir(project_root())
+            .env("CODEX_HOME", temp.path())
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let failed = invoke(&arguments);
+    assert!(!failed.status.success());
+    assert!(String::from_utf8_lossy(&failed.stderr).contains("runner failed"));
+    let checkpoint = temp.path().join("run-blocked/session.json");
+    let saved = fs::read(&checkpoint).unwrap();
+    let session: Value = serde_json::from_slice(&saved).unwrap();
+    assert_eq!(session["restricted_attempts"][0]["state"], "blocked");
+    assert_eq!(session["responses"], serde_json::json!([]));
+    assert!(!invoke(&arguments).status.success()); // Explicit resume required.
+    arguments.push("--resume");
+    assert!(!invoke(&arguments).status.success()); // No reexecution of an uncertain case.
+    assert_eq!(fs::read(&checkpoint).unwrap(), saved);
+    arguments[4] = "missing";
+    assert!(!invoke(&arguments).status.success());
+    assert!(!temp.path().join("run-missing").exists());
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_biblequotebench"))
+        .current_dir(project_root())
+        .env("CODEX_HOME", temp.path())
+        .args([
+            "mcp",
+            "--restricted-model",
+            "fail",
+            "--run-id",
+            "stdio",
+            "--model",
+            "fail",
+            "--case-limit",
+            "1",
+            "--translation",
+            "bsb-2025-third-printing",
+            "--codex-bin",
+            program.to_str().unwrap(),
+            "--output-dir",
+            temp.path().to_str().unwrap(),
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let mut output = BufReader::new(child.stdout.take().unwrap());
+    writeln!(input, "{}", serde_json::json!({"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"fixture","version":"1"}}})).unwrap();
+    input.flush().unwrap();
+    let mut initialized = String::new();
+    output.read_line(&mut initialized).unwrap();
+    assert!(
+        serde_json::from_str::<Value>(&initialized)
+            .unwrap()
+            .get("error")
+            .is_none()
+    );
+    writeln!(
+        input,
+        "{}",
+        serde_json::json!({"jsonrpc":"2.0","method":"notifications/initialized"})
+    )
+    .unwrap();
+    let mut rpc = |id: u32, name: &str, args: Value| {
+        writeln!(input, "{}", serde_json::json!({"jsonrpc":"2.0","id":id,"method":"tools/call","params":{"name":name,"arguments":args}})).unwrap();
+        input.flush().unwrap();
+        let mut line = String::new();
+        output.read_line(&mut line).unwrap();
+        let reply: Value = serde_json::from_str(&line).unwrap();
+        reply["result"].clone()
+    };
+    let next = rpc(1, "next_case", serde_json::json!({}));
+    let issued: Value = serde_json::from_str(next["content"][0]["text"].as_str().unwrap()).unwrap();
+    assert!(issued.get("prompt").is_none());
+    let failed = rpc(
+        2,
+        "answer_case",
+        serde_json::json!({"case_id":issued["case_id"]}),
+    );
+    assert_eq!(failed["isError"], true);
+    assert_eq!(
+        rpc(
+            3,
+            "submit_answer",
+            serde_json::json!({"case_id":issued["case_id"],"output":"copied answer"})
+        )["isError"],
+        true
+    );
+    drop(rpc);
+    drop(input);
+    assert!(child.wait().unwrap().success());
+    let saved: Value =
+        serde_json::from_slice(&fs::read(temp.path().join("run-stdio/session.json")).unwrap())
+            .unwrap();
+    assert_eq!(saved["restricted_attempts"][0]["state"], "blocked");
+    assert_eq!(saved["identity"]["evidence"], "restricted_codex");
+
+    fs::write(auth_path, r#"{"OPENAI_API_KEY":"fixture"}"#).unwrap();
+    arguments.truncate(arguments.len() - 1);
+    let rejected = invoke(&arguments);
+    assert!(!rejected.status.success());
+    assert!(
+        String::from_utf8_lossy(&rejected.stderr).contains("API-key authentication is rejected")
+    );
+    assert!(!temp.path().join("run-missing").exists());
+}
+
+#[test]
 fn scoring_summary_and_report_work_end_to_end() {
     let output = TempDir::new().unwrap();
     let scores = output.path().join("scores.jsonl");

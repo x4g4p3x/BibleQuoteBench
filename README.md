@@ -69,6 +69,17 @@ benchmark provider API calls, use the [local MCP server](docs/MCP.md). It saves
 answers and scores locally; the client app's normal usage limits still apply.
 Interactive evidence is kept distinct from controlled closed-book provider runs.
 
+For answers isolated from the desktop conversation and its retrieval tools, use
+the [restricted subscription runner](docs/RESTRICTED.md):
+
+```console
+cargo run --locked -- restricted --model gpt-6.1-sol --run-id recall-01 --case-limit 10
+```
+
+Its request gate supplies no tools or history, rejects tool output before CLI
+execution, and prevents retries of uncertain attempts. All three desktop clients
+can orchestrate it; the answering model is always the selected Codex model.
+
 Run the quality gates with:
 
 ```console

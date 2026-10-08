@@ -1,5 +1,9 @@
 # Interactive trials over MCP
 
+For enforced tool-free answers through a separate Codex subscription model, use
+the [restricted server](RESTRICTED.md). It works with all three desktop clients.
+The workflow below describes the ordinary interactive server.
+
 The local MCP server lets the assistant in Codex desktop, Claude Desktop, or
 Cursor answer benchmark prompts and retain scored results without the benchmark
 calling a model API. It needs no API key and makes no network requests. The
