@@ -4,6 +4,20 @@ BibleQuoteBench measures whether a model can reproduce the exact text of a
 specified Bible translation and edition from internal recall. Its primary track
 is closed-book: no retrieval, browsing, Bible API, tools, or RAG.
 
+## Public benchmark results
+
+Each model answered the same **300 public development cases**: 100 shared Bible
+references in ASV 1901, BSB 2025 third printing, and WEB Classic 2020.
+
+![Accuracy comparison for Claude Opus 5.5 Max, GPT-6.1 Sol Max, and Grok 4.7 xHigh across 300 cases per model](docs/trials/2026-10-09-300-case-comparison/accuracy-comparison.png)
+
+Claude and Grok used Cursor CLI through the benchmark MCP tools. Sol used native
+Codex CLI through the restricted runner, with one reviewed recovery across 301
+attempts. The chart describes these observed runs; execution controls differed.
+See [methods and metric definitions](docs/trials/2026-10-09-300-case-comparison/README.md).
+
+## What the benchmark includes
+
 The v0.2 implementation includes:
 
 - edition-pinned translation metadata;

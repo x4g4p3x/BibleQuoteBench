@@ -1,8 +1,14 @@
 # Observed interactive trials
 
+The [300-case accuracy comparison](2026-10-09-300-case-comparison/README.md)
+shows the completed Grok 4.7 xHigh and Claude Opus 5.5 Max Cursor runs alongside
+the restricted GPT-6.1 Sol Max Codex run. It also appears at the top of the
+repository README.
+
 This archive contains actual model answers obtained through desktop or CLI
-subscription clients. These records retain the `interactive_mcp` evidence label:
-they are descriptive diagnostics with client and conversation limitations.
+subscription clients. Interactive Cursor records retain the `interactive_mcp`
+evidence label; the restricted Codex comparison has stronger request-gate
+evidence. These are descriptive results with client and conversation limitations.
 They are separate from the [constructed v0.2 pilot](../pilot/v0.2/README.md),
 controlled provider comparisons, and the [restricted Codex runner](../RESTRICTED.md).
 
