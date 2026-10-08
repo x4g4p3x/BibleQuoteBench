@@ -7,8 +7,8 @@ use super::{McpConfig, McpServer, tool_definitions};
 use crate::{
     io::{read_json, read_jsonl, write_json},
     restricted::{
-        RestrictedRunner,
-        tests::{fake_program, fake_runner, stream, upstream},
+        ReasoningEffort, RestrictedRunner,
+        tests::{fake_program, fake_runner, fake_runner_with_effort, stream, upstream},
     },
 };
 
@@ -59,6 +59,14 @@ fn restricted_protocol_advertises_runner_answers_and_no_manual_submission() {
     assert!(
         server
             .call_tool("begin_trial", json!({"run_id":"new","model":"other"}))
+            .is_err()
+    );
+    assert!(
+        server
+            .call_tool(
+                "begin_trial",
+                json!({"run_id":"new","model":"fixture","reasoning_effort":"high"})
+            )
             .is_err()
     );
     assert!(
@@ -184,6 +192,120 @@ fn restricted_answers_are_audited_immutable_and_resumed_without_reexecution() {
     assert_eq!(
         server.complete_restricted().unwrap()["progress"]["finished"],
         true
+    );
+}
+
+#[test]
+fn high_effort_metadata_resume_and_operator_immutability_are_enforced() {
+    for effort in [
+        ReasoningEffort::High,
+        ReasoningEffort::Xhigh,
+        ReasoningEffort::Max,
+    ] {
+        check_effort_metadata_resume_and_operator_immutability(effort);
+    }
+}
+
+fn check_effort_metadata_resume_and_operator_immutability(effort: ReasoningEffort) {
+    let temp = TempDir::new().unwrap();
+    let program = fake_program(temp.path());
+    let (url, worker) = upstream("fixture", vec![stream("fixture", json!([]))]);
+    let runner = fake_runner_with_effort(temp.path(), &program, "fixture", &url, effort);
+    let mut config = config(temp.path(), "fixture");
+    config.case_limit = Some(1);
+    let mut server = open(&config, Some(runner.clone())).unwrap();
+    assert_eq!(
+        server.call_tool("benchmark_status", json!({})).unwrap()["restriction"]["reasoning_effort"],
+        effort.as_str()
+    );
+    let next = server.call_tool("next_case", json!({})).unwrap();
+    assert!(
+        server
+            .call_tool(
+                "answer_case",
+                json!({"case_id":next["case_id"],"reasoning_effort":"low"})
+            )
+            .is_err()
+    );
+    server.complete_restricted().unwrap();
+    assert_eq!(
+        worker.join().unwrap()[0]["reasoning"]["effort"],
+        effort.as_str()
+    );
+    let directory = config.output_dir.join("run-restricted-test");
+    let trial: Value = read_json(&directory.join("trial.json")).unwrap();
+    assert_eq!(
+        trial["identity"]["restriction"]["reasoning_effort"],
+        effort.as_str()
+    );
+    assert!(
+        trial["limitations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| value
+                .as_str()
+                .unwrap()
+                .contains(&format!("{} reasoning effort", effort.as_str())))
+    );
+    let checkpoint = directory.join("session.json");
+    let original = fs::read(&checkpoint).unwrap();
+    let saved: Value = serde_json::from_slice(&original).unwrap();
+    assert_eq!(saved["responses"][0]["reasoning_effort"], effort.as_str());
+    drop(server);
+    let low = fake_runner(temp.path(), &program, "fixture", "http://127.0.0.1:9");
+    assert!(open(&config, Some(low)).is_err());
+    for pointer in [
+        "/identity/restriction/reasoning_effort",
+        "/responses/0/reasoning_effort",
+    ] {
+        for value in [json!("low"), json!(null)] {
+            let mut changed = saved.clone();
+            *changed.pointer_mut(pointer).unwrap() = value;
+            write_json(&checkpoint, &changed).unwrap();
+            let before = fs::read(&checkpoint).unwrap();
+            assert!(open(&config, Some(runner.clone())).is_err());
+            assert_eq!(fs::read(&checkpoint).unwrap(), before);
+        }
+    }
+    let mut changed = saved;
+    changed["identity"]["restriction"]
+        .as_object_mut()
+        .unwrap()
+        .remove("reasoning_effort");
+    write_json(&checkpoint, &changed).unwrap();
+    assert!(open(&config, Some(runner.clone())).is_err());
+    fs::write(&checkpoint, original).unwrap();
+    let mut resumed = open(&config, Some(runner)).unwrap();
+    assert_eq!(
+        resumed.complete_restricted().unwrap()["progress"]["finished"],
+        true
+    );
+}
+
+#[test]
+fn legacy_low_identity_resumes_accepted_answers_without_reexecution() {
+    let temp = TempDir::new().unwrap();
+    let program = fake_program(temp.path());
+    let (url, worker) = upstream("fixture", vec![stream("fixture", json!([]))]);
+    let runner = fake_runner(temp.path(), &program, "fixture", &url);
+    let mut config = config(temp.path(), "fixture");
+    config.case_limit = Some(1);
+    let mut server = open(&config, Some(runner.clone())).unwrap();
+    server.complete_restricted().unwrap();
+    assert_eq!(worker.join().unwrap().len(), 1);
+    drop(server);
+    let checkpoint = config.output_dir.join("run-restricted-test/session.json");
+    let mut legacy: Value = read_json(&checkpoint).unwrap();
+    legacy["identity"]["restriction"]
+        .as_object_mut()
+        .unwrap()
+        .remove("reasoning_effort");
+    write_json(&checkpoint, &legacy).unwrap();
+    let mut server = open(&config, Some(runner)).unwrap();
+    assert_eq!(
+        server.complete_restricted().unwrap()["progress"]["restriction"]["reasoning_effort"],
+        "low"
     );
 }
 

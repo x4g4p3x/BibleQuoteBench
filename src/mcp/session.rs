@@ -669,7 +669,7 @@ impl Trial {
             output: result.text,
             error: None,
             temperature: None,
-            reasoning_effort: Some("low".into()),
+            reasoning_effort: Some(runner.identity().reasoning_effort.as_str().into()),
             seed: None,
             provider_request_id: None,
             system_fingerprint: None,
@@ -697,6 +697,12 @@ impl Trial {
                 &self.output.join("gate").join(format!("case-{index}")),
                 &crate::render_prompt(case, translation),
                 &self.session.identity.model,
+                self.session
+                    .identity
+                    .restriction
+                    .as_ref()
+                    .expect("restricted identity")
+                    .reasoning_effort,
             )?;
             let attempt = &self.session.restricted_attempts[index];
             if result.text != response.output
@@ -783,13 +789,19 @@ impl Trial {
             })
             .collect();
         let report = build_report(&scores);
+        let effort_limitation = self.restricted.as_ref().map(|runner| {
+            format!(
+                "{} reasoning effort; no controlled-provider manifest",
+                runner.identity().reasoning_effort.as_str()
+            )
+        });
         let (title, limitations) = if self.restricted.is_some() {
             (
                 "Restricted Codex subscription trial",
                 vec![
                     "trusted local Codex executable and evaluator",
                     "subscription service implementation is trusted",
-                    "low reasoning effort; no controlled-provider manifest",
+                    effort_limitation.as_deref().expect("restricted effort"),
                     "local audit files are not tamper-proof",
                 ],
             )
@@ -930,7 +942,12 @@ fn validate_progress(session: &Session, cases: &[BenchmarkCase]) -> Result<()> {
             || response.execution.is_some() != restricted
             || response.temperature.is_some()
             || (if restricted {
-                response.reasoning_effort.as_deref() != Some("low")
+                response.reasoning_effort.as_deref()
+                    != session
+                        .identity
+                        .restriction
+                        .as_ref()
+                        .map(|identity| identity.reasoning_effort.as_str())
             } else {
                 response.reasoning_effort.is_some()
             })

@@ -24,7 +24,7 @@ fn main() {
     assert!(std::env::var_os("OPENAI_API_KEY").is_none());
     assert!(std::env::var_os("ANTHROPIC_API_KEY").is_none());
     if model == "catalogue" { assert!(request(base, "GET", "/models?client_version=fixture", "")); }
-    let body = format!(r#"{{"model":"{model}","stream":true,"instructions":"INJECTED INSTRUCTIONS","input":[{{"role":"user","content":"COPIED ANSWER CANARY"}}],"tools":[{{"type":"web_search"}}],"tool_choice":"required","previous_response_id":"history"}}"#);
+    let body = format!(r#"{{"model":"{model}","stream":true,"reasoning":{{"effort":"medium"}},"instructions":"INJECTED INSTRUCTIONS","input":[{{"role":"user","content":"COPIED ANSWER CANARY"}}],"tools":[{{"type":"web_search"}}],"tool_choice":"required","previous_response_id":"history"}}"#);
     let path = if model == "route" { "/arbitrary-site" } else { "/responses" };
     if !request(base, "POST", path, &body) { std::process::exit(4); }
     if model == "repeat" && !request(base, "POST", path, &body) { std::process::exit(5); }

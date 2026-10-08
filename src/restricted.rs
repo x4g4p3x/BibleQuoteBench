@@ -41,11 +41,34 @@ const DISABLED_FEATURES: &[&str] = &[
     "enable_request_compression",
 ];
 
+/// Supported fixed reasoning settings for subscription recall.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, clap::ValueEnum)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningEffort {
+    #[default]
+    Low,
+    High,
+    Xhigh,
+    Max,
+}
+
+impl ReasoningEffort {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::High => "high",
+            Self::Xhigh => "xhigh",
+            Self::Max => "max",
+        }
+    }
+}
+
 /// Operator-selected subscription runner. MCP callers cannot change these settings.
 #[derive(Debug, Clone)]
 pub struct RunnerConfig {
     pub program: PathBuf,
     pub model: String,
+    pub reasoning_effort: ReasoningEffort,
     pub timeout_seconds: u64,
 }
 
@@ -55,6 +78,9 @@ pub struct RunnerConfig {
 pub struct RunnerIdentity {
     pub method: String,
     pub model: String,
+    /// Missing in legacy identities, which always used low effort.
+    #[serde(default)]
+    pub reasoning_effort: ReasoningEffort,
     pub cli_version: String,
     pub executable_sha256: String,
     pub instructions_sha256: String,
@@ -136,6 +162,7 @@ impl RestrictedRunner {
             identity: RunnerIdentity {
                 method: "codex_responses_gate_v1".into(),
                 model: config.model.clone(),
+                reasoning_effort: config.reasoning_effort,
                 cli_version: version,
                 executable_sha256: hash(&fs::read(&program)?),
                 instructions_sha256: hash(INSTRUCTIONS.as_bytes()),
@@ -222,6 +249,13 @@ impl RestrictedRunner {
                 "-c",
                 "project_doc_max_bytes=0",
             ]);
+        command.args([
+            "-c",
+            &format!(
+                "model_reasoning_effort={:?}",
+                self.identity.reasoning_effort.as_str()
+            ),
+        ]);
         for feature in DISABLED_FEATURES {
             command.args(["-c", &format!("features.{feature}=false")]);
         }
@@ -304,6 +338,7 @@ impl RestrictedRunner {
                     upstream,
                     prompt,
                     &self.identity.model,
+                    self.identity.reasoning_effort,
                     audit,
                 )?);
             }
@@ -432,13 +467,14 @@ impl Drop for ChildGuard {
     }
 }
 
-fn canonical_request(prompt: &str, model: &str) -> Value {
+fn canonical_request(prompt: &str, model: &str, effort: ReasoningEffort) -> Value {
     json!({"model":model, "stream":true, "store":false, "instructions":INSTRUCTIONS,
         "input":[{"role":"user","content":[{"type":"input_text","text":prompt}]}],
         "tools":[], "tool_choice":"none", "parallel_tool_calls":false,
-        "reasoning":{"effort":"low","summary":"auto"}, "include":["reasoning.encrypted_content"]})
+        "reasoning":{"effort":effort.as_str(),"summary":"auto"}, "include":["reasoning.encrypted_content"]})
 }
 
+#[allow(clippy::too_many_arguments)]
 fn forward(
     mut request: Request,
     client: &Client,
@@ -446,9 +482,19 @@ fn forward(
     upstream: &str,
     prompt: &str,
     model: &str,
+    effort: ReasoningEffort,
     audit: &Path,
 ) -> Result<RecallResult> {
-    let result = gated_response(&mut request, client, route, upstream, prompt, model, audit);
+    let result = gated_response(
+        &mut request,
+        client,
+        route,
+        upstream,
+        prompt,
+        model,
+        effort,
+        audit,
+    );
     match result {
         Ok((bytes, recall)) => {
             let response = Response::from_data(bytes).with_header(
@@ -475,6 +521,7 @@ fn gated_response(
     upstream: &str,
     prompt: &str,
     model: &str,
+    effort: ReasoningEffort,
     audit: &Path,
 ) -> Result<(Vec<u8>, RecallResult)> {
     ensure!(
@@ -511,7 +558,7 @@ fn gated_response(
         offered["model"] == model && offered["stream"] == true,
         "runner changed the requested model or transport"
     );
-    let canonical = canonical_request(prompt, model);
+    let canonical = canonical_request(prompt, model, effort);
     fs::create_dir_all(audit)?;
     write_json(&audit.join("request.json"), &canonical)?;
     let mut upstream_request = client
@@ -584,8 +631,13 @@ fn validate_item(item: &Value) -> Result<()> {
     }
 }
 
-pub(crate) fn read_audit(audit: &Path, prompt: &str, model: &str) -> Result<RecallResult> {
-    let canonical = canonical_request(prompt, model);
+pub(crate) fn read_audit(
+    audit: &Path,
+    prompt: &str,
+    model: &str,
+    effort: ReasoningEffort,
+) -> Result<RecallResult> {
+    let canonical = canonical_request(prompt, model, effort);
     let saved: Value = crate::io::read_json(&audit.join("request.json"))?;
     ensure!(saved == canonical, "restricted gate request audit changed");
     let bytes = fs::read(audit.join("response.sse"))?;

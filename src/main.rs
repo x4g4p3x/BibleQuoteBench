@@ -91,6 +91,9 @@ enum Command {
         /// Run answers through the tool-free Codex subscription gate instead of this chat.
         #[arg(long)]
         restricted_model: Option<String>,
+        /// Fixed operator-selected reasoning effort for restricted subscription answers.
+        #[arg(long, value_enum, default_value = "low")]
+        restricted_reasoning_effort: biblequotebench::restricted::ReasoningEffort,
         #[arg(long, default_value = "codex")]
         codex_bin: PathBuf,
         #[arg(long, default_value_t = 120)]
@@ -104,6 +107,9 @@ enum Command {
         run_id: String,
         #[arg(long)]
         model: String,
+        /// Fixed reasoning effort; must match the saved run when resuming.
+        #[arg(long, value_enum, default_value = "low")]
+        reasoning_effort: biblequotebench::restricted::ReasoningEffort,
         #[arg(long, default_value = "codex")]
         codex_bin: PathBuf,
         #[arg(long, default_value = "results/restricted")]
@@ -294,6 +300,7 @@ fn main() -> Result<()> {
             translation,
             seed,
             restricted_model,
+            restricted_reasoning_effort,
             codex_bin,
             timeout_seconds,
         } => {
@@ -315,6 +322,7 @@ fn main() -> Result<()> {
                     &biblequotebench::restricted::RunnerConfig {
                         program: codex_bin,
                         model,
+                        reasoning_effort: restricted_reasoning_effort,
                         timeout_seconds,
                     },
                 )?;
@@ -339,6 +347,7 @@ fn main() -> Result<()> {
             dataset: paths,
             run_id,
             model,
+            reasoning_effort,
             codex_bin,
             output_dir,
             case_limit,
@@ -360,6 +369,7 @@ fn main() -> Result<()> {
                 &biblequotebench::restricted::RunnerConfig {
                     program: codex_bin,
                     model: model.clone(),
+                    reasoning_effort,
                     timeout_seconds,
                 },
             )?;

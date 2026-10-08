@@ -97,8 +97,19 @@ fn restricted_cli_and_stdio_block_failed_attempts_without_network_or_api_keys() 
     let session: Value = serde_json::from_slice(&saved).unwrap();
     assert_eq!(session["restricted_attempts"][0]["state"], "blocked");
     assert_eq!(session["responses"], serde_json::json!([]));
+    assert_eq!(
+        session["identity"]["restriction"]["reasoning_effort"],
+        "low"
+    );
     assert!(!invoke(&arguments).status.success()); // Explicit resume required.
     arguments.push("--resume");
+    let mut changed_effort = arguments.clone();
+    changed_effort.extend(["--reasoning-effort", "xhigh"]);
+    let rejected = invoke(&changed_effort);
+    assert!(!rejected.status.success());
+    assert!(
+        String::from_utf8_lossy(&rejected.stderr).contains("resume settings or dataset changed")
+    );
     assert!(!invoke(&arguments).status.success()); // No reexecution of an uncertain case.
     assert_eq!(fs::read(&checkpoint).unwrap(), saved);
     arguments[4] = "missing";
@@ -112,6 +123,8 @@ fn restricted_cli_and_stdio_block_failed_attempts_without_network_or_api_keys() 
             "mcp",
             "--restricted-model",
             "fail",
+            "--restricted-reasoning-effort",
+            "xhigh",
             "--run-id",
             "stdio",
             "--model",
@@ -181,6 +194,10 @@ fn restricted_cli_and_stdio_block_failed_attempts_without_network_or_api_keys() 
             .unwrap();
     assert_eq!(saved["restricted_attempts"][0]["state"], "blocked");
     assert_eq!(saved["identity"]["evidence"], "restricted_codex");
+    assert_eq!(
+        saved["identity"]["restriction"]["reasoning_effort"],
+        "xhigh"
+    );
 
     fs::write(auth_path, r#"{"OPENAI_API_KEY":"fixture"}"#).unwrap();
     arguments.truncate(arguments.len() - 1);

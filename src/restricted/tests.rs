@@ -35,12 +35,25 @@ pub(crate) fn fake_runner(
         identity: RunnerIdentity {
             method: "codex_responses_gate_v1".into(),
             model: model.into(),
+            reasoning_effort: ReasoningEffort::Low,
             cli_version: "codex-cli fixture".into(),
             executable_sha256: hash(&fs::read(program).unwrap()),
             instructions_sha256: hash(INSTRUCTIONS.as_bytes()),
             timeout_seconds: 5,
         },
     }
+}
+
+pub(crate) fn fake_runner_with_effort(
+    directory: &Path,
+    program: &Path,
+    model: &str,
+    upstream: &str,
+    effort: ReasoningEffort,
+) -> RestrictedRunner {
+    let mut runner = fake_runner(directory, program, model, upstream);
+    runner.identity.reasoning_effort = effort;
+    runner
 }
 
 #[allow(clippy::needless_pass_by_value)] // Fixtures accept temporary JSON values.
@@ -91,7 +104,7 @@ pub(crate) fn upstream(
 
 #[test]
 fn canonical_request_has_no_client_context_tools_or_history() {
-    let request = canonical_request("Quote this passage", "fixture");
+    let request = canonical_request("Quote this passage", "fixture", ReasoningEffort::Low);
     assert_eq!(
         request["input"],
         json!([{"role":"user","content":[{"type":"input_text","text":"Quote this passage"}]}])
@@ -102,6 +115,67 @@ fn canonical_request_has_no_client_context_tools_or_history() {
     assert_eq!(request["store"], false);
     assert_eq!(request["reasoning"]["effort"], "low");
     assert!(request.get("previous_response_id").is_none());
+}
+
+#[test]
+fn runner_identity_defaults_only_legacy_missing_effort_to_low() {
+    let temp = TempDir::new().unwrap();
+    let program = temp.path().join("program");
+    fs::write(&program, "fixture").unwrap();
+    let runner = fake_runner(temp.path(), &program, "fixture", "http://127.0.0.1:9");
+    let mut legacy = serde_json::to_value(runner.identity()).unwrap();
+    legacy.as_object_mut().unwrap().remove("reasoning_effort");
+    assert_eq!(
+        serde_json::from_value::<RunnerIdentity>(legacy.clone()).unwrap(),
+        *runner.identity()
+    );
+    for unsupported in [json!(null), json!("medium"), json!("HIGH"), json!(false)] {
+        legacy["reasoning_effort"] = unsupported;
+        assert!(serde_json::from_value::<RunnerIdentity>(legacy.clone()).is_err());
+    }
+}
+
+#[test]
+fn high_effort_is_canonical_and_audit_effort_is_required_and_immutable() {
+    for effort in [
+        ReasoningEffort::High,
+        ReasoningEffort::Xhigh,
+        ReasoningEffort::Max,
+    ] {
+        check_canonical_effort_and_audit_immutability(effort);
+    }
+}
+
+fn check_canonical_effort_and_audit_immutability(effort: ReasoningEffort) {
+    let temp = TempDir::new().unwrap();
+    let program = fake_program(temp.path());
+    let (url, worker) = upstream("fixture", vec![stream("fixture", json!([]))]);
+    let runner = fake_runner_with_effort(temp.path(), &program, "fixture", &url, effort);
+    let audit = temp.path().join("audit");
+    let result = runner.recall("canonical prompt", &audit).unwrap();
+    let canonical = canonical_request("canonical prompt", "fixture", effort);
+    assert_eq!(canonical["reasoning"]["effort"], effort.as_str());
+    assert_eq!(worker.join().unwrap(), vec![canonical.clone()]);
+    assert_eq!(
+        read_audit(&audit, "canonical prompt", "fixture", effort)
+            .unwrap()
+            .request_sha256,
+        result.request_sha256
+    );
+    assert!(read_audit(&audit, "canonical prompt", "fixture", ReasoningEffort::Low).is_err());
+    for changed_effort in [Some(json!("low")), Some(json!(null)), None] {
+        let mut changed = canonical.clone();
+        if let Some(changed_effort) = changed_effort {
+            changed["reasoning"]["effort"] = changed_effort;
+        } else {
+            changed["reasoning"]
+                .as_object_mut()
+                .unwrap()
+                .remove("effort");
+        }
+        write_json(&audit.join("request.json"), &changed).unwrap();
+        assert!(read_audit(&audit, "canonical prompt", "fixture", effort).is_err());
+    }
 }
 
 #[test]
@@ -352,6 +426,7 @@ fn deliver_request(
         upstream_url,
         "canonical",
         "fixture",
+        ReasoningEffort::Low,
         temp.path(),
     )
     .unwrap_err()
@@ -457,6 +532,7 @@ fn runner_configuration_and_executable_changes_fail_before_model_requests() {
             RestrictedRunner::prepare(&RunnerConfig {
                 program: PathBuf::from("missing"),
                 model: model.into(),
+                reasoning_effort: ReasoningEffort::Low,
                 timeout_seconds: 5
             })
             .is_err()
@@ -466,6 +542,7 @@ fn runner_configuration_and_executable_changes_fail_before_model_requests() {
         RestrictedRunner::prepare(&RunnerConfig {
             program: PathBuf::from("missing"),
             model: "fixture".into(),
+            reasoning_effort: ReasoningEffort::Low,
             timeout_seconds: 0
         })
         .is_err()
@@ -503,10 +580,10 @@ fn real_local_process_uses_gate_rewrites_context_and_validates_audit() {
         assert_eq!(result.text, "  kept\nexactly  ");
         assert_eq!(
             worker.join().unwrap()[0],
-            canonical_request("canonical prompt", model)
+            canonical_request("canonical prompt", model, ReasoningEffort::Low)
         );
         assert_eq!(
-            read_audit(&audit, "canonical prompt", model)
+            read_audit(&audit, "canonical prompt", model, ReasoningEffort::Low)
                 .unwrap()
                 .response_sha256,
             result.response_sha256
@@ -515,10 +592,10 @@ fn real_local_process_uses_gate_rewrites_context_and_validates_audit() {
         let mut changed: Value = serde_json::from_slice(&original).unwrap();
         changed["tools"] = json!([{"type":"web_search"}]);
         write_json(&audit.join("request.json"), &changed).unwrap();
-        assert!(read_audit(&audit, "canonical prompt", model).is_err());
+        assert!(read_audit(&audit, "canonical prompt", model, ReasoningEffort::Low).is_err());
         fs::write(audit.join("request.json"), original).unwrap();
         fs::write(audit.join("response.sse"), b"data: broken\n\n").unwrap();
-        assert!(read_audit(&audit, "canonical prompt", model).is_err());
+        assert!(read_audit(&audit, "canonical prompt", model, ReasoningEffort::Low).is_err());
     }
 }
 

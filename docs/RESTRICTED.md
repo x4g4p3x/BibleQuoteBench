@@ -29,12 +29,21 @@ same recorded stratified sampling as interactive trials. `--translation`,
 The default per-case timeout is 120 seconds; allowed values are 1–300 seconds.
 There is no fallback to another model or paid API endpoint.
 
+Reasoning effort defaults to `low`; `high`, `xhigh`, and `max` are also supported.
+For a model that supports extra-high effort, add
+`--reasoning-effort xhigh` to the `restricted` command. The operator fixes this
+setting for the entire run; it is recorded in the runner identity, canonical
+request audits, and response metadata. For example, a ten-case BSB trial can use
+`--model gpt-6.1-sol --reasoning-effort xhigh --case-limit 10 --timeout-seconds 300`.
+Use `max` instead when selecting the model's maximum supported reasoning effort.
+
 To resume, repeat the original arguments and add `--resume`. A completed run makes
 no further model requests. Failed, timed-out, or interrupted attempts remain
 blocked: their answers and subscription usage may be uncertain. Preserve those
 artifacts and use a fresh run ID for a new trial. Do not present a restarted
 trial as a continuation with missing failures omitted. Updating the Codex binary,
-model, timeout, instructions, selection, or dataset requires a new run ID.
+model, reasoning effort, timeout, instructions, selection, or dataset requires a new run ID.
+Old restricted identities without a reasoning field remain resumable as `low`.
 
 ## Connect desktop clients
 
@@ -48,6 +57,9 @@ cargo build --locked --release
 This adds `biblequotebench-restricted` and preserves the ordinary `biblequotebench`
 entry. Existing JSON settings are backed up. `-Preview` shows the registration
 without editing settings. Restart the clients or reload MCP connections.
+Use `-RestrictedReasoningEffort xhigh` when registering an extra-high-effort server.
+For direct MCP startup, use `--restricted-reasoning-effort xhigh`. MCP callers
+cannot override the operator-selected model or reasoning effort.
 
 Ask the orchestrating assistant:
 
@@ -72,7 +84,7 @@ conversation state are excluded. Retrieval features are also disabled.
 A loopback Responses gate receives the CLI's request and replaces the entire
 body with the canonical edition-pinned prompt and fixed recall instructions.
 The outgoing request has `tools: []`, `tool_choice: "none"`,
-`parallel_tool_calls: false`, no history, and low reasoning effort. Reference
+`parallel_tool_calls: false`, no history, and the operator-selected reasoning effort. Reference
 text is never included. The gate forwards only authentication/protocol headers
 to the fixed Codex subscription endpoint; HTTP redirects and ambient proxies
 are disabled. One local model-catalogue query is answered without an upstream
@@ -87,7 +99,7 @@ Attempts are checkpointed before launch and never automatically retried.
 
 Each trial retains the normal responses, scores, and reports, plus:
 
-- schema-three `restricted_codex` identity with executable and instruction hashes;
+- schema-three `restricted_codex` identity with reasoning effort, executable and instruction hashes;
 - per-case accepted or blocked attempt records;
 - canonical `gate/case-N/request.json` and raw `response.sse` audits;
 - response model identity, token usage, and typed refusals.

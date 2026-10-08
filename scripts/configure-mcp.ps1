@@ -7,6 +7,8 @@ param(
     # Optional fixed Codex model for server-side, tool-free subscription recall.
     [ValidatePattern('^[A-Za-z0-9_.-]{1,256}$')]
     [string]$RestrictedModel,
+    [ValidateSet('low', 'high', 'xhigh', 'max')]
+    [string]$RestrictedReasoningEffort = 'low',
     [string]$CodexBin = 'codex',
     [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')]
     [string]$RunIdPrefix,
@@ -57,7 +59,7 @@ foreach ($clientName in $Client) {
         $serverArguments += @('--run-id', "$RunIdPrefix-$clientName", '--model', $Model)
     }
     if ($RestrictedModel) {
-        $serverArguments += @('--restricted-model', $RestrictedModel, '--codex-bin', $CodexBin)
+        $serverArguments += @('--restricted-model', $RestrictedModel, '--restricted-reasoning-effort', $RestrictedReasoningEffort, '--codex-bin', $CodexBin)
     }
     $entry = @{ command = $executablePath; args = $serverArguments }
     if ($clientName -eq 'codex') {
