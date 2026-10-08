@@ -70,6 +70,23 @@ enum Command {
     },
     /// Validate translation metadata, cases, and reference-text coverage.
     Validate(DatasetPaths),
+    /// Serve local MCP tools for interactive trials without provider API calls.
+    Mcp {
+        #[command(flatten)]
+        dataset: DatasetPaths,
+        /// A unique local run label; restart with the same settings to resume.
+        #[arg(long)]
+        run_id: String,
+        /// Self-reported model label from the connected assistant.
+        #[arg(long)]
+        model: String,
+        #[arg(long, default_value = "results/mcp")]
+        output_dir: PathBuf,
+        #[arg(long)]
+        case_limit: Option<usize>,
+        #[arg(long)]
+        translation: Option<String>,
+    },
     /// Render the exact prompt for one benchmark case.
     Prompt {
         #[command(flatten)]
@@ -235,6 +252,29 @@ fn main() -> Result<()> {
             &hidden_seed_file,
         ),
         Command::Validate(paths) => validate_command(&paths),
+        Command::Mcp {
+            dataset: paths,
+            run_id,
+            model,
+            output_dir,
+            case_limit,
+            translation,
+        } => {
+            let dataset = load_dataset(&paths)?;
+            let mut server = biblequotebench::mcp::McpServer::open(
+                dataset.catalog,
+                dataset.cases,
+                dataset.references,
+                &biblequotebench::mcp::McpConfig {
+                    run_id,
+                    model,
+                    output_dir,
+                    case_limit,
+                    translation,
+                },
+            )?;
+            server.serve(std::io::stdin().lock(), std::io::stdout().lock())
+        }
         Command::Prompt {
             dataset: paths,
             case_id,

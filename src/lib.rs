@@ -9,6 +9,7 @@
 pub mod domain;
 pub mod importer;
 pub mod io;
+pub mod mcp;
 pub mod pilot;
 pub mod prompt;
 pub mod provider;

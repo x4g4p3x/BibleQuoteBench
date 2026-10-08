@@ -1,0 +1,94 @@
+#requires -Version 7.0
+[CmdletBinding()]
+param(
+    [ValidateSet('codex', 'claude', 'cursor')]
+    [string[]]$Client = @('codex'),
+    [string]$Model,
+    [ValidatePattern('^[A-Za-z0-9_-]{1,48}$')]
+    [string]$RunIdPrefix = 'interactive-01',
+    [ValidateRange(1, 100000)]
+    [int]$CaseLimit = 10,
+    [string]$Translation = 'bsb-2025-third-printing',
+    # Optional alternate JSON config path, for a single Claude or Cursor client.
+    [string]$ConfigPath,
+    # Print the new entry and destination without editing app settings.
+    [switch]$Preview
+)
+
+$ErrorActionPreference = 'Stop'
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$executableName = if ($IsWindows) { 'biblequotebench.exe' } else { 'biblequotebench' }
+$executablePath = Join-Path $projectRoot "target/release/$executableName"
+if (-not (Test-Path -LiteralPath $executablePath)) {
+    throw 'Build the server first with: cargo build --locked --release'
+}
+if ($ConfigPath -and ($Client.Count -ne 1 -or $Client[0] -eq 'codex')) {
+    throw '-ConfigPath requires one Claude or Cursor client.'
+}
+if ($Model -and [string]::IsNullOrWhiteSpace($Model)) {
+    throw '-Model must be a nonempty label.'
+}
+
+foreach ($clientName in $Client) {
+    $modelLabel = if ($Model) { $Model } else { "$clientName (model unspecified)" }
+    $serverArguments = @(
+        'mcp', '--run-id', "$RunIdPrefix-$clientName", '--model', $modelLabel,
+        '--case-limit', "$CaseLimit", '--translation', $Translation,
+        '--translations', (Join-Path $projectRoot 'data/dev/translations.json'),
+        '--cases', (Join-Path $projectRoot 'data/dev/cases.jsonl'),
+        '--references', (Join-Path $projectRoot 'data/dev/references.jsonl'),
+        '--output-dir', (Join-Path $projectRoot 'results/mcp')
+    )
+    $entry = @{ command = $executablePath; args = $serverArguments }
+    if ($clientName -eq 'codex') {
+        if ($Preview) {
+            Write-Output 'Codex: server biblequotebench in the shared Codex configuration'
+            $entry | ConvertTo-Json -Depth 10
+            continue
+        }
+        & codex mcp add biblequotebench -- $executablePath @serverArguments
+        if ($LASTEXITCODE -ne 0) { throw 'Codex MCP registration failed.' }
+        Write-Output 'Configured BibleQuoteBench for Codex. Reload its MCP connections or restart the app.'
+        continue
+    }
+    $destination = if ($ConfigPath) {
+        [System.IO.Path]::GetFullPath($ConfigPath)
+    } elseif ($clientName -eq 'cursor') {
+        Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cursor/mcp.json'
+    } elseif ($IsWindows) {
+        $storeConfigs = @(Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'Claude_*' -ErrorAction SilentlyContinue |
+            ForEach-Object { Join-Path $_.FullName 'LocalCache/Roaming/Claude/claude_desktop_config.json' } |
+            Where-Object { Test-Path -LiteralPath (Split-Path -Parent $_) })
+        if ($storeConfigs.Count -gt 1) { throw 'Multiple Claude Store profiles found; choose one with -ConfigPath.' }
+        if ($storeConfigs.Count -eq 1) { $storeConfigs[0] } else {
+            Join-Path $env:APPDATA 'Claude/claude_desktop_config.json'
+        }
+    } elseif ($IsMacOS) {
+        Join-Path ([Environment]::GetFolderPath('UserProfile')) 'Library/Application Support/Claude/claude_desktop_config.json'
+    } else {
+        throw 'Use -ConfigPath to specify the Claude Desktop configuration location.'
+    }
+    if ($Preview) {
+        Write-Output "$clientName`: $destination"
+        @{ mcpServers = @{ biblequotebench = $entry } } | ConvertTo-Json -Depth 10
+        continue
+    }
+    $settings = if (Test-Path -LiteralPath $destination) {
+        Get-Content -LiteralPath $destination -Raw | ConvertFrom-Json -AsHashtable
+    } else { @{} }
+    if ($settings -isnot [System.Collections.IDictionary]) { throw 'App configuration must be a JSON object.' }
+    if (-not $settings.Contains('mcpServers')) { $settings['mcpServers'] = @{} }
+    if ($settings['mcpServers'] -isnot [System.Collections.IDictionary]) { throw 'mcpServers must be a JSON object.' }
+    $settings['mcpServers']['biblequotebench'] = $entry
+    $parentDirectory = Split-Path -Parent $destination
+    [System.IO.Directory]::CreateDirectory($parentDirectory) | Out-Null
+    if (Test-Path -LiteralPath $destination) {
+        $backup = "$destination.bqb-backup.$(Get-Date -Format 'yyyyMMdd-HHmmss-fffffff')"
+        Copy-Item -LiteralPath $destination -Destination $backup
+        Write-Output "Saved original configuration: $backup"
+    }
+    $temporary = "$destination.bqb-tmp"
+    [System.IO.File]::WriteAllText($temporary, ($settings | ConvertTo-Json -Depth 100))
+    Move-Item -LiteralPath $temporary -Destination $destination -Force
+    Write-Output "Configured BibleQuoteBench for $clientName at $destination. Restart the app."
+}

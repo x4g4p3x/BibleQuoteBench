@@ -31,6 +31,9 @@ reference text ─────────────────────�
   metadata and per-case failures.
 - `execution` locks a shared campaign budget, reserves each request, and saves
   resumable checkpoints with token and completion accounting.
+- `mcp` serves local interactive trials, issuing prompts and durably retaining
+  immutable assistant answers without invoking model APIs. It withholds scores
+  until completion and labels this evidence separately from provider execution.
 - `scoring` implements the normative exact and edit-distance metrics.
 - `report` produces grouped summaries, translation resemblance, and stability.
 - `study` binds complete runs to manifests and rejects incomparable observations.
@@ -66,6 +69,12 @@ tools, retrieval, browsing, or conversation history. The separate copy-control
 track explicitly supplies reference text in a marked prompt section. The
 execution and analysis paths reject mixed tracks; loopback tests verify this
 boundary in actual request bodies.
+
+The optional [MCP workflow](MCP.md) carries prompts through a connected assistant
+instead of stateless provider requests. It keeps reference text inside the
+evaluator but cannot enforce conversation isolation or prohibit other client
+tools. Its `interactive_mcp` trials have separate metadata and descriptive reports;
+they are not accepted as controlled provider evidence by `analyze`.
 
 The pre-commit and CI publication guards inspect Git-indexed bytes rather than
 only working-tree filenames. They are defense in depth; evaluator hosts must also

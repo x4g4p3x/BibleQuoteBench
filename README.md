@@ -64,6 +64,11 @@ Fable validation preview is offline and keeps spending disabled:
 ./scripts/preview-fable-pilot.ps1
 ```
 
+For interactive trials in Codex desktop, Claude Desktop, or Cursor without
+benchmark provider API calls, use the [local MCP server](docs/MCP.md). It saves
+answers and scores locally; the client app's normal usage limits still apply.
+Interactive evidence is kept distinct from controlled closed-book provider runs.
+
 Run the quality gates with:
 
 ```console
