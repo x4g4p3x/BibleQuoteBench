@@ -76,6 +76,8 @@ It includes the submitted answers, reproducible scores, four downloadable charts
 and an offline case explorer. This small interactive diagnostic is separate from
 the synthetic pilot and the held paid GPT-6 pilot. See the
 [observed trial archive](docs/trials/README.md) for evidence boundaries.
+The [client and token accounting guide](docs/TOKEN-USAGE.md) explains the Cursor
+MCP and restricted Codex paths, usage coverage and limits of token comparisons.
 
 For answers isolated from the desktop conversation and its retrieval tools, use
 the [restricted subscription runner](docs/RESTRICTED.md):

@@ -6,6 +6,12 @@ they are descriptive diagnostics with client and conversation limitations.
 They are separate from the [constructed v0.2 pilot](../pilot/v0.2/README.md),
 controlled provider comparisons, and the [restricted Codex runner](../RESTRICTED.md).
 
+For subscription runs, disclose the answering client and tool restrictions with
+every result. See [client paths and token accounting](../TOKEN-USAGE.md) for
+usage coverage, account-export reconciliation and comparison limits. Full
+300-case answer archives and their aggregate token reports are kept in the
+private evaluator repository.
+
 | Date | Requested model and client | Edition | Cases | ExactText / ExactWords | Mean word accuracy | Report |
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | 2026-10-08 | Grok 4.7 xHigh, Fast off; Cursor CLI | BSB 2025 third printing | 10 | 20% / 20% | 79.49% | [Methodology and results](2026-10-08-grok47-xhigh-cursor/README.md) |
