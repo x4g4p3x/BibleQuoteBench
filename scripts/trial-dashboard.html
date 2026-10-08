@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Grok 4.7 xHigh · First Cursor recall trial</title>
+<style>
+:root{--bg:#f3f6f8;--panel:#fff;--ink:#172d3c;--muted:#536877;--line:#d5dfe5;--accent:#147d74;--error:#a24627;--highlight:#fff0d8;--shadow:0 8px 28px #172d3c09}
+body.dark{--bg:#101a24;--panel:#1a2835;--ink:#e7f0f5;--muted:#abc0ce;--line:#425666;--accent:#79d0c4;--error:#ffb494;--highlight:#493d2c;--shadow:none}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif}main{max-width:1250px;margin:auto;padding:32px 24px 64px}a{color:var(--accent)}h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.15;margin:12px 0}h2{font-size:1.5rem;margin:0 0 16px}h3{margin:0 0 8px}p{margin:8px 0 16px}.muted{color:var(--muted)}.eyebrow{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.8rem}.topline{display:flex;justify-content:space-between;align-items:center;gap:16px}.tag{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:3px 12px;font-size:.85rem;margin:4px 4px 4px 0}.lead{max-width:900px;font-size:1.1rem}.notice{border-left:4px solid var(--accent);padding:12px 20px;background:var(--panel);border-radius:4px;margin:24px 0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.card,.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.card{padding:20px}.card strong{display:block;font-size:2.4rem;line-height:1.2;margin:6px 0}.section{padding:24px;margin-top:24px}.plot{background:#fff;border-radius:8px;overflow:hidden;color:#172d3c;margin-top:12px}.plot svg{width:100%;height:auto;display:block}.downloads{font-size:.9rem;margin-top:10px}.filters{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px}.filters label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;flex:1;min-width:150px}input,select,button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 12px}button{cursor:pointer}button:hover{border-color:var(--accent)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.explorer{display:grid;grid-template-columns:minmax(250px,1fr) minmax(0,1.8fr);gap:24px}.case-list{display:flex;flex-direction:column;gap:8px}.case-button{text-align:left;padding:12px;line-height:1.35}.case-button[aria-pressed=true]{border:2px solid var(--accent);padding:11px}.case-button small{display:block;color:var(--muted);margin-top:4px}.meter{height:5px;background:var(--line);margin-top:10px;border-radius:5px;overflow:hidden}.meter span{display:block;height:100%;background:var(--accent)}.partial .meter span{background:var(--error)}.detail{min-width:0}.detail dl{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.detail dl div{border:1px solid var(--line);border-radius:8px;padding:10px}.detail dt{font-size:.8rem;color:var(--muted)}.detail dd{margin:0;font-weight:700}.passage{padding:16px;border:1px solid var(--line);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.passage .changed{background:var(--highlight);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;border-radius:2px}.case-id{font-size:.8rem;overflow-wrap:anywhere}.empty{padding:20px;border:1px dashed var(--line);border-radius:8px}.foot{margin-top:32px;color:var(--muted);font-size:.9rem}.small{font-size:.9rem}
+@media(max-width:760px){main{padding:20px 14px 40px}.cards{grid-template-columns:1fr}.card strong{font-size:2rem}.section{padding:16px}.explorer{grid-template-columns:1fr}.detail dl{grid-template-columns:repeat(2,1fr)}.topline{align-items:flex-start}.plot{overflow-x:auto}.plot svg{min-width:680px}.case-list{max-height:380px;overflow:auto}}
+@media print{body,body.dark{--bg:#fff;--panel:#fff;--ink:#172d3c;--muted:#536877;--line:#d5dfe5;--accent:#147d74;--error:#a24627;--highlight:#fff0d8}main{max-width:none;padding:0}.filters,#theme,.downloads{display:none}.section,.card{box-shadow:none;break-inside:avoid}.plot svg{min-width:0}.explorer{grid-template-columns:1fr}.case-list{display:none}.foot{font-size:9pt}}
+</style>
+</head>
+<body>
+<main>
+<div class="topline"><span class="eyebrow">BibleQuoteBench · Trial archive</span><button id="theme" type="button" aria-pressed="false">Dark appearance</button></div>
+<h1>Grok 4.7 xHigh: first Cursor recall trial</h1>
+<p class="lead">Two of ten passages matched the requested Bible edition exactly. Mean word accuracy was 79.49%, with errors ranging from one missing word to substantial wording changes.</p>
+<div><span class="tag">8 October 2026</span><span class="tag">Fast off</span><span class="tag">BSB 2025 third printing</span><span class="tag">Interactive MCP · n = 10</span></div>
+<div class="notice"><strong>Read this as a diagnostic sample.</strong> These ten public development cases were answered in one shared Cursor conversation. No retrieval tools were observed; service-side tool restrictions and the resolved model were not independently verified. This is not a controlled model comparison or a population estimate.</div>
+<div class="cards">
+<div class="card"><span>Exact passage recall</span><strong>20%</strong><span class="muted">2 / 10 · ExactText and ExactWords</span></div>
+<div class="card"><span>Mean word accuracy</span><strong>79.49%</strong><span class="muted">Average of ten per-case scores</span></div>
+<div class="card"><span>Partial passages</span><strong>8 / 10</strong><span class="muted">70 word edits · 0 refusals</span></div>
+</div>
+<p><a href="README.md">Full methodology and interpretation</a> · <a href="case-metrics.csv">Case metrics (CSV)</a> · <a href="provenance.json">Sanitized provenance</a> · <a href="scores.jsonl">Scored records</a></p>
+<section class="section" aria-labelledby="outcome-title"><h2 id="outcome-title">Exact recall and approximate wording measure different things</h2><p class="muted">The headline rates always describe all ten passages, even when the explorer below is filtered.</p><div class="plot" role="img" aria-label="Two exact passages and eight partial passages out of ten">@@OUTCOMES@@</div><p class="downloads">Download <a href="figures/outcomes.svg">SVG</a> · <a href="figures/outcomes.png">PNG</a></p></section>
+<section class="section" aria-labelledby="accuracy-title"><h2 id="accuracy-title">Every passage, in presentation order</h2><div class="plot" role="img" aria-label="Per-case word accuracy with an overall mean of 79.49 percent">@@CASE_ACCURACY@@</div><p class="downloads">Download <a href="figures/case-accuracy.svg">SVG</a> · <a href="figures/case-accuracy.png">PNG</a></p></section>
+<section class="section" aria-labelledby="explore-title">
+<h2 id="explore-title">Inspect the recalled wording</h2>
+<p class="muted">Select a passage to compare the actual submitted answer with the requested BSB reference. Underlined highlights mark an illustrative whitespace-word difference; the saved Rust scores use the normative scoring rules.</p>
+<div class="filters">
+<label>Search reference or wording<input id="search" type="search" placeholder="For example, Matthew or even"></label>
+<label>Stratum<select id="stratum"><option value="all">All strata</option></select></label>
+<label>Outcome<select id="outcome"><option value="all">All outcomes</option><option value="exact_requested">Exact</option><option value="partial">Partial</option></select></label>
+<label>List metric<select id="metric"><option value="word_accuracy">Word accuracy</option><option value="word_error_rate">Word error rate</option><option value="character_error_rate">Character error rate</option></select></label>
+</div>
+<p><span id="count" role="status" aria-live="polite"></span> <button id="reset" type="button">Reset filters</button></p>
+<div class="explorer"><div class="case-list" id="case-list" aria-label="Passages"></div><article class="detail" id="detail" aria-label="Selected passage"></article></div>
+<noscript><p>Enable JavaScript to use the case explorer. All charts remain visible, and the <a href="README.md">full report</a> and <a href="responses.jsonl">submitted answers</a> contain the underlying results.</p></noscript>
+</section>
+<section class="section" aria-labelledby="edits-title"><h2 id="edits-title">Where the word errors occur</h2><div class="plot" role="img" aria-label="Twenty-four insertions, ten deletions and thirty-six substitutions across ten passages">@@WORD_EDITS@@</div><p class="downloads">Download <a href="figures/word-edits.svg">SVG</a> · <a href="figures/word-edits.png">PNG</a></p></section>
+<section class="section" aria-labelledby="diagnostics-title"><h2 id="diagnostics-title">Sparse strata and edition resemblance</h2><p class="muted">Five strata contain one passage each; the random stratum contains five. One answer was closer to ASV and one to WEB, but neither matched an alternative edition exactly.</p><div class="plot" role="img" aria-label="Six sampled strata; two exact BSB, one closer ASV, one closer WEB and six unclassified errors">@@DIAGNOSTICS@@</div><p class="downloads">Download <a href="figures/diagnostics.svg">SVG</a> · <a href="figures/diagnostics.png">PNG</a></p></section>
+<section class="section"><h2>Execution and evidence</h2><p>The CLI selected <strong>Grok 4.7 256K Extra High</strong>, with <strong>Fast = false</strong>. The successful launch took 439.25 seconds and reported 11,099 input tokens, 5,214 output tokens and 320,000 cache-read tokens. These are launch-level usage figures; no per-case token usage or price was verified.</p><p>No paid provider API calls were made. Cursor account usage was consumed. Local permissions denied web, shell and file tools; the transcript showed only benchmark calls and their schema discovery. The evidence remains <code>interactive_mcp</code>, with an unresolved service model identity.</p><p>Raw thinking, account metadata, session identifiers and local paths remain private. The public bundle contains the submitted answers, the reference subset, scores and sanitized provenance. See the <a href="README.md">report</a> for the initial guard interruption, audit details, digest scope and reproduction instructions.</p></section>
+<p class="foot">Run: grok47-xhigh-cursor-20261008-01 · BibleQuoteBench 0.2.0 · This file works offline without a server or external resources. Printing includes the currently selected passage; the full report documents every case.</p>
+</main>
+<script type="application/json" id="trial-data">@@TRIAL_DATA@@</script>
+<script>
+"use strict";
+const data = JSON.parse(document.getElementById("trial-data").textContent);
+const byId = id => document.getElementById(id);
+const controls = ["search", "stratum", "outcome", "metric"].map(byId);
+let selected = data.rows[0].case_id;
+const human = text => text.replaceAll("_", " ");
+const percent = value => `${(value * 100).toFixed(2)}%`;
+function node(tag, text, className) {const element = document.createElement(tag); if (text !== undefined) element.textContent = text; if (className) element.className = className; return element;}
+for (const stratum of [...new Set(data.rows.map(row => row.stratum))].sort()) {const option = node("option", human(stratum)); option.value = stratum; byId("stratum").append(option);}
+function passage(tokens) {const element = node("div", undefined, "passage"); tokens.forEach((token, index) => {if (index) element.append(document.createTextNode(" ")); element.append(node("span", token.word, token.changed ? "changed" : ""));}); return element;}
+function showDetail(row) {
+ const detail = byId("detail"); detail.replaceChildren();
+ if (!row) {detail.append(node("p", "No passages match these filters.", "empty")); return;}
+ detail.append(node("h3", row.label), node("p", `${row.exact_text ? "Exact" : "Partial"} · ${human(row.stratum)}`, "muted"), node("p", row.case_id, "case-id"));
+ const metrics = node("dl");
+ for (const [label, value] of [["Word accuracy", percent(row.word_accuracy)], ["WER", percent(row.word_error_rate)], ["CER", percent(row.character_error_rate)], ["Insertions", row.insertions], ["Deletions", row.deletions], ["Substitutions", row.substitutions]]) {const pair = node("div"); pair.append(node("dt", label), node("dd", value)); metrics.append(pair);}
+ detail.append(metrics, node("h3", "Expected · BSB 2025 third printing"), passage(row.alignment.expected), node("h3", "Submitted · Grok 4.7 xHigh"), passage(row.alignment.output));
+ let destination = "Unclassified error";
+ if (row.exact_text) destination = "Exact requested BSB";
+ else if (row.closest_translation === "asv-1901") destination = "Closer to ASV (approximate)";
+ else if (row.closest_translation === "web-classic-2020") destination = "Closer to WEB (approximate)";
+ detail.append(node("p", `ExactText: ${row.exact_text ? "yes" : "no"} · ExactWords: ${row.exact_words ? "yes" : "no"} · ${row.reference_words} reference words`, "small"), node("p", `Resemblance: ${destination}. No exact alternative-edition matches were observed in this trial.`, "small"));
+}
+function render() {
+ const query = byId("search").value.trim().toLocaleLowerCase();
+ const rows = data.rows.filter(row => (byId("stratum").value === "all" || row.stratum === byId("stratum").value) && (byId("outcome").value === "all" || row.classification === byId("outcome").value) && `${row.label} ${row.expected} ${row.output}`.toLocaleLowerCase().includes(query));
+ if (!rows.some(row => row.case_id === selected)) selected = rows[0]?.case_id;
+ byId("count").textContent = `${rows.length} of ${data.rows.length} passages shown.`;
+ const list = byId("case-list"); list.replaceChildren();
+ for (const row of rows) {
+  const metric = byId("metric").value;
+  const button = node("button", undefined, `case-button ${row.exact_text ? "exact" : "partial"}`); button.type = "button"; button.setAttribute("aria-pressed", String(row.case_id === selected));
+  button.append(node("strong", `${String(row.order).padStart(2, "0")} · ${row.label}`), node("small", `${row.exact_text ? "Exact" : "Partial"} · ${percent(row[metric])} ${human(metric)}`));
+  const meter = node("div", undefined, "meter"); meter.setAttribute("aria-hidden", "true"); const fill = node("span"); fill.style.width = `${Math.min(100, row[metric] * 100)}%`; meter.append(fill); button.append(meter);
+  button.addEventListener("click", () => {selected = row.case_id; for (const candidate of list.children) candidate.setAttribute("aria-pressed", String(candidate === button)); showDetail(row);});
+  list.append(button);
+ }
+ showDetail(rows.find(row => row.case_id === selected));
+}
+controls.forEach(control => control.addEventListener(control.id === "search" ? "input" : "change", render));
+byId("reset").addEventListener("click", () => {byId("search").value = ""; byId("stratum").value = "all"; byId("outcome").value = "all"; byId("metric").value = "word_accuracy"; render();});
+byId("theme").addEventListener("click", () => {const dark = document.body.classList.toggle("dark"); byId("theme").setAttribute("aria-pressed", String(dark)); byId("theme").textContent = dark ? "Light appearance" : "Dark appearance";});
+render();
+</script>
+</body>
+</html>

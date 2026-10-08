@@ -1,0 +1,156 @@
+{
+  "overall": {
+    "responses": 10,
+    "exact_text_rate": 0.2,
+    "exact_words_rate": 0.2,
+    "mean_word_accuracy": 0.794896849854477,
+    "mean_word_error_rate": 0.20510315014552302,
+    "mean_character_error_rate": 0.16080798933817725,
+    "refusal_rate": 0.0,
+    "provider_error_rate": 0.0,
+    "extraneous_text_rate": 0.0,
+    "translation_confusion_rate": 0.0,
+    "classifications": {
+      "exact_requested": 2,
+      "partial": 8
+    }
+  },
+  "by_model": {
+    "interactive_mcp / grok-4.7-xhigh / unresolved": {
+      "responses": 10,
+      "exact_text_rate": 0.2,
+      "exact_words_rate": 0.2,
+      "mean_word_accuracy": 0.794896849854477,
+      "mean_word_error_rate": 0.20510315014552302,
+      "mean_character_error_rate": 0.16080798933817725,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "exact_requested": 2,
+        "partial": 8
+      }
+    }
+  },
+  "by_translation": {
+    "bsb-2025-third-printing": {
+      "responses": 10,
+      "exact_text_rate": 0.2,
+      "exact_words_rate": 0.2,
+      "mean_word_accuracy": 0.794896849854477,
+      "mean_word_error_rate": 0.20510315014552302,
+      "mean_character_error_rate": 0.16080798933817725,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "exact_requested": 2,
+        "partial": 8
+      }
+    }
+  },
+  "by_stratum": {
+    "extremely_famous": {
+      "responses": 1,
+      "exact_text_rate": 1.0,
+      "exact_words_rate": 1.0,
+      "mean_word_accuracy": 1.0,
+      "mean_word_error_rate": 0.0,
+      "mean_character_error_rate": 0.0,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "exact_requested": 1
+      }
+    },
+    "long_verse": {
+      "responses": 1,
+      "exact_text_rate": 0.0,
+      "exact_words_rate": 0.0,
+      "mean_word_accuracy": 0.5593220338983051,
+      "mean_word_error_rate": 0.4406779661016949,
+      "mean_character_error_rate": 0.3395638629283489,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "partial": 1
+      }
+    },
+    "random": {
+      "responses": 5,
+      "exact_text_rate": 0.0,
+      "exact_words_rate": 0.0,
+      "mean_word_accuracy": 0.7412626262626263,
+      "mean_word_error_rate": 0.25873737373737377,
+      "mean_character_error_rate": 0.2015819939694726,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "partial": 5
+      }
+    },
+    "short_verse": {
+      "responses": 1,
+      "exact_text_rate": 0.0,
+      "exact_words_rate": 0.0,
+      "mean_word_accuracy": 0.75,
+      "mean_word_error_rate": 0.25,
+      "mean_character_error_rate": 0.2,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "partial": 1
+      }
+    },
+    "translation_sensitive": {
+      "responses": 1,
+      "exact_text_rate": 1.0,
+      "exact_words_rate": 1.0,
+      "mean_word_accuracy": 1.0,
+      "mean_word_error_rate": 0.0,
+      "mean_character_error_rate": 0.0,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "exact_requested": 1
+      }
+    },
+    "well_known": {
+      "responses": 1,
+      "exact_text_rate": 0.0,
+      "exact_words_rate": 0.0,
+      "mean_word_accuracy": 0.9333333333333333,
+      "mean_word_error_rate": 0.06666666666666667,
+      "mean_character_error_rate": 0.06060606060606061,
+      "refusal_rate": 0.0,
+      "provider_error_rate": 0.0,
+      "extraneous_text_rate": 0.0,
+      "translation_confusion_rate": 0.0,
+      "classifications": {
+        "partial": 1
+      }
+    }
+  },
+  "requested_to_resembles": {
+    "bsb-2025-third-printing": {
+      "_unclassified": 6,
+      "asv-1901": 1,
+      "bsb-2025-third-printing": 2,
+      "web-classic-2020": 1
+    }
+  },
+  "exact_alternative_matches": {},
+  "stability": {}
+}

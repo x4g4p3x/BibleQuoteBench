@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "run_id": "grok47-xhigh-cursor-20261008-01",
+  "evidence": "interactive_mcp",
+  "source_commit": "2cde230ee8b84986415b7646136bbb3d17e5e650",
+  "engine_version": "0.2.0",
+  "started_utc": "2026-10-08T11:12:49+00:00",
+  "finished_utc_approximate": "2026-10-08T11:20:08.250000+00:00",
+  "client_timezone": "Europe/Berlin",
+  "elapsed_seconds": 439.25,
+  "cli_version": "2026.10.01-e373342",
+  "cli_bundle_sha256": "0e7e28c34e050c6b83fe574e1fefa8d95d7c80bea6c4a4d3ae2726e5191243ef",
+  "model_selection": {
+    "modelId": "grok-4.7",
+    "parameters": [
+      {
+        "id": "context",
+        "value": "256k"
+      },
+      {
+        "id": "reasoning_effort",
+        "value": "xhigh"
+      },
+      {
+        "id": "fast",
+        "value": "false"
+      }
+    ]
+  },
+  "cli_model_label": "Grok 4.7 256K Extra High",
+  "service_resolved_model": null,
+  "authentication": "Cursor browser login",
+  "provider_api_keys_supplied": false,
+  "paid_provider_api_calls": 0,
+  "cursor_usage_consumed": true,
+  "cursor_result_usage": {
+    "inputTokens": 11099,
+    "outputTokens": 5214,
+    "cacheReadTokens": 320000,
+    "cacheWriteTokens": 0
+  },
+  "cursor_usage_scope": "CLI-reported aggregate for successful launch; initial aborted launch usage unknown",
+  "usage_cost": null,
+  "selection": {
+    "case_limit": 10,
+    "method": "stratified_reference_v1",
+    "seed": "BibleQuoteBench/MCP/stratified-v1",
+    "translation": "bsb-2025-third-printing"
+  },
+  "permissions": {
+    "allow": [
+      "Mcp(biblequotebench:benchmark_status)",
+      "Mcp(biblequotebench:next_case)",
+      "Mcp(biblequotebench:submit_answer)",
+      "Mcp(biblequotebench:finish_run)"
+    ],
+    "deny": [
+      "Shell(*)",
+      "Read(**)",
+      "Write(**)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Mcp(biblequotebench:begin_trial)",
+      "Mcp(biblequotebench:resume_trial)"
+    ]
+  },
+  "orchestration_instructions": "Run the already-started BibleQuoteBench trial using only the biblequotebench MCP server.\nThe fixed run ID is grok47-xhigh-cursor-20261008-01, model label grok-4.7-xhigh, ten cases, BSB 2025 third printing.\nFirst call benchmark_status and verify those settings. Do not call begin_trial or resume_trial.\nThen call next_case. Read its prompt and answer the quotation from your internal recall only, following its exact edition and output requirements.\nCall submit_answer with the issued case_id and only the raw passage text in output. Do not add labels, quotation fences, explanations, or a claim of uncertainty. If you cannot recall any passage text, submit an empty output. Never replace or revise an accepted answer.\nRepeat next_case and submit_answer until next_case says complete, then call finish_run and report the aggregate summary.\nOnly benchmark_status, next_case, submit_answer, and finish_run are permitted. Tool discovery for this server is permitted if needed.\nDo not browse, search the web, fetch URLs, read files, inspect directories, use shell commands, delegate, or call other tools. Do not retrieve Bible verses from anywhere. The reference corpus is evaluator-only. Do not use any Codex answering tool.\nAll ten answers must be submitted before requesting scores. Proceed through all cases in this turn.",
+  "tool_counts_by_unique_call_id": {
+    "benchmark_tool_discovery": 1,
+    "benchmark_status": 1,
+    "next_case": 11,
+    "submit_answer": 10,
+    "finish_run": 1
+  },
+  "tool_start_events_before_deduplication": {
+    "getMcpToolsToolCall": 1,
+    "mcpToolCall": 24
+  },
+  "repeated_tool_start_events": 1,
+  "non_benchmark_tool_calls_observed": 0,
+  "submitted_outputs_match_checkpoint": true,
+  "independent_rescoring_matches": true,
+  "private_transcript_sha256": "2cb1567dc9be8c8b9b60a05c2fdf44074fdd6259d0430825193f601230bea863",
+  "aborted_launch": {
+    "reason": "transcript guard mistook envelope metadata for tools during allowed schema discovery",
+    "benchmark_cases_issued": 0,
+    "benchmark_answers_submitted": 0,
+    "records_preserved": true
+  },
+  "temporary_workspace_cleanup": "blocked by automatic approval policy; workspace retained locally",
+  "privacy": "Raw thinking, session/request IDs, account metadata, local paths, and temporary client files remain private.",
+  "reference_corpus_scope": "30 public-domain records: BSB/ASV/WEB for ten selected references; original trial reference commitment covers the full development corpus",
+  "limitations": [
+    "Cursor subscription usage was consumed",
+    "service-side behavior and resolved model are not independently verified",
+    "no authoritative zero-tool request gate for Grok",
+    "shared Cursor conversation context",
+    "ten-case BSB diagnostic sample; not a population estimate"
+  ]
+}

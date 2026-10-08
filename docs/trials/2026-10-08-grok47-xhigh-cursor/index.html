@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Grok 4.7 xHigh · First Cursor recall trial</title>
+<style>
+:root{--bg:#f3f6f8;--panel:#fff;--ink:#172d3c;--muted:#536877;--line:#d5dfe5;--accent:#147d74;--error:#a24627;--highlight:#fff0d8;--shadow:0 8px 28px #172d3c09}
+body.dark{--bg:#101a24;--panel:#1a2835;--ink:#e7f0f5;--muted:#abc0ce;--line:#425666;--accent:#79d0c4;--error:#ffb494;--highlight:#493d2c;--shadow:none}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif}main{max-width:1250px;margin:auto;padding:32px 24px 64px}a{color:var(--accent)}h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.15;margin:12px 0}h2{font-size:1.5rem;margin:0 0 16px}h3{margin:0 0 8px}p{margin:8px 0 16px}.muted{color:var(--muted)}.eyebrow{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.8rem}.topline{display:flex;justify-content:space-between;align-items:center;gap:16px}.tag{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:3px 12px;font-size:.85rem;margin:4px 4px 4px 0}.lead{max-width:900px;font-size:1.1rem}.notice{border-left:4px solid var(--accent);padding:12px 20px;background:var(--panel);border-radius:4px;margin:24px 0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}.card,.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.card{padding:20px}.card strong{display:block;font-size:2.4rem;line-height:1.2;margin:6px 0}.section{padding:24px;margin-top:24px}.plot{background:#fff;border-radius:8px;overflow:hidden;color:#172d3c;margin-top:12px}.plot svg{width:100%;height:auto;display:block}.downloads{font-size:.9rem;margin-top:10px}.filters{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px}.filters label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;flex:1;min-width:150px}input,select,button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 12px}button{cursor:pointer}button:hover{border-color:var(--accent)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.explorer{display:grid;grid-template-columns:minmax(250px,1fr) minmax(0,1.8fr);gap:24px}.case-list{display:flex;flex-direction:column;gap:8px}.case-button{text-align:left;padding:12px;line-height:1.35}.case-button[aria-pressed=true]{border:2px solid var(--accent);padding:11px}.case-button small{display:block;color:var(--muted);margin-top:4px}.meter{height:5px;background:var(--line);margin-top:10px;border-radius:5px;overflow:hidden}.meter span{display:block;height:100%;background:var(--accent)}.partial .meter span{background:var(--error)}.detail{min-width:0}.detail dl{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.detail dl div{border:1px solid var(--line);border-radius:8px;padding:10px}.detail dt{font-size:.8rem;color:var(--muted)}.detail dd{margin:0;font-weight:700}.passage{padding:16px;border:1px solid var(--line);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.passage .changed{background:var(--highlight);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;border-radius:2px}.case-id{font-size:.8rem;overflow-wrap:anywhere}.empty{padding:20px;border:1px dashed var(--line);border-radius:8px}.foot{margin-top:32px;color:var(--muted);font-size:.9rem}.small{font-size:.9rem}
+@media(max-width:760px){main{padding:20px 14px 40px}.cards{grid-template-columns:1fr}.card strong{font-size:2rem}.section{padding:16px}.explorer{grid-template-columns:1fr}.detail dl{grid-template-columns:repeat(2,1fr)}.topline{align-items:flex-start}.plot{overflow-x:auto}.plot svg{min-width:680px}.case-list{max-height:380px;overflow:auto}}
+@media print{body,body.dark{--bg:#fff;--panel:#fff;--ink:#172d3c;--muted:#536877;--line:#d5dfe5;--accent:#147d74;--error:#a24627;--highlight:#fff0d8}main{max-width:none;padding:0}.filters,#theme,.downloads{display:none}.section,.card{box-shadow:none;break-inside:avoid}.plot svg{min-width:0}.explorer{grid-template-columns:1fr}.case-list{display:none}.foot{font-size:9pt}}
+</style>
+</head>
+<body>
+<main>
+<div class="topline"><span class="eyebrow">BibleQuoteBench · Trial archive</span><button id="theme" type="button" aria-pressed="false">Dark appearance</button></div>
+<h1>Grok 4.7 xHigh: first Cursor recall trial</h1>
+<p class="lead">Two of ten passages matched the requested Bible edition exactly. Mean word accuracy was 79.49%, with errors ranging from one missing word to substantial wording changes.</p>
+<div><span class="tag">8 October 2026</span><span class="tag">Fast off</span><span class="tag">BSB 2025 third printing</span><span class="tag">Interactive MCP · n = 10</span></div>
+<div class="notice"><strong>Read this as a diagnostic sample.</strong> These ten public development cases were answered in one shared Cursor conversation. No retrieval tools were observed; service-side tool restrictions and the resolved model were not independently verified. This is not a controlled model comparison or a population estimate.</div>
+<div class="cards">
+<div class="card"><span>Exact passage recall</span><strong>20%</strong><span class="muted">2 / 10 · ExactText and ExactWords</span></div>
+<div class="card"><span>Mean word accuracy</span><strong>79.49%</strong><span class="muted">Average of ten per-case scores</span></div>
+<div class="card"><span>Partial passages</span><strong>8 / 10</strong><span class="muted">70 word edits · 0 refusals</span></div>
+</div>
+<p><a href="README.md">Full methodology and interpretation</a> · <a href="case-metrics.csv">Case metrics (CSV)</a> · <a href="provenance.json">Sanitized provenance</a> · <a href="scores.jsonl">Scored records</a></p>
+<section class="section" aria-labelledby="outcome-title"><h2 id="outcome-title">Exact recall and approximate wording measure different things</h2><p class="muted">The headline rates always describe all ten passages, even when the explorer below is filtered.</p><div class="plot" role="img" aria-label="Two exact passages and eight partial passages out of ten"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="648pt" height="273.6pt" viewBox="0 0 648 273.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="outcomes-figure_1">
+  <g id="outcomes-patch_1">
+   <path d="M 0 273.6
+L 648 273.6
+L 648 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="outcomes-axes_1">
+   <g id="outcomes-patch_2">
+    <path d="M 142.56 207.936
+L 602.64 207.936
+L 602.64 68.4
+L 142.56 68.4
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="outcomes-matplotlib.axis_1">
+    <g id="outcomes-xtick_1">
+     <g id="outcomes-line2d_1">
+      <path d="M 142.56 207.936
+L 142.56 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_2"/>
+     <g id="outcomes-text_1">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="142.56" y="224.293422" transform="rotate(-0 142.56 224.293422)">0</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_2">
+     <g id="outcomes-line2d_3">
+      <path d="M 188.568 207.936
+L 188.568 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_4"/>
+     <g id="outcomes-text_2">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="188.568" y="224.293422" transform="rotate(-0 188.568 224.293422)">1</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_3">
+     <g id="outcomes-line2d_5">
+      <path d="M 234.576 207.936
+L 234.576 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_6"/>
+     <g id="outcomes-text_3">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="234.576" y="224.293422" transform="rotate(-0 234.576 224.293422)">2</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_4">
+     <g id="outcomes-line2d_7">
+      <path d="M 280.584 207.936
+L 280.584 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_8"/>
+     <g id="outcomes-text_4">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="280.584" y="224.293422" transform="rotate(-0 280.584 224.293422)">3</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_5">
+     <g id="outcomes-line2d_9">
+      <path d="M 326.592 207.936
+L 326.592 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_10"/>
+     <g id="outcomes-text_5">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="326.592" y="224.293422" transform="rotate(-0 326.592 224.293422)">4</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_6">
+     <g id="outcomes-line2d_11">
+      <path d="M 372.6 207.936
+L 372.6 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_12"/>
+     <g id="outcomes-text_6">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="372.6" y="224.293422" transform="rotate(-0 372.6 224.293422)">5</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_7">
+     <g id="outcomes-line2d_13">
+      <path d="M 418.608 207.936
+L 418.608 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_14"/>
+     <g id="outcomes-text_7">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="418.608" y="224.293422" transform="rotate(-0 418.608 224.293422)">6</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_8">
+     <g id="outcomes-line2d_15">
+      <path d="M 464.616 207.936
+L 464.616 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_16"/>
+     <g id="outcomes-text_8">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="464.616" y="224.293422" transform="rotate(-0 464.616 224.293422)">7</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_9">
+     <g id="outcomes-line2d_17">
+      <path d="M 510.624 207.936
+L 510.624 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_18"/>
+     <g id="outcomes-text_9">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="510.624" y="224.293422" transform="rotate(-0 510.624 224.293422)">8</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_10">
+     <g id="outcomes-line2d_19">
+      <path d="M 556.632 207.936
+L 556.632 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_20"/>
+     <g id="outcomes-text_10">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="556.632" y="224.293422" transform="rotate(-0 556.632 224.293422)">9</text>
+     </g>
+    </g>
+    <g id="outcomes-xtick_11">
+     <g id="outcomes-line2d_21">
+      <path d="M 602.64 207.936
+L 602.64 68.4
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="outcomes-line2d_22"/>
+     <g id="outcomes-text_11">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="602.64" y="224.293422" transform="rotate(-0 602.64 224.293422)">10</text>
+     </g>
+    </g>
+    <g id="outcomes-text_12">
+     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172d3c" x="372.6" y="239.294281" transform="rotate(-0 372.6 239.294281)">Passages out of ten</text>
+    </g>
+   </g>
+   <g id="outcomes-matplotlib.axis_2">
+    <g id="outcomes-ytick_1">
+     <g id="outcomes-line2d_23"/>
+     <g id="outcomes-text_13">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="134.56" y="101.427063" transform="rotate(-0 134.56 101.427063)">Exact passage</text>
+     </g>
+    </g>
+    <g id="outcomes-ytick_2">
+     <g id="outcomes-line2d_24"/>
+     <g id="outcomes-text_14">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="134.56" y="183.266789" transform="rotate(-0 134.56 183.266789)">Partial passage</text>
+     </g>
+    </g>
+   </g>
+   <g id="outcomes-patch_3">
+    <path d="M 142.56 119.754158
+L 234.576 119.754158
+L 234.576 74.742545
+L 142.56 74.742545
+z
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: #147d74"/>
+   </g>
+   <g id="outcomes-patch_4">
+    <path d="M 142.56 201.593455
+L 510.624 201.593455
+L 510.624 156.581842
+L 142.56 156.581842
+z
+" clip-path="url(#outcomes-p50e5e22df4)" style="fill: #bd5c32"/>
+   </g>
+   <g id="outcomes-patch_5">
+    <path d="M 142.56 207.936
+L 602.64 207.936
+" style="fill: none; stroke: #e1e7ec; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="outcomes-text_15">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="240.09696" y="100.365539" transform="rotate(-0 240.09696 100.365539)">2/10  (20%)</text>
+   </g>
+   <g id="outcomes-text_16">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="516.14496" y="182.204836" transform="rotate(-0 516.14496 182.204836)">8/10  (80%)</text>
+   </g>
+  </g>
+  <g id="outcomes-text_17">
+   <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="19.44" y="20.668875" transform="rotate(-0 19.44 20.668875)">Two passages reproduced exactly</text>
+  </g>
+  <g id="outcomes-text_18">
+   <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="19.44" y="46.512" transform="rotate(-0 19.44 46.512)">ExactText and ExactWords both succeed for the same two passages.</text>
+  </g>
+  <g id="outcomes-text_19">
+   <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="9.72" y="268.6752" transform="rotate(-0 9.72 268.6752)">Grok 4.7 xHigh · Fast off · BSB 2025 third printing · 8 October 2026 · Interactive diagnostic, n=10</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="outcomes-p50e5e22df4">
+   <rect x="142.56" y="68.4" width="460.08" height="139.536"/>
+  </clipPath>
+ </defs>
+</svg>
+</div><p class="downloads">Download <a href="figures/outcomes.svg">SVG</a> · <a href="figures/outcomes.png">PNG</a></p></section>
+<section class="section" aria-labelledby="accuracy-title"><h2 id="accuracy-title">Every passage, in presentation order</h2><div class="plot" role="img" aria-label="Per-case word accuracy with an overall mean of 79.49 percent"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="720pt" height="489.6pt" viewBox="0 0 720 489.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="case-accuracy-figure_1">
+  <g id="case-accuracy-patch_1">
+   <path d="M 0 489.6
+L 720 489.6
+L 720 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="case-accuracy-axes_1">
+   <g id="case-accuracy-patch_2">
+    <path d="M 223.2 416.16
+L 676.8 416.16
+L 676.8 88.128
+L 223.2 88.128
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="case-accuracy-matplotlib.axis_1">
+    <g id="case-accuracy-xtick_1">
+     <g id="case-accuracy-line2d_1">
+      <path d="M 223.2 416.16
+L 223.2 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="case-accuracy-line2d_2"/>
+     <g id="case-accuracy-text_1">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="223.2" y="432.517422" transform="rotate(-0 223.2 432.517422)">0%</text>
+     </g>
+    </g>
+    <g id="case-accuracy-xtick_2">
+     <g id="case-accuracy-line2d_3">
+      <path d="M 326.290909 416.16
+L 326.290909 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="case-accuracy-line2d_4"/>
+     <g id="case-accuracy-text_2">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="326.290909" y="432.517422" transform="rotate(-0 326.290909 432.517422)">25%</text>
+     </g>
+    </g>
+    <g id="case-accuracy-xtick_3">
+     <g id="case-accuracy-line2d_5">
+      <path d="M 429.381818 416.16
+L 429.381818 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="case-accuracy-line2d_6"/>
+     <g id="case-accuracy-text_3">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="429.381818" y="432.517422" transform="rotate(-0 429.381818 432.517422)">50%</text>
+     </g>
+    </g>
+    <g id="case-accuracy-xtick_4">
+     <g id="case-accuracy-line2d_7">
+      <path d="M 532.472727 416.16
+L 532.472727 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="case-accuracy-line2d_8"/>
+     <g id="case-accuracy-text_4">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="532.472727" y="432.517422" transform="rotate(-0 532.472727 432.517422)">75%</text>
+     </g>
+    </g>
+    <g id="case-accuracy-xtick_5">
+     <g id="case-accuracy-line2d_9">
+      <path d="M 635.563636 416.16
+L 635.563636 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="case-accuracy-line2d_10"/>
+     <g id="case-accuracy-text_5">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="635.563636" y="432.517422" transform="rotate(-0 635.563636 432.517422)">100%</text>
+     </g>
+    </g>
+    <g id="case-accuracy-text_6">
+     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172d3c" x="450" y="447.518281" transform="rotate(-0 450 447.518281)">Word accuracy = max(0, 1 − WER)</text>
+    </g>
+   </g>
+   <g id="case-accuracy-matplotlib.axis_2">
+    <g id="case-accuracy-ytick_1">
+     <g id="case-accuracy-line2d_11"/>
+     <g id="case-accuracy-text_7">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="115.951897" transform="rotate(-0 215.2 115.951897)">01  Psalms 119:165</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_2">
+     <g id="case-accuracy-line2d_12"/>
+     <g id="case-accuracy-text_8">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="147.145077" transform="rotate(-0 215.2 147.145077)">02  Deuteronomy 15:17</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_3">
+     <g id="case-accuracy-line2d_13"/>
+     <g id="case-accuracy-text_9">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="178.339116" transform="rotate(-0 215.2 178.339116)">03  2 Chronicles 15:6</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_4">
+     <g id="case-accuracy-line2d_14"/>
+     <g id="case-accuracy-text_10">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="209.532726" transform="rotate(-0 215.2 209.532726)">04  Judges 19:22</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_5">
+     <g id="case-accuracy-line2d_15"/>
+     <g id="case-accuracy-text_11">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="240.726336" transform="rotate(-0 215.2 240.726336)">05  Jeremiah 21:7</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_6">
+     <g id="case-accuracy-line2d_16"/>
+     <g id="case-accuracy-text_12">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="271.919945" transform="rotate(-0 215.2 271.919945)">06  Ruth 1:19</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_7">
+     <g id="case-accuracy-line2d_17"/>
+     <g id="case-accuracy-text_13">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="303.113555" transform="rotate(-0 215.2 303.113555)">07  Nehemiah 10:13</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_8">
+     <g id="case-accuracy-line2d_18"/>
+     <g id="case-accuracy-text_14">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="334.307165" transform="rotate(-0 215.2 334.307165)">08  Obadiah 1:4</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_9">
+     <g id="case-accuracy-line2d_19"/>
+     <g id="case-accuracy-text_15">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="365.500775" transform="rotate(-0 215.2 365.500775)">09  Proverbs 3:5</text>
+     </g>
+    </g>
+    <g id="case-accuracy-ytick_10">
+     <g id="case-accuracy-line2d_20"/>
+     <g id="case-accuracy-text_16">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="396.694384" transform="rotate(-0 215.2 396.694384)">10  Matthew 5:14</text>
+     </g>
+    </g>
+   </g>
+   <g id="case-accuracy-patch_3">
+    <path d="M 223.2 103.038545
+L 635.563636 103.038545
+L 635.563636 120.506967
+L 223.2 120.506967
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #147d74"/>
+   </g>
+   <g id="case-accuracy-patch_4">
+    <path d="M 223.2 134.232155
+L 532.472727 134.232155
+L 532.472727 151.700577
+L 223.2 151.700577
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_5">
+    <path d="M 223.2 165.425765
+L 543.927273 165.425765
+L 543.927273 182.894186
+L 223.2 182.894186
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_6">
+    <path d="M 223.2 196.619375
+L 488.945455 196.619375
+L 488.945455 214.087796
+L 223.2 214.087796
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_7">
+    <path d="M 223.2 227.812984
+L 453.844068 227.812984
+L 453.844068 245.281406
+L 223.2 245.281406
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_8">
+    <path d="M 223.2 259.006594
+L 460.621488 259.006594
+L 460.621488 276.475016
+L 223.2 276.475016
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_9">
+    <path d="M 223.2 290.200204
+L 532.472727 290.200204
+L 532.472727 307.668625
+L 223.2 307.668625
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_10">
+    <path d="M 223.2 321.393814
+L 618.381818 321.393814
+L 618.381818 338.862235
+L 223.2 338.862235
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-patch_11">
+    <path d="M 223.2 352.587423
+L 635.563636 352.587423
+L 635.563636 370.055845
+L 223.2 370.055845
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #147d74"/>
+   </g>
+   <g id="case-accuracy-patch_12">
+    <path d="M 223.2 383.781033
+L 608.072727 383.781033
+L 608.072727 401.249455
+L 223.2 401.249455
+z
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: #bd5c32"/>
+   </g>
+   <g id="case-accuracy-line2d_21">
+    <path d="M 550.986556 416.16
+L 550.986556 88.128
+" clip-path="url(#case-accuracy-p0da1c35d5a)" style="fill: none; stroke-dasharray: 4.07,1.76; stroke-dashoffset: 0; stroke: #172d3c; stroke-width: 1.1"/>
+   </g>
+   <g id="case-accuracy-patch_13">
+    <path d="M 223.2 416.16
+L 676.8 416.16
+" style="fill: none; stroke: #e1e7ec; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="case-accuracy-text_17">
+    <g id="case-accuracy-patch_14">
+     <path d="M 638.187273 118.272756
+L 679.31696 118.272756
+L 679.31696 105.272756
+L 638.187273 105.272756
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="639.687273" y="114.370412" transform="rotate(-0 639.687273 114.370412)">100.0%</text>
+   </g>
+   <g id="case-accuracy-text_18">
+    <g id="case-accuracy-patch_15">
+     <path d="M 535.096364 149.466366
+L 569.863551 149.466366
+L 569.863551 136.466366
+L 535.096364 136.466366
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="536.596364" y="145.564022" transform="rotate(-0 536.596364 145.564022)">75.0%</text>
+   </g>
+   <g id="case-accuracy-text_19">
+    <g id="case-accuracy-patch_16">
+     <path d="M 546.550909 180.659976
+L 581.318097 180.659976
+L 581.318097 167.659976
+L 546.550909 167.659976
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="548.050909" y="176.757632" transform="rotate(-0 548.050909 176.757632)">77.8%</text>
+   </g>
+   <g id="case-accuracy-text_20">
+    <g id="case-accuracy-patch_17">
+     <path d="M 491.569091 211.853585
+L 526.336278 211.853585
+L 526.336278 198.853585
+L 491.569091 198.853585
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="493.069091" y="207.951242" transform="rotate(-0 493.069091 207.951242)">64.4%</text>
+   </g>
+   <g id="case-accuracy-text_21">
+    <g id="case-accuracy-patch_18">
+     <path d="M 456.467704 243.047195
+L 491.234892 243.047195
+L 491.234892 230.047195
+L 456.467704 230.047195
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="457.967704" y="239.144851" transform="rotate(-0 457.967704 239.144851)">55.9%</text>
+   </g>
+   <g id="case-accuracy-text_22">
+    <g id="case-accuracy-patch_19">
+     <path d="M 463.245124 274.240805
+L 498.012311 274.240805
+L 498.012311 261.240805
+L 463.245124 261.240805
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="464.745124" y="270.338461" transform="rotate(-0 464.745124 270.338461)">57.6%</text>
+   </g>
+   <g id="case-accuracy-text_23">
+    <g id="case-accuracy-patch_20">
+     <path d="M 535.096364 305.434415
+L 569.863551 305.434415
+L 569.863551 292.434415
+L 535.096364 292.434415
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="536.596364" y="301.532071" transform="rotate(-0 536.596364 301.532071)">75.0%</text>
+   </g>
+   <g id="case-accuracy-text_24">
+    <g id="case-accuracy-patch_21">
+     <path d="M 621.005455 336.628024
+L 655.772642 336.628024
+L 655.772642 323.628024
+L 621.005455 323.628024
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="622.505455" y="332.725681" transform="rotate(-0 622.505455 332.725681)">95.8%</text>
+   </g>
+   <g id="case-accuracy-text_25">
+    <g id="case-accuracy-patch_22">
+     <path d="M 638.187273 367.821634
+L 679.31696 367.821634
+L 679.31696 354.821634
+L 638.187273 354.821634
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="639.687273" y="363.91929" transform="rotate(-0 639.687273 363.91929)">100.0%</text>
+   </g>
+   <g id="case-accuracy-text_26">
+    <g id="case-accuracy-patch_23">
+     <path d="M 610.696364 399.015244
+L 645.463551 399.015244
+L 645.463551 386.015244
+L 610.696364 386.015244
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="612.196364" y="395.1129" transform="rotate(-0 612.196364 395.1129)">93.3%</text>
+   </g>
+  </g>
+  <g id="case-accuracy-text_27">
+   <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="21.6" y="24.988875" transform="rotate(-0 21.6 24.988875)">Close wording can still fail exact recall</text>
+  </g>
+  <g id="case-accuracy-text_28">
+   <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="21.6" y="51.408" transform="rotate(-0 21.6 51.408)">Green = exact passage; rust = partial. Dashed line = mean across cases, 79.49%.</text>
+  </g>
+  <g id="case-accuracy-text_29">
+   <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="10.8" y="480.7872" transform="rotate(-0 10.8 480.7872)">Grok 4.7 xHigh · Fast off · BSB 2025 third printing · 8 October 2026 · Interactive diagnostic, n=10</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="case-accuracy-p0da1c35d5a">
+   <rect x="223.2" y="88.128" width="453.6" height="328.032"/>
+  </clipPath>
+ </defs>
+</svg>
+</div><p class="downloads">Download <a href="figures/case-accuracy.svg">SVG</a> · <a href="figures/case-accuracy.png">PNG</a></p></section>
+<section class="section" aria-labelledby="explore-title">
+<h2 id="explore-title">Inspect the recalled wording</h2>
+<p class="muted">Select a passage to compare the actual submitted answer with the requested BSB reference. Underlined highlights mark an illustrative whitespace-word difference; the saved Rust scores use the normative scoring rules.</p>
+<div class="filters">
+<label>Search reference or wording<input id="search" type="search" placeholder="For example, Matthew or even"></label>
+<label>Stratum<select id="stratum"><option value="all">All strata</option></select></label>
+<label>Outcome<select id="outcome"><option value="all">All outcomes</option><option value="exact_requested">Exact</option><option value="partial">Partial</option></select></label>
+<label>List metric<select id="metric"><option value="word_accuracy">Word accuracy</option><option value="word_error_rate">Word error rate</option><option value="character_error_rate">Character error rate</option></select></label>
+</div>
+<p><span id="count" role="status" aria-live="polite"></span> <button id="reset" type="button">Reset filters</button></p>
+<div class="explorer"><div class="case-list" id="case-list" aria-label="Passages"></div><article class="detail" id="detail" aria-label="Selected passage"></article></div>
+<noscript><p>Enable JavaScript to use the case explorer. All charts remain visible, and the <a href="README.md">full report</a> and <a href="responses.jsonl">submitted answers</a> contain the underlying results.</p></noscript>
+</section>
+<section class="section" aria-labelledby="edits-title"><h2 id="edits-title">Where the word errors occur</h2><div class="plot" role="img" aria-label="Twenty-four insertions, ten deletions and thirty-six substitutions across ten passages"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="720pt" height="489.6pt" viewBox="0 0 720 489.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="word-edits-figure_1">
+  <g id="word-edits-patch_1">
+   <path d="M 0 489.6
+L 720 489.6
+L 720 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="word-edits-axes_1">
+   <g id="word-edits-patch_2">
+    <path d="M 223.2 416.16
+L 676.8 416.16
+L 676.8 97.92
+L 223.2 97.92
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="word-edits-matplotlib.axis_1">
+    <g id="word-edits-xtick_1">
+     <g id="word-edits-line2d_1">
+      <path d="M 223.2 416.16
+L 223.2 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_2"/>
+     <g id="word-edits-text_1">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="223.2" y="432.517422" transform="rotate(-0 223.2 432.517422)">0</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_2">
+     <g id="word-edits-line2d_3">
+      <path d="M 270.124138 416.16
+L 270.124138 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_4"/>
+     <g id="word-edits-text_2">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="270.124138" y="432.517422" transform="rotate(-0 270.124138 432.517422)">3</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_3">
+     <g id="word-edits-line2d_5">
+      <path d="M 317.048276 416.16
+L 317.048276 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_6"/>
+     <g id="word-edits-text_3">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="317.048276" y="432.517422" transform="rotate(-0 317.048276 432.517422)">6</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_4">
+     <g id="word-edits-line2d_7">
+      <path d="M 363.972414 416.16
+L 363.972414 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_8"/>
+     <g id="word-edits-text_4">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="363.972414" y="432.517422" transform="rotate(-0 363.972414 432.517422)">9</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_5">
+     <g id="word-edits-line2d_9">
+      <path d="M 410.896552 416.16
+L 410.896552 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_10"/>
+     <g id="word-edits-text_5">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="410.896552" y="432.517422" transform="rotate(-0 410.896552 432.517422)">12</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_6">
+     <g id="word-edits-line2d_11">
+      <path d="M 457.82069 416.16
+L 457.82069 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_12"/>
+     <g id="word-edits-text_6">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="457.82069" y="432.517422" transform="rotate(-0 457.82069 432.517422)">15</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_7">
+     <g id="word-edits-line2d_13">
+      <path d="M 504.744828 416.16
+L 504.744828 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_14"/>
+     <g id="word-edits-text_7">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="504.744828" y="432.517422" transform="rotate(-0 504.744828 432.517422)">18</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_8">
+     <g id="word-edits-line2d_15">
+      <path d="M 551.668966 416.16
+L 551.668966 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_16"/>
+     <g id="word-edits-text_8">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="551.668966" y="432.517422" transform="rotate(-0 551.668966 432.517422)">21</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_9">
+     <g id="word-edits-line2d_17">
+      <path d="M 598.593103 416.16
+L 598.593103 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_18"/>
+     <g id="word-edits-text_9">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="598.593103" y="432.517422" transform="rotate(-0 598.593103 432.517422)">24</text>
+     </g>
+    </g>
+    <g id="word-edits-xtick_10">
+     <g id="word-edits-line2d_19">
+      <path d="M 645.517241 416.16
+L 645.517241 97.92
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="word-edits-line2d_20"/>
+     <g id="word-edits-text_10">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="645.517241" y="432.517422" transform="rotate(-0 645.517241 432.517422)">27</text>
+     </g>
+    </g>
+    <g id="word-edits-text_11">
+     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172d3c" x="450" y="447.518281" transform="rotate(-0 450 447.518281)">Word edits in the normative Levenshtein alignment</text>
+    </g>
+   </g>
+   <g id="word-edits-matplotlib.axis_2">
+    <g id="word-edits-ytick_1">
+     <g id="word-edits-line2d_21"/>
+     <g id="word-edits-text_12">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="125.038083" transform="rotate(-0 215.2 125.038083)">01  Psalms 119:165</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_2">
+     <g id="word-edits-line2d_22"/>
+     <g id="word-edits-text_13">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="155.300111" transform="rotate(-0 215.2 155.300111)">02  Deuteronomy 15:17</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_3">
+     <g id="word-edits-line2d_23"/>
+     <g id="word-edits-text_14">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="185.562998" transform="rotate(-0 215.2 185.562998)">03  2 Chronicles 15:6</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_4">
+     <g id="word-edits-line2d_24"/>
+     <g id="word-edits-text_15">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="215.825455" transform="rotate(-0 215.2 215.825455)">04  Judges 19:22</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_5">
+     <g id="word-edits-line2d_25"/>
+     <g id="word-edits-text_16">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="246.087912" transform="rotate(-0 215.2 246.087912)">05  Jeremiah 21:7</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_6">
+     <g id="word-edits-line2d_26"/>
+     <g id="word-edits-text_17">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="276.350369" transform="rotate(-0 215.2 276.350369)">06  Ruth 1:19</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_7">
+     <g id="word-edits-line2d_27"/>
+     <g id="word-edits-text_18">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="306.612826" transform="rotate(-0 215.2 306.612826)">07  Nehemiah 10:13</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_8">
+     <g id="word-edits-line2d_28"/>
+     <g id="word-edits-text_19">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="336.875284" transform="rotate(-0 215.2 336.875284)">08  Obadiah 1:4</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_9">
+     <g id="word-edits-line2d_29"/>
+     <g id="word-edits-text_20">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="367.137741" transform="rotate(-0 215.2 367.137741)">09  Proverbs 3:5</text>
+     </g>
+    </g>
+    <g id="word-edits-ytick_10">
+     <g id="word-edits-line2d_30"/>
+     <g id="word-edits-text_21">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="215.2" y="397.400198" transform="rotate(-0 215.2 397.400198)">10  Matthew 5:14</text>
+     </g>
+    </g>
+   </g>
+   <g id="word-edits-patch_3">
+    <path d="M 223.2 112.385455
+L 223.2 112.385455
+L 223.2 129.332431
+L 223.2 129.332431
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_4">
+    <path d="M 223.2 142.647912
+L 223.2 142.647912
+L 223.2 159.594888
+L 223.2 159.594888
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_5">
+    <path d="M 223.2 172.910369
+L 223.2 172.910369
+L 223.2 189.857345
+L 223.2 189.857345
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_6">
+    <path d="M 223.2 203.172826
+L 301.406897 203.172826
+L 301.406897 220.119802
+L 223.2 220.119802
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_7">
+    <path d="M 223.2 233.435283
+L 457.82069 233.435283
+L 457.82069 250.382259
+L 223.2 250.382259
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_8">
+    <path d="M 223.2 263.697741
+L 270.124138 263.697741
+L 270.124138 280.644717
+L 223.2 280.644717
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_9">
+    <path d="M 223.2 293.960198
+L 223.2 293.960198
+L 223.2 310.907174
+L 223.2 310.907174
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_10">
+    <path d="M 223.2 324.222655
+L 223.2 324.222655
+L 223.2 341.169631
+L 223.2 341.169631
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_11">
+    <path d="M 223.2 354.485112
+L 223.2 354.485112
+L 223.2 371.432088
+L 223.2 371.432088
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_12">
+    <path d="M 223.2 384.747569
+L 238.841379 384.747569
+L 238.841379 401.694545
+L 223.2 401.694545
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #3276a3"/>
+   </g>
+   <g id="word-edits-patch_13">
+    <path d="M 223.2 112.385455
+L 223.2 112.385455
+L 223.2 129.332431
+L 223.2 129.332431
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_14">
+    <path d="M 223.2 142.647912
+L 238.841379 142.647912
+L 238.841379 159.594888
+L 223.2 159.594888
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_15">
+    <path d="M 223.2 172.910369
+L 223.2 172.910369
+L 223.2 189.857345
+L 223.2 189.857345
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_16">
+    <path d="M 301.406897 203.172826
+L 301.406897 203.172826
+L 301.406897 220.119802
+L 301.406897 220.119802
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_17">
+    <path d="M 457.82069 233.435283
+L 504.744828 233.435283
+L 504.744828 250.382259
+L 457.82069 250.382259
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_18">
+    <path d="M 270.124138 263.697741
+L 332.689655 263.697741
+L 332.689655 280.644717
+L 270.124138 280.644717
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_19">
+    <path d="M 223.2 293.960198
+L 238.841379 293.960198
+L 238.841379 310.907174
+L 223.2 310.907174
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_20">
+    <path d="M 223.2 324.222655
+L 238.841379 324.222655
+L 238.841379 341.169631
+L 223.2 341.169631
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_21">
+    <path d="M 223.2 354.485112
+L 223.2 354.485112
+L 223.2 371.432088
+L 223.2 371.432088
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_22">
+    <path d="M 238.841379 384.747569
+L 238.841379 384.747569
+L 238.841379 401.694545
+L 238.841379 401.694545
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #c58c28"/>
+   </g>
+   <g id="word-edits-patch_23">
+    <path d="M 223.2 112.385455
+L 223.2 112.385455
+L 223.2 129.332431
+L 223.2 129.332431
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_24">
+    <path d="M 238.841379 142.647912
+L 332.689655 142.647912
+L 332.689655 159.594888
+L 238.841379 159.594888
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_25">
+    <path d="M 223.2 172.910369
+L 285.765517 172.910369
+L 285.765517 189.857345
+L 223.2 189.857345
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_26">
+    <path d="M 301.406897 203.172826
+L 473.462069 203.172826
+L 473.462069 220.119802
+L 301.406897 220.119802
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_27">
+    <path d="M 504.744828 233.435283
+L 629.875862 233.435283
+L 629.875862 250.382259
+L 504.744828 250.382259
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_28">
+    <path d="M 332.689655 263.697741
+L 442.17931 263.697741
+L 442.17931 280.644717
+L 332.689655 280.644717
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_29">
+    <path d="M 238.841379 293.960198
+L 238.841379 293.960198
+L 238.841379 310.907174
+L 238.841379 310.907174
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_30">
+    <path d="M 238.841379 324.222655
+L 238.841379 324.222655
+L 238.841379 341.169631
+L 238.841379 341.169631
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_31">
+    <path d="M 223.2 354.485112
+L 223.2 354.485112
+L 223.2 371.432088
+L 223.2 371.432088
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_32">
+    <path d="M 238.841379 384.747569
+L 238.841379 384.747569
+L 238.841379 401.694545
+L 238.841379 401.694545
+z
+" clip-path="url(#word-edits-p9013ee07dc)" style="fill: #765b94"/>
+   </g>
+   <g id="word-edits-patch_33">
+    <path d="M 223.2 416.16
+L 676.8 416.16
+" style="fill: none; stroke: #e1e7ec; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="word-edits-text_22">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="262.303448" y="213.984205" transform="rotate(-0 262.303448 213.984205)">5</text>
+   </g>
+   <g id="word-edits-text_23">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="340.510345" y="244.246662" transform="rotate(-0 340.510345 244.246662)">15</text>
+   </g>
+   <g id="word-edits-text_24">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="246.662069" y="274.509119" transform="rotate(-0 246.662069 274.509119)">3</text>
+   </g>
+   <g id="word-edits-text_25">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="231.02069" y="395.558948" transform="rotate(-0 231.02069 395.558948)">1</text>
+   </g>
+   <g id="word-edits-text_26">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="231.02069" y="153.45929" transform="rotate(-0 231.02069 153.45929)">1</text>
+   </g>
+   <g id="word-edits-text_27">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="481.282759" y="244.246662" transform="rotate(-0 481.282759 244.246662)">3</text>
+   </g>
+   <g id="word-edits-text_28">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="301.406897" y="274.509119" transform="rotate(-0 301.406897 274.509119)">4</text>
+   </g>
+   <g id="word-edits-text_29">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="231.02069" y="304.771576" transform="rotate(-0 231.02069 304.771576)">1</text>
+   </g>
+   <g id="word-edits-text_30">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="231.02069" y="335.034034" transform="rotate(-0 231.02069 335.034034)">1</text>
+   </g>
+   <g id="word-edits-text_31">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="285.765517" y="153.45929" transform="rotate(-0 285.765517 153.45929)">6</text>
+   </g>
+   <g id="word-edits-text_32">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="254.482759" y="183.721748" transform="rotate(-0 254.482759 183.721748)">4</text>
+   </g>
+   <g id="word-edits-text_33">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="387.434483" y="213.984205" transform="rotate(-0 387.434483 213.984205)">11</text>
+   </g>
+   <g id="word-edits-text_34">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="567.310345" y="244.246662" transform="rotate(-0 567.310345 244.246662)">8</text>
+   </g>
+   <g id="word-edits-text_35">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="387.434483" y="274.509119" transform="rotate(-0 387.434483 274.509119)">7</text>
+   </g>
+   <g id="word-edits-text_36">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #147d74" x="227.892414" y="123.716364" transform="rotate(-0 227.892414 123.716364)">0 · exact</text>
+   </g>
+   <g id="word-edits-text_37">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #147d74" x="227.892414" y="365.816022" transform="rotate(-0 227.892414 365.816022)">0 · exact</text>
+   </g>
+   <g id="word-edits-legend_1">
+    <g id="word-edits-patch_34">
+     <path d="M 232.2 76.329637
+L 252.2 76.329637
+L 252.2 69.329637
+L 232.2 69.329637
+z
+" style="fill: #3276a3"/>
+    </g>
+    <g id="word-edits-text_38">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="260.2" y="76.329637" transform="rotate(-0 260.2 76.329637)">Insertions (24)</text>
+    </g>
+    <g id="word-edits-patch_35">
+     <path d="M 353.03125 76.329637
+L 373.03125 76.329637
+L 373.03125 69.329637
+L 353.03125 69.329637
+z
+" style="fill: #c58c28"/>
+    </g>
+    <g id="word-edits-text_39">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="381.03125" y="76.329637" transform="rotate(-0 381.03125 76.329637)">Deletions (10)</text>
+    </g>
+    <g id="word-edits-patch_36">
+     <path d="M 471.885937 76.329637
+L 491.885937 76.329637
+L 491.885937 69.329637
+L 471.885937 69.329637
+z
+" style="fill: #765b94"/>
+    </g>
+    <g id="word-edits-text_40">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="499.885937" y="76.329637" transform="rotate(-0 499.885937 76.329637)">Substitutions (36)</text>
+    </g>
+   </g>
+  </g>
+  <g id="word-edits-text_41">
+   <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="21.6" y="24.988875" transform="rotate(-0 21.6 24.988875)">Seventy word edits across the ten passages</text>
+  </g>
+  <g id="word-edits-text_42">
+   <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="21.6" y="48.96" transform="rotate(-0 21.6 48.96)">Raw counts depend on passage length. Use per-case WER to compare normalized error.</text>
+  </g>
+  <g id="word-edits-text_43">
+   <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="10.8" y="480.7872" transform="rotate(-0 10.8 480.7872)">Grok 4.7 xHigh · Fast off · BSB 2025 third printing · 8 October 2026 · Interactive diagnostic, n=10</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="word-edits-p9013ee07dc">
+   <rect x="223.2" y="97.92" width="453.6" height="318.24"/>
+  </clipPath>
+ </defs>
+</svg>
+</div><p class="downloads">Download <a href="figures/word-edits.svg">SVG</a> · <a href="figures/word-edits.png">PNG</a></p></section>
+<section class="section" aria-labelledby="diagnostics-title"><h2 id="diagnostics-title">Sparse strata and edition resemblance</h2><p class="muted">Five strata contain one passage each; the random stratum contains five. One answer was closer to ASV and one to WEB, but neither matched an alternative edition exactly.</p><div class="plot" role="img" aria-label="Six sampled strata; two exact BSB, one closer ASV, one closer WEB and six unclassified errors"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="936pt" height="381.6pt" viewBox="0 0 936 381.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="diagnostics-figure_1">
+  <g id="diagnostics-patch_1">
+   <path d="M 0 381.6
+L 936 381.6
+L 936 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="diagnostics-axes_1">
+   <g id="diagnostics-patch_2">
+    <path d="M 215.28 305.28
+L 500.750948 305.28
+L 500.750948 91.584
+L 215.28 91.584
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="diagnostics-matplotlib.axis_1">
+    <g id="diagnostics-xtick_1">
+     <g id="diagnostics-line2d_1">
+      <path d="M 215.28 305.28
+L 215.28 91.584
+" clip-path="url(#diagnostics-p0b6e01c582)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_2"/>
+     <g id="diagnostics-text_1">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="215.28" y="321.637422" transform="rotate(-0 215.28 321.637422)">0%</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_2">
+     <g id="diagnostics-line2d_3">
+      <path d="M 345.039522 305.28
+L 345.039522 91.584
+" clip-path="url(#diagnostics-p0b6e01c582)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_4"/>
+     <g id="diagnostics-text_2">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="345.039522" y="321.637422" transform="rotate(-0 345.039522 321.637422)">50%</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_3">
+     <g id="diagnostics-line2d_5">
+      <path d="M 474.799043 305.28
+L 474.799043 91.584
+" clip-path="url(#diagnostics-p0b6e01c582)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_6"/>
+     <g id="diagnostics-text_3">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="474.799043" y="321.637422" transform="rotate(-0 474.799043 321.637422)">100%</text>
+     </g>
+    </g>
+    <g id="diagnostics-text_4">
+     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172d3c" x="358.015474" y="336.638281" transform="rotate(-0 358.015474 336.638281)">Mean word accuracy</text>
+    </g>
+   </g>
+   <g id="diagnostics-matplotlib.axis_2">
+    <g id="diagnostics-ytick_1">
+     <g id="diagnostics-line2d_7"/>
+     <g id="diagnostics-text_5">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="105.476595" transform="rotate(-0 207.28 105.476595)">Extremely Famous  (n=1)</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_2">
+     <g id="diagnostics-line2d_8"/>
+     <g id="diagnostics-text_6">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="144.329984" transform="rotate(-0 207.28 144.329984)">Long Verse  (n=1)</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_3">
+     <g id="diagnostics-line2d_9"/>
+     <g id="diagnostics-text_7">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="183.184232" transform="rotate(-0 207.28 183.184232)">Random  (n=5)</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_4">
+     <g id="diagnostics-line2d_10"/>
+     <g id="diagnostics-text_8">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="222.03805" transform="rotate(-0 207.28 222.03805)">Short Verse  (n=1)</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_5">
+     <g id="diagnostics-line2d_11"/>
+     <g id="diagnostics-text_9">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="260.891868" transform="rotate(-0 207.28 260.891868)">Translation Sensitive  (n=1)</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_6">
+     <g id="diagnostics-line2d_12"/>
+     <g id="diagnostics-text_10">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="207.28" y="299.745686" transform="rotate(-0 207.28 299.745686)">Well Known  (n=1)</text>
+     </g>
+    </g>
+   </g>
+   <g id="diagnostics-PathCollection_1">
+    <defs>
+     <path id="diagnostics-mfe4481627e" d="M 0 3.24037
+C 0.859356 3.24037 1.683631 2.898944 2.291288 2.291288
+C 2.898944 1.683631 3.24037 0.859356 3.24037 0
+C 3.24037 -0.859356 2.898944 -1.683631 2.291288 -2.291288
+C 1.683631 -2.898944 0.859356 -3.24037 0 -3.24037
+C -0.859356 -3.24037 -1.683631 -2.898944 -2.291288 -2.291288
+C -2.898944 -1.683631 -3.24037 -0.859356 -3.24037 0
+C -3.24037 0.859356 -2.898944 1.683631 -2.291288 2.291288
+C -1.683631 2.898944 -0.859356 3.24037 0 3.24037
+z
+" style="stroke: #172d3c"/>
+    </defs>
+    <g clip-path="url(#diagnostics-p0b6e01c582)">
+     <use xlink:href="#diagnostics-mfe4481627e" x="474.799043" y="101.297455" style="fill: #172d3c; stroke: #172d3c"/>
+     <use xlink:href="#diagnostics-mfe4481627e" x="360.434719" y="140.151273" style="fill: #172d3c; stroke: #172d3c"/>
+     <use xlink:href="#diagnostics-mfe4481627e" x="407.651768" y="179.005091" style="fill: #172d3c; stroke: #172d3c"/>
+     <use xlink:href="#diagnostics-mfe4481627e" x="409.919283" y="217.858909" style="fill: #172d3c; stroke: #172d3c"/>
+     <use xlink:href="#diagnostics-mfe4481627e" x="474.799043" y="256.712727" style="fill: #172d3c; stroke: #172d3c"/>
+     <use xlink:href="#diagnostics-mfe4481627e" x="457.497774" y="295.566545" style="fill: #172d3c; stroke: #172d3c"/>
+    </g>
+   </g>
+   <g id="diagnostics-patch_3">
+    <path d="M 215.28 305.28
+L 500.750948 305.28
+" style="fill: none; stroke: #e1e7ec; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="diagnostics-text_11">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="215.28" y="73.584" transform="rotate(-0 215.28 73.584)">Six sampled strata</text>
+   </g>
+  </g>
+  <g id="diagnostics-axes_2">
+   <g id="diagnostics-patch_4">
+    <path d="M 687.100039 305.28
+L 898.56 305.28
+L 898.56 91.584
+L 687.100039 91.584
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="diagnostics-matplotlib.axis_3">
+    <g id="diagnostics-xtick_4">
+     <g id="diagnostics-line2d_13">
+      <path d="M 687.100039 305.28
+L 687.100039 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_14"/>
+     <g id="diagnostics-text_12">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="687.100039" y="321.637422" transform="rotate(-0 687.100039 321.637422)">0</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_5">
+     <g id="diagnostics-line2d_15">
+      <path d="M 717.308605 305.28
+L 717.308605 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_16"/>
+     <g id="diagnostics-text_13">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="717.308605" y="321.637422" transform="rotate(-0 717.308605 321.637422)">1</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_6">
+     <g id="diagnostics-line2d_17">
+      <path d="M 747.51717 305.28
+L 747.51717 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_18"/>
+     <g id="diagnostics-text_14">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="747.51717" y="321.637422" transform="rotate(-0 747.51717 321.637422)">2</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_7">
+     <g id="diagnostics-line2d_19">
+      <path d="M 777.725736 305.28
+L 777.725736 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_20"/>
+     <g id="diagnostics-text_15">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="777.725736" y="321.637422" transform="rotate(-0 777.725736 321.637422)">3</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_8">
+     <g id="diagnostics-line2d_21">
+      <path d="M 807.934302 305.28
+L 807.934302 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_22"/>
+     <g id="diagnostics-text_16">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="807.934302" y="321.637422" transform="rotate(-0 807.934302 321.637422)">4</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_9">
+     <g id="diagnostics-line2d_23">
+      <path d="M 838.142868 305.28
+L 838.142868 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_24"/>
+     <g id="diagnostics-text_17">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="838.142868" y="321.637422" transform="rotate(-0 838.142868 321.637422)">5</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_10">
+     <g id="diagnostics-line2d_25">
+      <path d="M 868.351434 305.28
+L 868.351434 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_26"/>
+     <g id="diagnostics-text_18">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="868.351434" y="321.637422" transform="rotate(-0 868.351434 321.637422)">6</text>
+     </g>
+    </g>
+    <g id="diagnostics-xtick_11">
+     <g id="diagnostics-line2d_27">
+      <path d="M 898.56 305.28
+L 898.56 91.584
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: none; stroke: #e1e7ec; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="diagnostics-line2d_28"/>
+     <g id="diagnostics-text_19">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #536877" x="898.56" y="321.637422" transform="rotate(-0 898.56 321.637422)">7</text>
+     </g>
+    </g>
+    <g id="diagnostics-text_20">
+     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172d3c" x="792.830019" y="336.637422" transform="rotate(-0 792.830019 336.637422)">Passages</text>
+    </g>
+   </g>
+   <g id="diagnostics-matplotlib.axis_4">
+    <g id="diagnostics-ytick_7">
+     <g id="diagnostics-line2d_29"/>
+     <g id="diagnostics-text_21">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="679.100039" y="119.352529" transform="rotate(-0 679.100039 119.352529)">Exact BSB</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_8">
+     <g id="diagnostics-line2d_30"/>
+     <g id="diagnostics-text_22">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="679.100039" y="174.858413" transform="rotate(-0 679.100039 174.858413)">Closer to ASV</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_9">
+     <g id="diagnostics-line2d_31"/>
+     <g id="diagnostics-text_23">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="679.100039" y="230.363868" transform="rotate(-0 679.100039 230.363868)">Closer to WEB</text>
+     </g>
+    </g>
+    <g id="diagnostics-ytick_10">
+     <g id="diagnostics-line2d_32"/>
+     <g id="diagnostics-text_24">
+      <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #536877" x="679.100039" y="285.869322" transform="rotate(-0 679.100039 285.869322)">Unclassified error</text>
+     </g>
+    </g>
+   </g>
+   <g id="diagnostics-patch_5">
+    <path d="M 687.100039 101.297455
+L 747.51717 101.297455
+L 747.51717 129.050182
+L 687.100039 129.050182
+z
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: #147d74"/>
+   </g>
+   <g id="diagnostics-patch_6">
+    <path d="M 687.100039 156.802909
+L 717.308605 156.802909
+L 717.308605 184.555636
+L 687.100039 184.555636
+z
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: #3276a3"/>
+   </g>
+   <g id="diagnostics-patch_7">
+    <path d="M 687.100039 212.308364
+L 717.308605 212.308364
+L 717.308605 240.061091
+L 687.100039 240.061091
+z
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: #765b94"/>
+   </g>
+   <g id="diagnostics-patch_8">
+    <path d="M 687.100039 267.813818
+L 868.351434 267.813818
+L 868.351434 295.566545
+L 687.100039 295.566545
+z
+" clip-path="url(#diagnostics-pc3ea13c0ee)" style="fill: #bd5c32"/>
+   </g>
+   <g id="diagnostics-patch_9">
+    <path d="M 687.100039 305.28
+L 898.56 305.28
+" style="fill: none; stroke: #e1e7ec; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="diagnostics-text_25">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="750.538027" y="118.03124" transform="rotate(-0 750.538027 118.03124)">2</text>
+   </g>
+   <g id="diagnostics-text_26">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="720.329461" y="173.536695" transform="rotate(-0 720.329461 173.536695)">1</text>
+   </g>
+   <g id="diagnostics-text_27">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="720.329461" y="229.042149" transform="rotate(-0 720.329461 229.042149)">1</text>
+   </g>
+   <g id="diagnostics-text_28">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="871.372291" y="284.547604" transform="rotate(-0 871.372291 284.547604)">6</text>
+   </g>
+   <g id="diagnostics-text_29">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="687.100039" y="73.584" transform="rotate(-0 687.100039 73.584)">Resemblance destinations</text>
+   </g>
+  </g>
+  <g id="diagnostics-text_30">
+   <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172d3c" x="28.08" y="22.828875" transform="rotate(-0 28.08 22.828875)">Sparse strata and approximate resemblance</text>
+  </g>
+  <g id="diagnostics-text_31">
+   <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="28.08" y="53.424" transform="rotate(-0 28.08 53.424)">Most strata contain one passage. Closer wording is not an exact alternative-edition match.</text>
+  </g>
+  <g id="diagnostics-text_32">
+   <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #536877" x="14.04" y="374.7312" transform="rotate(-0 14.04 374.7312)">Grok 4.7 xHigh · Fast off · BSB 2025 third printing · 8 October 2026 · Interactive diagnostic, n=10</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="diagnostics-p0b6e01c582">
+   <rect x="215.28" y="91.584" width="285.470948" height="213.696"/>
+  </clipPath>
+  <clipPath id="diagnostics-pc3ea13c0ee">
+   <rect x="687.100039" y="91.584" width="211.459961" height="213.696"/>
+  </clipPath>
+ </defs>
+</svg>
+</div><p class="downloads">Download <a href="figures/diagnostics.svg">SVG</a> · <a href="figures/diagnostics.png">PNG</a></p></section>
+<section class="section"><h2>Execution and evidence</h2><p>The CLI selected <strong>Grok 4.7 256K Extra High</strong>, with <strong>Fast = false</strong>. The successful launch took 439.25 seconds and reported 11,099 input tokens, 5,214 output tokens and 320,000 cache-read tokens. These are launch-level usage figures; no per-case token usage or price was verified.</p><p>No paid provider API calls were made. Cursor account usage was consumed. Local permissions denied web, shell and file tools; the transcript showed only benchmark calls and their schema discovery. The evidence remains <code>interactive_mcp</code>, with an unresolved service model identity.</p><p>Raw thinking, account metadata, session identifiers and local paths remain private. The public bundle contains the submitted answers, the reference subset, scores and sanitized provenance. See the <a href="README.md">report</a> for the initial guard interruption, audit details, digest scope and reproduction instructions.</p></section>
+<p class="foot">Run: grok47-xhigh-cursor-20261008-01 · BibleQuoteBench 0.2.0 · This file works offline without a server or external resources. Printing includes the currently selected passage; the full report documents every case.</p>
+</main>
+<script type="application/json" id="trial-data">{"rows":[{"case_id":"BQ-DEV-F039574F52ED560E","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"88244660e33d815a9a57c57e6687295549db23a2961ceed87d96636f001c936a","requested_translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":119,"verse_start":165},"stratum":"translation_sensitive","exact_text":true,"exact_words":true,"word_error_rate":0.0,"character_error_rate":0.0,"word_accuracy":1.0,"insertions":0,"deletions":0,"substitutions":0,"refusal":false,"extraneous_text":false,"classification":"exact_requested","order":1,"label":"Psalms 119:165","reference_words":14,"expected":"Abundant peace belongs to those who love Your law; nothing can make them stumble.","output":"Abundant peace belongs to those who love Your law; nothing can make them stumble.","alignment":{"expected":[{"word":"Abundant","changed":false},{"word":"peace","changed":false},{"word":"belongs","changed":false},{"word":"to","changed":false},{"word":"those","changed":false},{"word":"who","changed":false},{"word":"love","changed":false},{"word":"Your","changed":false},{"word":"law;","changed":false},{"word":"nothing","changed":false},{"word":"can","changed":false},{"word":"make","changed":false},{"word":"them","changed":false},{"word":"stumble.","changed":false}],"output":[{"word":"Abundant","changed":false},{"word":"peace","changed":false},{"word":"belongs","changed":false},{"word":"to","changed":false},{"word":"those","changed":false},{"word":"who","changed":false},{"word":"love","changed":false},{"word":"Your","changed":false},{"word":"law;","changed":false},{"word":"nothing","changed":false},{"word":"can","changed":false},{"word":"make","changed":false},{"word":"them","changed":false},{"word":"stumble.","changed":false}]}},{"case_id":"BQ-DEV-55B0A612F58E9A41","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"ae158df3a79547d060307b4e054ca25ced9dc3fe2f83af643258e8b010ae425d","requested_translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":15,"verse_start":17},"stratum":"random","exact_text":false,"exact_words":false,"word_error_rate":0.25,"character_error_rate":0.1736111111111111,"word_accuracy":0.75,"insertions":0,"deletions":1,"substitutions":6,"refusal":false,"extraneous_text":false,"classification":"partial","alternative_edition_token_overlap":0.0,"order":2,"label":"Deuteronomy 15:17","reference_words":28,"expected":"then take an awl and pierce it through his ear into the door, and he will become your servant for life. And treat your maidservant the same way.","output":"then take an awl and pierce it through his ear into the door, and he will become your servant for life. Do the same for your maidservant.","alignment":{"expected":[{"word":"then","changed":false},{"word":"take","changed":false},{"word":"an","changed":false},{"word":"awl","changed":false},{"word":"and","changed":false},{"word":"pierce","changed":false},{"word":"it","changed":false},{"word":"through","changed":false},{"word":"his","changed":false},{"word":"ear","changed":false},{"word":"into","changed":false},{"word":"the","changed":false},{"word":"door,","changed":false},{"word":"and","changed":false},{"word":"he","changed":false},{"word":"will","changed":false},{"word":"become","changed":false},{"word":"your","changed":false},{"word":"servant","changed":false},{"word":"for","changed":false},{"word":"life.","changed":false},{"word":"And","changed":true},{"word":"treat","changed":true},{"word":"your","changed":true},{"word":"maidservant","changed":true},{"word":"the","changed":false},{"word":"same","changed":false},{"word":"way.","changed":true}],"output":[{"word":"then","changed":false},{"word":"take","changed":false},{"word":"an","changed":false},{"word":"awl","changed":false},{"word":"and","changed":false},{"word":"pierce","changed":false},{"word":"it","changed":false},{"word":"through","changed":false},{"word":"his","changed":false},{"word":"ear","changed":false},{"word":"into","changed":false},{"word":"the","changed":false},{"word":"door,","changed":false},{"word":"and","changed":false},{"word":"he","changed":false},{"word":"will","changed":false},{"word":"become","changed":false},{"word":"your","changed":false},{"word":"servant","changed":false},{"word":"for","changed":false},{"word":"life.","changed":false},{"word":"Do","changed":true},{"word":"the","changed":false},{"word":"same","changed":false},{"word":"for","changed":true},{"word":"your","changed":true},{"word":"maidservant.","changed":true}]}},{"case_id":"BQ-DEV-4081B8B67336D3DD","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"8581dd3fedfe809257a68d4420a2ee3d4696251e96cdf1e01e137a82a3609ac2","requested_translation":"bsb-2025-third-printing","reference":{"book":"2 Chronicles","chapter":15,"verse_start":6},"stratum":"random","exact_text":false,"exact_words":false,"word_error_rate":0.2222222222222222,"character_error_rate":0.21212121212121213,"word_accuracy":0.7777777777777778,"insertions":0,"deletions":0,"substitutions":4,"refusal":false,"extraneous_text":false,"classification":"partial","alternative_edition_token_overlap":0.25,"order":3,"label":"2 Chronicles 15:6","reference_words":18,"expected":"Nation was crushed by nation, and city by city, for God afflicted them with all kinds of adversity.","output":"Nation was crushed by nation, and city by city, for God troubled them with every kind of distress.","alignment":{"expected":[{"word":"Nation","changed":false},{"word":"was","changed":false},{"word":"crushed","changed":false},{"word":"by","changed":false},{"word":"nation,","changed":false},{"word":"and","changed":false},{"word":"city","changed":false},{"word":"by","changed":false},{"word":"city,","changed":false},{"word":"for","changed":false},{"word":"God","changed":false},{"word":"afflicted","changed":true},{"word":"them","changed":false},{"word":"with","changed":false},{"word":"all","changed":true},{"word":"kinds","changed":true},{"word":"of","changed":false},{"word":"adversity.","changed":true}],"output":[{"word":"Nation","changed":false},{"word":"was","changed":false},{"word":"crushed","changed":false},{"word":"by","changed":false},{"word":"nation,","changed":false},{"word":"and","changed":false},{"word":"city","changed":false},{"word":"by","changed":false},{"word":"city,","changed":false},{"word":"for","changed":false},{"word":"God","changed":false},{"word":"troubled","changed":true},{"word":"them","changed":false},{"word":"with","changed":false},{"word":"every","changed":true},{"word":"kind","changed":true},{"word":"of","changed":false},{"word":"distress.","changed":true}]}},{"case_id":"BQ-DEV-14F5F44BE426F2CD","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"2a4a1f6ff01354fce43e322a6d5b08f719de28dc55d687f2d295c25ecbcf42b2","requested_translation":"bsb-2025-third-printing","reference":{"book":"Judges","chapter":19,"verse_start":22},"stratum":"random","exact_text":false,"exact_words":false,"word_error_rate":0.35555555555555557,"character_error_rate":0.2987551867219917,"word_accuracy":0.6444444444444444,"insertions":5,"deletions":0,"substitutions":11,"refusal":false,"extraneous_text":false,"classification":"partial","alternative_edition_token_overlap":0.625,"order":4,"label":"Judges 19:22","reference_words":45,"expected":"While they were enjoying themselves, suddenly the wicked men of the city surrounded the house. Pounding on the door, they said to the old man who owned the house, “Bring out the man who came to your house, so we can have relations with him!”","output":"While they were making their hearts merry, behold, the men of the city, worthless men, surrounded the house, pounding on the door. And they said to the old man, the master of the house, “Bring out the man who came into your house, that we may have relations with him.”","alignment":{"expected":[{"word":"While","changed":false},{"word":"they","changed":false},{"word":"were","changed":false},{"word":"enjoying","changed":true},{"word":"themselves,","changed":true},{"word":"suddenly","changed":true},{"word":"the","changed":false},{"word":"wicked","changed":true},{"word":"men","changed":false},{"word":"of","changed":false},{"word":"the","changed":false},{"word":"city","changed":true},{"word":"surrounded","changed":false},{"word":"the","changed":false},{"word":"house.","changed":true},{"word":"Pounding","changed":true},{"word":"on","changed":false},{"word":"the","changed":false},{"word":"door,","changed":true},{"word":"they","changed":false},{"word":"said","changed":false},{"word":"to","changed":false},{"word":"the","changed":false},{"word":"old","changed":false},{"word":"man","changed":true},{"word":"who","changed":true},{"word":"owned","changed":true},{"word":"the","changed":false},{"word":"house,","changed":false},{"word":"“Bring","changed":false},{"word":"out","changed":false},{"word":"the","changed":false},{"word":"man","changed":false},{"word":"who","changed":false},{"word":"came","changed":false},{"word":"to","changed":true},{"word":"your","changed":false},{"word":"house,","changed":false},{"word":"so","changed":true},{"word":"we","changed":false},{"word":"can","changed":true},{"word":"have","changed":false},{"word":"relations","changed":false},{"word":"with","changed":false},{"word":"him!”","changed":true}],"output":[{"word":"While","changed":false},{"word":"they","changed":false},{"word":"were","changed":false},{"word":"making","changed":true},{"word":"their","changed":true},{"word":"hearts","changed":true},{"word":"merry,","changed":true},{"word":"behold,","changed":true},{"word":"the","changed":false},{"word":"men","changed":false},{"word":"of","changed":false},{"word":"the","changed":false},{"word":"city,","changed":true},{"word":"worthless","changed":true},{"word":"men,","changed":true},{"word":"surrounded","changed":false},{"word":"the","changed":false},{"word":"house,","changed":true},{"word":"pounding","changed":true},{"word":"on","changed":false},{"word":"the","changed":false},{"word":"door.","changed":true},{"word":"And","changed":true},{"word":"they","changed":false},{"word":"said","changed":false},{"word":"to","changed":false},{"word":"the","changed":false},{"word":"old","changed":false},{"word":"man,","changed":true},{"word":"the","changed":true},{"word":"master","changed":true},{"word":"of","changed":true},{"word":"the","changed":false},{"word":"house,","changed":false},{"word":"“Bring","changed":false},{"word":"out","changed":false},{"word":"the","changed":false},{"word":"man","changed":false},{"word":"who","changed":false},{"word":"came","changed":false},{"word":"into","changed":true},{"word":"your","changed":false},{"word":"house,","changed":false},{"word":"that","changed":true},{"word":"we","changed":false},{"word":"may","changed":true},{"word":"have","changed":false},{"word":"relations","changed":false},{"word":"with","changed":false},{"word":"him.”","changed":true}]}},{"case_id":"BQ-DEV-BE25A6048968EBE3","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"38bc9e39ed6fb3df304aaa134d98a0c73f2b348425fd95ea907715894b73b80d","requested_translation":"bsb-2025-third-printing","reference":{"book":"Jeremiah","chapter":21,"verse_start":7},"stratum":"long_verse","exact_text":false,"exact_words":false,"word_error_rate":0.4406779661016949,"character_error_rate":0.3395638629283489,"word_accuracy":0.5593220338983051,"insertions":15,"deletions":3,"substitutions":8,"refusal":false,"extraneous_text":false,"classification":"partial","closest_translation":"web-classic-2020","closest_translations":["web-classic-2020"],"alternative_edition_token_overlap":0.9565217391304348,"order":5,"label":"Jeremiah 21:7","reference_words":59,"expected":"‘After that,’ declares the LORD, ‘I will hand over Zedekiah king of Judah, his officers, and the people in this city who survive the plague and sword and famine, to Nebuchadnezzar king of Babylon and to their enemies who seek their lives. He will put them to the sword; he will not spare them or show pity or compassion.’","output":"Afterward, declares the LORD, I will give Zedekiah king of Judah, his servants, and the people in this city who survive the plague, sword, and famine into the hand of Nebuchadnezzar king of Babylon, and into the hand of their enemies, and into the hand of those who seek their lives. He will strike them with the edge of the sword; he will not spare them or have pity or compassion.","alignment":{"expected":[{"word":"‘After","changed":true},{"word":"that,’","changed":true},{"word":"declares","changed":false},{"word":"the","changed":false},{"word":"LORD,","changed":false},{"word":"‘I","changed":true},{"word":"will","changed":false},{"word":"hand","changed":true},{"word":"over","changed":true},{"word":"Zedekiah","changed":false},{"word":"king","changed":false},{"word":"of","changed":false},{"word":"Judah,","changed":false},{"word":"his","changed":false},{"word":"officers,","changed":true},{"word":"and","changed":false},{"word":"the","changed":false},{"word":"people","changed":false},{"word":"in","changed":false},{"word":"this","changed":false},{"word":"city","changed":false},{"word":"who","changed":false},{"word":"survive","changed":false},{"word":"the","changed":false},{"word":"plague","changed":true},{"word":"and","changed":false},{"word":"sword","changed":true},{"word":"and","changed":true},{"word":"famine,","changed":true},{"word":"to","changed":true},{"word":"Nebuchadnezzar","changed":false},{"word":"king","changed":false},{"word":"of","changed":false},{"word":"Babylon","changed":true},{"word":"and","changed":false},{"word":"to","changed":true},{"word":"their","changed":false},{"word":"enemies","changed":true},{"word":"who","changed":false},{"word":"seek","changed":false},{"word":"their","changed":false},{"word":"lives.","changed":false},{"word":"He","changed":false},{"word":"will","changed":false},{"word":"put","changed":true},{"word":"them","changed":false},{"word":"to","changed":true},{"word":"the","changed":false},{"word":"sword;","changed":false},{"word":"he","changed":false},{"word":"will","changed":false},{"word":"not","changed":false},{"word":"spare","changed":false},{"word":"them","changed":false},{"word":"or","changed":false},{"word":"show","changed":true},{"word":"pity","changed":false},{"word":"or","changed":false},{"word":"compassion.’","changed":true}],"output":[{"word":"Afterward,","changed":true},{"word":"declares","changed":false},{"word":"the","changed":false},{"word":"LORD,","changed":false},{"word":"I","changed":true},{"word":"will","changed":false},{"word":"give","changed":true},{"word":"Zedekiah","changed":false},{"word":"king","changed":false},{"word":"of","changed":false},{"word":"Judah,","changed":false},{"word":"his","changed":false},{"word":"servants,","changed":true},{"word":"and","changed":false},{"word":"the","changed":false},{"word":"people","changed":false},{"word":"in","changed":false},{"word":"this","changed":false},{"word":"city","changed":false},{"word":"who","changed":false},{"word":"survive","changed":false},{"word":"the","changed":false},{"word":"plague,","changed":true},{"word":"sword,","changed":true},{"word":"and","changed":false},{"word":"famine","changed":true},{"word":"into","changed":true},{"word":"the","changed":true},{"word":"hand","changed":true},{"word":"of","changed":true},{"word":"Nebuchadnezzar","changed":false},{"word":"king","changed":false},{"word":"of","changed":false},{"word":"Babylon,","changed":true},{"word":"and","changed":false},{"word":"into","changed":true},{"word":"the","changed":true},{"word":"hand","changed":true},{"word":"of","changed":true},{"word":"their","changed":false},{"word":"enemies,","changed":true},{"word":"and","changed":true},{"word":"into","changed":true},{"word":"the","changed":true},{"word":"hand","changed":true},{"word":"of","changed":true},{"word":"those","changed":true},{"word":"who","changed":false},{"word":"seek","changed":false},{"word":"their","changed":false},{"word":"lives.","changed":false},{"word":"He","changed":false},{"word":"will","changed":false},{"word":"strike","changed":true},{"word":"them","changed":false},{"word":"with","changed":true},{"word":"the","changed":true},{"word":"edge","changed":true},{"word":"of","changed":true},{"word":"the","changed":false},{"word":"sword;","changed":false},{"word":"he","changed":false},{"word":"will","changed":false},{"word":"not","changed":false},{"word":"spare","changed":false},{"word":"them","changed":false},{"word":"or","changed":false},{"word":"have","changed":true},{"word":"pity","changed":false},{"word":"or","changed":false},{"word":"compassion.","changed":true}]}},{"case_id":"BQ-DEV-2B7DEE8B8B00DE29","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"e140b1a3142edf2b367ed49ca8a8724c51cdda6650ee6fbf25e462e1e1ee81f9","requested_translation":"bsb-2025-third-printing","reference":{"book":"Ruth","chapter":1,"verse_start":19},"stratum":"random","exact_text":false,"exact_words":false,"word_error_rate":0.42424242424242425,"character_error_rate":0.28342245989304815,"word_accuracy":0.5757575757575757,"insertions":3,"deletions":4,"substitutions":7,"refusal":false,"extraneous_text":false,"classification":"partial","alternative_edition_token_overlap":0.4,"order":6,"label":"Ruth 1:19","reference_words":33,"expected":"So Naomi and Ruth traveled until they came to Bethlehem. When they entered Bethlehem, the whole town was stirred because of them, and the women of the town exclaimed, “Can this be Naomi?”","output":"So the two of them went on until they came to Bethlehem. When they arrived in Bethlehem, the whole town was stirred because of them, and the women said, “Is this Naomi?”","alignment":{"expected":[{"word":"So","changed":false},{"word":"Naomi","changed":true},{"word":"and","changed":true},{"word":"Ruth","changed":true},{"word":"traveled","changed":true},{"word":"until","changed":false},{"word":"they","changed":false},{"word":"came","changed":false},{"word":"to","changed":false},{"word":"Bethlehem.","changed":false},{"word":"When","changed":false},{"word":"they","changed":false},{"word":"entered","changed":true},{"word":"Bethlehem,","changed":false},{"word":"the","changed":false},{"word":"whole","changed":false},{"word":"town","changed":false},{"word":"was","changed":false},{"word":"stirred","changed":false},{"word":"because","changed":false},{"word":"of","changed":false},{"word":"them,","changed":false},{"word":"and","changed":false},{"word":"the","changed":false},{"word":"women","changed":false},{"word":"of","changed":true},{"word":"the","changed":true},{"word":"town","changed":true},{"word":"exclaimed,","changed":true},{"word":"“Can","changed":true},{"word":"this","changed":false},{"word":"be","changed":true},{"word":"Naomi?”","changed":false}],"output":[{"word":"So","changed":false},{"word":"the","changed":true},{"word":"two","changed":true},{"word":"of","changed":true},{"word":"them","changed":true},{"word":"went","changed":true},{"word":"on","changed":true},{"word":"until","changed":false},{"word":"they","changed":false},{"word":"came","changed":false},{"word":"to","changed":false},{"word":"Bethlehem.","changed":false},{"word":"When","changed":false},{"word":"they","changed":false},{"word":"arrived","changed":true},{"word":"in","changed":true},{"word":"Bethlehem,","changed":false},{"word":"the","changed":false},{"word":"whole","changed":false},{"word":"town","changed":false},{"word":"was","changed":false},{"word":"stirred","changed":false},{"word":"because","changed":false},{"word":"of","changed":false},{"word":"them,","changed":false},{"word":"and","changed":false},{"word":"the","changed":false},{"word":"women","changed":false},{"word":"said,","changed":true},{"word":"“Is","changed":true},{"word":"this","changed":false},{"word":"Naomi?”","changed":false}]}},{"case_id":"BQ-DEV-417F34EC981C6F4F","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"6c0a9d859751f180326357185647a5b86bb579a7f377092f5dbbb1265da33b08","requested_translation":"bsb-2025-third-printing","reference":{"book":"Nehemiah","chapter":10,"verse_start":13},"stratum":"short_verse","exact_text":false,"exact_words":false,"word_error_rate":0.25,"character_error_rate":0.2,"word_accuracy":0.75,"insertions":0,"deletions":1,"substitutions":0,"refusal":false,"extraneous_text":false,"classification":"partial","closest_translation":"asv-1901","closest_translations":["asv-1901"],"order":7,"label":"Nehemiah 10:13","reference_words":4,"expected":"Hodiah, Bani, and Beninu.","output":"Hodiah, Bani, Beninu,","alignment":{"expected":[{"word":"Hodiah,","changed":false},{"word":"Bani,","changed":false},{"word":"and","changed":true},{"word":"Beninu.","changed":true}],"output":[{"word":"Hodiah,","changed":false},{"word":"Bani,","changed":false},{"word":"Beninu,","changed":true}]}},{"case_id":"BQ-DEV-D2B06180D50C4DB2","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"94b4cfe7af20b1c4d102237bbfb86bc8ef026f7bdcf8c7d36f1b3a24b20666c2","requested_translation":"bsb-2025-third-printing","reference":{"book":"Obadiah","chapter":1,"verse_start":4},"stratum":"random","exact_text":false,"exact_words":false,"word_error_rate":0.041666666666666664,"character_error_rate":0.04,"word_accuracy":0.9583333333333334,"insertions":0,"deletions":1,"substitutions":0,"refusal":false,"extraneous_text":false,"classification":"partial","order":8,"label":"Obadiah 1:4","reference_words":24,"expected":"Though you soar like the eagle and make your nest among the stars, even from there I will bring you down,” declares the LORD.","output":"Though you soar like the eagle and make your nest among the stars, from there I will bring you down,” declares the LORD.","alignment":{"expected":[{"word":"Though","changed":false},{"word":"you","changed":false},{"word":"soar","changed":false},{"word":"like","changed":false},{"word":"the","changed":false},{"word":"eagle","changed":false},{"word":"and","changed":false},{"word":"make","changed":false},{"word":"your","changed":false},{"word":"nest","changed":false},{"word":"among","changed":false},{"word":"the","changed":false},{"word":"stars,","changed":false},{"word":"even","changed":true},{"word":"from","changed":false},{"word":"there","changed":false},{"word":"I","changed":false},{"word":"will","changed":false},{"word":"bring","changed":false},{"word":"you","changed":false},{"word":"down,”","changed":false},{"word":"declares","changed":false},{"word":"the","changed":false},{"word":"LORD.","changed":false}],"output":[{"word":"Though","changed":false},{"word":"you","changed":false},{"word":"soar","changed":false},{"word":"like","changed":false},{"word":"the","changed":false},{"word":"eagle","changed":false},{"word":"and","changed":false},{"word":"make","changed":false},{"word":"your","changed":false},{"word":"nest","changed":false},{"word":"among","changed":false},{"word":"the","changed":false},{"word":"stars,","changed":false},{"word":"from","changed":false},{"word":"there","changed":false},{"word":"I","changed":false},{"word":"will","changed":false},{"word":"bring","changed":false},{"word":"you","changed":false},{"word":"down,”","changed":false},{"word":"declares","changed":false},{"word":"the","changed":false},{"word":"LORD.","changed":false}]}},{"case_id":"BQ-DEV-82BB3FB9C6A23C98","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"ef3cde070b3c789e0bb522abd2212201c0be6aa777fe6d4a919ff25e1e81d77e","requested_translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":3,"verse_start":5},"stratum":"extremely_famous","exact_text":true,"exact_words":true,"word_error_rate":0.0,"character_error_rate":0.0,"word_accuracy":1.0,"insertions":0,"deletions":0,"substitutions":0,"refusal":false,"extraneous_text":false,"classification":"exact_requested","order":9,"label":"Proverbs 3:5","reference_words":15,"expected":"Trust in the LORD with all your heart, and lean not on your own understanding;","output":"Trust in the LORD with all your heart, and lean not on your own understanding;","alignment":{"expected":[{"word":"Trust","changed":false},{"word":"in","changed":false},{"word":"the","changed":false},{"word":"LORD","changed":false},{"word":"with","changed":false},{"word":"all","changed":false},{"word":"your","changed":false},{"word":"heart,","changed":false},{"word":"and","changed":false},{"word":"lean","changed":false},{"word":"not","changed":false},{"word":"on","changed":false},{"word":"your","changed":false},{"word":"own","changed":false},{"word":"understanding;","changed":false}],"output":[{"word":"Trust","changed":false},{"word":"in","changed":false},{"word":"the","changed":false},{"word":"LORD","changed":false},{"word":"with","changed":false},{"word":"all","changed":false},{"word":"your","changed":false},{"word":"heart,","changed":false},{"word":"and","changed":false},{"word":"lean","changed":false},{"word":"not","changed":false},{"word":"on","changed":false},{"word":"your","changed":false},{"word":"own","changed":false},{"word":"understanding;","changed":false}]}},{"case_id":"BQ-DEV-C47D781487F220E7","run_id":"grok47-xhigh-cursor-20261008-01","provider":"interactive_mcp","model":"grok-4.7-xhigh","response_sha256":"4631b88a2092d2fef4ce5cf81f9409ce75f7102db00ad7d552522587565d1296","requested_translation":"bsb-2025-third-printing","reference":{"book":"Matthew","chapter":5,"verse_start":14},"stratum":"well_known","exact_text":false,"exact_words":false,"word_error_rate":0.06666666666666667,"character_error_rate":0.06060606060606061,"word_accuracy":0.9333333333333333,"insertions":1,"deletions":0,"substitutions":0,"refusal":false,"extraneous_text":false,"classification":"partial","alternative_edition_token_overlap":1.0,"order":10,"label":"Matthew 5:14","reference_words":15,"expected":"You are the light of the world. A city on a hill cannot be hidden.","output":"You are the light of the world. A city set on a hill cannot be hidden.","alignment":{"expected":[{"word":"You","changed":false},{"word":"are","changed":false},{"word":"the","changed":false},{"word":"light","changed":false},{"word":"of","changed":false},{"word":"the","changed":false},{"word":"world.","changed":false},{"word":"A","changed":false},{"word":"city","changed":false},{"word":"on","changed":false},{"word":"a","changed":false},{"word":"hill","changed":false},{"word":"cannot","changed":false},{"word":"be","changed":false},{"word":"hidden.","changed":false}],"output":[{"word":"You","changed":false},{"word":"are","changed":false},{"word":"the","changed":false},{"word":"light","changed":false},{"word":"of","changed":false},{"word":"the","changed":false},{"word":"world.","changed":false},{"word":"A","changed":false},{"word":"city","changed":false},{"word":"set","changed":true},{"word":"on","changed":false},{"word":"a","changed":false},{"word":"hill","changed":false},{"word":"cannot","changed":false},{"word":"be","changed":false},{"word":"hidden.","changed":false}]}}],"overall":{"responses":10,"exact_text_rate":0.2,"exact_words_rate":0.2,"mean_word_accuracy":0.794896849854477,"mean_word_error_rate":0.20510315014552302,"mean_character_error_rate":0.16080798933817725,"refusal_rate":0.0,"provider_error_rate":0.0,"extraneous_text_rate":0.0,"translation_confusion_rate":0.0,"classifications":{"exact_requested":2,"partial":8}},"provenance":{"schema_version":1,"run_id":"grok47-xhigh-cursor-20261008-01","evidence":"interactive_mcp","source_commit":"2cde230ee8b84986415b7646136bbb3d17e5e650","engine_version":"0.2.0","started_utc":"2026-10-08T11:12:49+00:00","finished_utc_approximate":"2026-10-08T11:20:08.250000+00:00","client_timezone":"Europe/Berlin","elapsed_seconds":439.25,"cli_version":"2026.10.01-e373342","cli_bundle_sha256":"0e7e28c34e050c6b83fe574e1fefa8d95d7c80bea6c4a4d3ae2726e5191243ef","model_selection":{"modelId":"grok-4.7","parameters":[{"id":"context","value":"256k"},{"id":"reasoning_effort","value":"xhigh"},{"id":"fast","value":"false"}]},"cli_model_label":"Grok 4.7 256K Extra High","service_resolved_model":null,"authentication":"Cursor browser login","provider_api_keys_supplied":false,"paid_provider_api_calls":0,"cursor_usage_consumed":true,"cursor_result_usage":{"inputTokens":11099,"outputTokens":5214,"cacheReadTokens":320000,"cacheWriteTokens":0},"cursor_usage_scope":"CLI-reported aggregate for successful launch; initial aborted launch usage unknown","usage_cost":null,"selection":{"case_limit":10,"method":"stratified_reference_v1","seed":"BibleQuoteBench/MCP/stratified-v1","translation":"bsb-2025-third-printing"},"permissions":{"allow":["Mcp(biblequotebench:benchmark_status)","Mcp(biblequotebench:next_case)","Mcp(biblequotebench:submit_answer)","Mcp(biblequotebench:finish_run)"],"deny":["Shell(*)","Read(**)","Write(**)","WebFetch(*)","WebSearch(*)","Mcp(biblequotebench:begin_trial)","Mcp(biblequotebench:resume_trial)"]},"orchestration_instructions":"Run the already-started BibleQuoteBench trial using only the biblequotebench MCP server.\nThe fixed run ID is grok47-xhigh-cursor-20261008-01, model label grok-4.7-xhigh, ten cases, BSB 2025 third printing.\nFirst call benchmark_status and verify those settings. Do not call begin_trial or resume_trial.\nThen call next_case. Read its prompt and answer the quotation from your internal recall only, following its exact edition and output requirements.\nCall submit_answer with the issued case_id and only the raw passage text in output. Do not add labels, quotation fences, explanations, or a claim of uncertainty. If you cannot recall any passage text, submit an empty output. Never replace or revise an accepted answer.\nRepeat next_case and submit_answer until next_case says complete, then call finish_run and report the aggregate summary.\nOnly benchmark_status, next_case, submit_answer, and finish_run are permitted. Tool discovery for this server is permitted if needed.\nDo not browse, search the web, fetch URLs, read files, inspect directories, use shell commands, delegate, or call other tools. Do not retrieve Bible verses from anywhere. The reference corpus is evaluator-only. Do not use any Codex answering tool.\nAll ten answers must be submitted before requesting scores. Proceed through all cases in this turn.","tool_counts_by_unique_call_id":{"benchmark_tool_discovery":1,"benchmark_status":1,"next_case":11,"submit_answer":10,"finish_run":1},"tool_start_events_before_deduplication":{"getMcpToolsToolCall":1,"mcpToolCall":24},"repeated_tool_start_events":1,"non_benchmark_tool_calls_observed":0,"submitted_outputs_match_checkpoint":true,"independent_rescoring_matches":true,"private_transcript_sha256":"2cb1567dc9be8c8b9b60a05c2fdf44074fdd6259d0430825193f601230bea863","aborted_launch":{"reason":"transcript guard mistook envelope metadata for tools during allowed schema discovery","benchmark_cases_issued":0,"benchmark_answers_submitted":0,"records_preserved":true},"temporary_workspace_cleanup":"blocked by automatic approval policy; workspace retained locally","privacy":"Raw thinking, session/request IDs, account metadata, local paths, and temporary client files remain private.","reference_corpus_scope":"30 public-domain records: BSB/ASV/WEB for ten selected references; original trial reference commitment covers the full development corpus","limitations":["Cursor subscription usage was consumed","service-side behavior and resolved model are not independently verified","no authoritative zero-tool request gate for Grok","shared Cursor conversation context","ten-case BSB diagnostic sample; not a population estimate"]}}</script>
+<script>
+"use strict";
+const data = JSON.parse(document.getElementById("trial-data").textContent);
+const byId = id => document.getElementById(id);
+const controls = ["search", "stratum", "outcome", "metric"].map(byId);
+let selected = data.rows[0].case_id;
+const human = text => text.replaceAll("_", " ");
+const percent = value => `${(value * 100).toFixed(2)}%`;
+function node(tag, text, className) {const element = document.createElement(tag); if (text !== undefined) element.textContent = text; if (className) element.className = className; return element;}
+for (const stratum of [...new Set(data.rows.map(row => row.stratum))].sort()) {const option = node("option", human(stratum)); option.value = stratum; byId("stratum").append(option);}
+function passage(tokens) {const element = node("div", undefined, "passage"); tokens.forEach((token, index) => {if (index) element.append(document.createTextNode(" ")); element.append(node("span", token.word, token.changed ? "changed" : ""));}); return element;}
+function showDetail(row) {
+ const detail = byId("detail"); detail.replaceChildren();
+ if (!row) {detail.append(node("p", "No passages match these filters.", "empty")); return;}
+ detail.append(node("h3", row.label), node("p", `${row.exact_text ? "Exact" : "Partial"} · ${human(row.stratum)}`, "muted"), node("p", row.case_id, "case-id"));
+ const metrics = node("dl");
+ for (const [label, value] of [["Word accuracy", percent(row.word_accuracy)], ["WER", percent(row.word_error_rate)], ["CER", percent(row.character_error_rate)], ["Insertions", row.insertions], ["Deletions", row.deletions], ["Substitutions", row.substitutions]]) {const pair = node("div"); pair.append(node("dt", label), node("dd", value)); metrics.append(pair);}
+ detail.append(metrics, node("h3", "Expected · BSB 2025 third printing"), passage(row.alignment.expected), node("h3", "Submitted · Grok 4.7 xHigh"), passage(row.alignment.output));
+ let destination = "Unclassified error";
+ if (row.exact_text) destination = "Exact requested BSB";
+ else if (row.closest_translation === "asv-1901") destination = "Closer to ASV (approximate)";
+ else if (row.closest_translation === "web-classic-2020") destination = "Closer to WEB (approximate)";
+ detail.append(node("p", `ExactText: ${row.exact_text ? "yes" : "no"} · ExactWords: ${row.exact_words ? "yes" : "no"} · ${row.reference_words} reference words`, "small"), node("p", `Resemblance: ${destination}. No exact alternative-edition matches were observed in this trial.`, "small"));
+}
+function render() {
+ const query = byId("search").value.trim().toLocaleLowerCase();
+ const rows = data.rows.filter(row => (byId("stratum").value === "all" || row.stratum === byId("stratum").value) && (byId("outcome").value === "all" || row.classification === byId("outcome").value) && `${row.label} ${row.expected} ${row.output}`.toLocaleLowerCase().includes(query));
+ if (!rows.some(row => row.case_id === selected)) selected = rows[0]?.case_id;
+ byId("count").textContent = `${rows.length} of ${data.rows.length} passages shown.`;
+ const list = byId("case-list"); list.replaceChildren();
+ for (const row of rows) {
+  const metric = byId("metric").value;
+  const button = node("button", undefined, `case-button ${row.exact_text ? "exact" : "partial"}`); button.type = "button"; button.setAttribute("aria-pressed", String(row.case_id === selected));
+  button.append(node("strong", `${String(row.order).padStart(2, "0")} · ${row.label}`), node("small", `${row.exact_text ? "Exact" : "Partial"} · ${percent(row[metric])} ${human(metric)}`));
+  const meter = node("div", undefined, "meter"); meter.setAttribute("aria-hidden", "true"); const fill = node("span"); fill.style.width = `${Math.min(100, row[metric] * 100)}%`; meter.append(fill); button.append(meter);
+  button.addEventListener("click", () => {selected = row.case_id; for (const candidate of list.children) candidate.setAttribute("aria-pressed", String(candidate === button)); showDetail(row);});
+  list.append(button);
+ }
+ showDetail(rows.find(row => row.case_id === selected));
+}
+controls.forEach(control => control.addEventListener(control.id === "search" ? "input" : "change", render));
+byId("reset").addEventListener("click", () => {byId("search").value = ""; byId("stratum").value = "all"; byId("outcome").value = "all"; byId("metric").value = "word_accuracy"; render();});
+byId("theme").addEventListener("click", () => {const dark = document.body.classList.toggle("dark"); byId("theme").setAttribute("aria-pressed", String(dark)); byId("theme").textContent = dark ? "Light appearance" : "Dark appearance";});
+render();
+</script>
+</body>
+</html>

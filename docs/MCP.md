@@ -17,6 +17,12 @@ where possible. Use the public development data for these trials; any case sent
 to an assistant becomes part of that conversation and may leave the local machine.
 The server does not expose reference text or use MCP sampling.
 
+For an observed end-to-end example, see the
+[8 October 2026 Grok 4.7 xHigh Cursor CLI trial](trials/2026-10-08-grok47-xhigh-cursor/README.md).
+It publishes all ten answers, scoring inputs, charts, and sanitized provenance,
+including client isolation, denied tool categories, observed call counts, and
+the limits of those restrictions. It retains the `interactive_mcp` label.
+
 ## Connect desktop clients
 
 Build the executable once:

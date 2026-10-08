@@ -1,0 +1,43 @@
+{
+  "identity": {
+    "cases_sha256": "fddba6c21ad3419320f5a667abe7ccccb4d2258c9fbd226058e4b423ddb64e63",
+    "catalog_sha256": "b55994c299cc692d6e21f911df37bd63b8ed5817224603f2729dfcd92f89d63e",
+    "engine_version": "0.2.0",
+    "evidence": "interactive_mcp",
+    "expected_case_ids": [
+      "BQ-DEV-F039574F52ED560E",
+      "BQ-DEV-55B0A612F58E9A41",
+      "BQ-DEV-4081B8B67336D3DD",
+      "BQ-DEV-14F5F44BE426F2CD",
+      "BQ-DEV-BE25A6048968EBE3",
+      "BQ-DEV-2B7DEE8B8B00DE29",
+      "BQ-DEV-417F34EC981C6F4F",
+      "BQ-DEV-D2B06180D50C4DB2",
+      "BQ-DEV-82BB3FB9C6A23C98",
+      "BQ-DEV-C47D781487F220E7"
+    ],
+    "model": "grok-4.7-xhigh",
+    "model_identity": "self_reported",
+    "prompts_sha256": "8b24ec8e2b41cdebd474f82c8ece6b94933811586ea7820f790d5a38880f609d",
+    "references_sha256": "3b47fc510fcdafa04c1669245f5e5f1192af355d2f0cc78af3ae0f97e36ce18c",
+    "run_id": "grok47-xhigh-cursor-20261008-01",
+    "schema_version": 2,
+    "selection": {
+      "case_limit": 10,
+      "method": "stratified_reference_v1",
+      "seed": "BibleQuoteBench/MCP/stratified-v1",
+      "translation": "bsb-2025-third-printing"
+    }
+  },
+  "limitations": [
+    "self-reported model identity",
+    "shared conversation context",
+    "client-side retrieval restrictions are not enforced",
+    "model sampling settings and usage are unknown"
+  ],
+  "paid_api_calls": 0,
+  "provider_api_calls": 0,
+  "responses_sha256": "0066e11d301bbb36aa36761eea04d51a1f0d337c54cae9023dc6dafe1926e481",
+  "restricted_attempts": [],
+  "scores_sha256": "242bf30442c0aeb68eb26944a5b88257bd578d00ea88a8df79bb93cab2ce65d5"
+}

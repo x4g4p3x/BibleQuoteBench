@@ -69,6 +69,14 @@ benchmark provider API calls, use the [local MCP server](docs/MCP.md). It saves
 answers and scores locally; the client app's normal usage limits still apply.
 Interactive evidence is kept distinct from controlled closed-book provider runs.
 
+The first live subscription trial is documented in the
+[Grok 4.7 xHigh Cursor report](docs/trials/2026-10-08-grok47-xhigh-cursor/README.md):
+2 of 10 BSB passages were exact (20%); mean word accuracy was 79.49%.
+It includes the submitted answers, reproducible scores, four downloadable charts,
+and an offline case explorer. This small interactive diagnostic is separate from
+the synthetic pilot and the held paid GPT-6 pilot. See the
+[observed trial archive](docs/trials/README.md) for evidence boundaries.
+
 For answers isolated from the desktop conversation and its retrieval tools, use
 the [restricted subscription runner](docs/RESTRICTED.md):
 

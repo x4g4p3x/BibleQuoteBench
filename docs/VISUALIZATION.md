@@ -4,6 +4,16 @@ The benchmark generates a single HTML file containing its data, styles, and
 controls. Open it directly in a browser; no server, installation, internet
 connection, or provider credentials are needed.
 
+Observed MCP trials have a separate
+[trial archive](trials/README.md). The first
+[Grok 4.7 xHigh report](trials/2026-10-08-grok47-xhigh-cursor/README.md) includes
+four SVG/PNG figures and a standalone case explorer generated from its public
+score bundle. It is descriptive `interactive_mcp` evidence and is not an input
+to the controlled `analyze`/`visualize` workflow described below. Its explorer
+offers reference/wording search, stratum and outcome filters, WER/CER selection,
+and a light/dark toggle. It keeps headline rates fixed for the complete ten-case
+sample and displays no comparison intervals.
+
 Use **Appearance** to choose System, Light, or Dark. System follows your device's
 color preference, including changes while the report is open. A manual choice is
 remembered when browser storage is available. Print/PDF output uses the light palette.

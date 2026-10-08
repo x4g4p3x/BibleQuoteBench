@@ -1,0 +1,11 @@
+order,case_id,book,chapter,verse,stratum,classification,exact_text,exact_words,word_accuracy,word_error_rate,character_error_rate,insertions,deletions,substitutions,closer_alternatives
+1,BQ-DEV-F039574F52ED560E,Psalms,119,165,translation_sensitive,exact_requested,True,True,1.0,0.0,0.0,0,0,0,
+2,BQ-DEV-55B0A612F58E9A41,Deuteronomy,15,17,random,partial,False,False,0.75,0.25,0.1736111111111111,0,1,6,
+3,BQ-DEV-4081B8B67336D3DD,2 Chronicles,15,6,random,partial,False,False,0.7777777777777778,0.2222222222222222,0.21212121212121213,0,0,4,
+4,BQ-DEV-14F5F44BE426F2CD,Judges,19,22,random,partial,False,False,0.6444444444444444,0.35555555555555557,0.2987551867219917,5,0,11,
+5,BQ-DEV-BE25A6048968EBE3,Jeremiah,21,7,long_verse,partial,False,False,0.5593220338983051,0.4406779661016949,0.3395638629283489,15,3,8,web-classic-2020
+6,BQ-DEV-2B7DEE8B8B00DE29,Ruth,1,19,random,partial,False,False,0.5757575757575757,0.42424242424242425,0.28342245989304815,3,4,7,
+7,BQ-DEV-417F34EC981C6F4F,Nehemiah,10,13,short_verse,partial,False,False,0.75,0.25,0.2,0,1,0,asv-1901
+8,BQ-DEV-D2B06180D50C4DB2,Obadiah,1,4,random,partial,False,False,0.9583333333333334,0.041666666666666664,0.04,0,1,0,
+9,BQ-DEV-82BB3FB9C6A23C98,Proverbs,3,5,extremely_famous,exact_requested,True,True,1.0,0.0,0.0,0,0,0,
+10,BQ-DEV-C47D781487F220E7,Matthew,5,14,well_known,partial,False,False,0.9333333333333333,0.06666666666666667,0.06060606060606061,1,0,0,

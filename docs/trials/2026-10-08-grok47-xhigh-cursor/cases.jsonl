@@ -1,0 +1,10 @@
+{"case_id":"BQ-DEV-F039574F52ED560E","translation":"bsb-2025-third-printing","reference":{"book":"Psalms","chapter":119,"verse_start":165},"stratum":"translation_sensitive","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-55B0A612F58E9A41","translation":"bsb-2025-third-printing","reference":{"book":"Deuteronomy","chapter":15,"verse_start":17},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-4081B8B67336D3DD","translation":"bsb-2025-third-printing","reference":{"book":"2 Chronicles","chapter":15,"verse_start":6},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-14F5F44BE426F2CD","translation":"bsb-2025-third-printing","reference":{"book":"Judges","chapter":19,"verse_start":22},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-BE25A6048968EBE3","translation":"bsb-2025-third-printing","reference":{"book":"Jeremiah","chapter":21,"verse_start":7},"stratum":"long_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-2B7DEE8B8B00DE29","translation":"bsb-2025-third-printing","reference":{"book":"Ruth","chapter":1,"verse_start":19},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-417F34EC981C6F4F","translation":"bsb-2025-third-printing","reference":{"book":"Nehemiah","chapter":10,"verse_start":13},"stratum":"short_verse","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-D2B06180D50C4DB2","translation":"bsb-2025-third-printing","reference":{"book":"Obadiah","chapter":1,"verse_start":4},"stratum":"random","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-82BB3FB9C6A23C98","translation":"bsb-2025-third-printing","reference":{"book":"Proverbs","chapter":3,"verse_start":5},"stratum":"extremely_famous","prompt_variant":"canonical"}
+{"case_id":"BQ-DEV-C47D781487F220E7","translation":"bsb-2025-third-printing","reference":{"book":"Matthew","chapter":5,"verse_start":14},"stratum":"well_known","prompt_variant":"canonical"}
