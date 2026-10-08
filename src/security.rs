@@ -217,7 +217,7 @@ mod tests {
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].reason, "private key material detected");
         assert!(!format!("{violations:?}").contains(&marker));
-        assert!(inspect_entry("binary.bin", &[0xff, 0xfe]).is_empty());
+        assert_eq!(inspect_entry("binary.bin", &[0xff, 0xfe]), vec![]);
     }
 
     #[test]
@@ -228,7 +228,10 @@ mod tests {
             inspect_entry("innocent-report.json", text.as_bytes()).len(),
             1
         );
-        assert!(inspect_entry("manifest.json", br#"{"hidden_cases_sha256":"digest"}"#).is_empty());
+        assert_eq!(
+            inspect_entry("manifest.json", br#"{"hidden_cases_sha256":"digest"}"#),
+            vec![]
+        );
     }
 
     #[test]
@@ -246,7 +249,7 @@ mod tests {
             "sk-proj-", "abcdefghijklmnopqrstuvwxyz123456"
         );
         let violations = inspect_entry("accidental.txt", fixture.as_bytes());
-        assert!(!violations.is_empty());
+        assert_ne!(violations, vec![]);
         assert!(
             violations
                 .iter()
@@ -256,7 +259,13 @@ mod tests {
 
     #[test]
     fn permits_documented_placeholders() {
-        assert!(inspect_entry("README.md", b"OPENAI_API_KEY=$OPENAI_API_KEY").is_empty());
-        assert!(inspect_entry(".env.example", b"OPENAI_API_KEY=YOUR_API_KEY_HERE").is_empty());
+        assert_eq!(
+            inspect_entry("README.md", b"OPENAI_API_KEY=$OPENAI_API_KEY"),
+            vec![]
+        );
+        assert_eq!(
+            inspect_entry(".env.example", b"OPENAI_API_KEY=YOUR_API_KEY_HERE"),
+            vec![]
+        );
     }
 }

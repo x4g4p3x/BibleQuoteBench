@@ -506,7 +506,7 @@ mod tests {
             (10, crate::Classification::ProviderError),
         ] {
             let response = synthetic_response(&config, &cases[0], &references, index, 0);
-            assert!(response.output.is_empty());
+            assert_eq!(response.output, "");
             assert_eq!(response.error.is_some(), index == 10);
             assert_eq!(response.resolved_model.as_deref(), Some("synthetic-a"));
             assert_eq!(

@@ -628,7 +628,7 @@ mod tests {
         assert_eq!(report.exact_alternative_matches["requested"]["a"], 1);
         assert_eq!(report.exact_alternative_matches["requested"]["b"], 1);
         let approximate = score_response(&case(), &response("A X extra C"), &requested, &[&a, &b]);
-        assert!(approximate.exact_other_translations.is_empty());
+        assert_eq!(approximate.exact_other_translations, Vec::<String>::new());
         assert_eq!(approximate.closest_translations, vec!["a", "b"]);
         assert_eq!(
             crate::report::build_report(&[approximate]).requested_to_resembles["requested"]["_ambiguous_closest"],

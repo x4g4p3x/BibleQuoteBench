@@ -659,7 +659,7 @@ mod tests {
                     let records = result.unwrap();
                     assert_eq!(records.len(), 1);
                     assert_eq!(records[0].case_id, cases[0].case_id);
-                    assert!(records[0].output.is_empty());
+                    assert_eq!(records[0].output, "");
                     assert!(records[0].error.as_ref().unwrap().contains(expected));
                     assert!(records[0].execution.is_none());
                     assert!(records[0].resolved_model.is_none());
@@ -916,7 +916,7 @@ mod tests {
         validate_config(&config).unwrap();
         let result =
             complete_anthropic(&client(), &config, &base_url, "test-key", "prompt").unwrap();
-        assert!(result.text.is_empty());
+        assert_eq!(result.text, "");
         assert!(result.execution.truncated);
         assert_eq!(result.execution.output_tokens, Some(4096));
         let request = request.recv().unwrap();

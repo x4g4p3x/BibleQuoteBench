@@ -352,7 +352,7 @@ mod tests {
             .unwrap()
             .remove("exact_other_translations");
         score = serde_json::from_value(legacy).unwrap();
-        assert!(score.exact_other_translations.is_empty());
+        assert_eq!(score.exact_other_translations, Vec::<String>::new());
         assert!(score.exact_other_translation.is_some());
         let restored = build_report(&[score]);
         assert_eq!(
