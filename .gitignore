@@ -1,4 +1,6 @@
 /target/
+.local-ci-generations/
+__pycache__/
 /results/
 /data/sources/
 /data/corpus/

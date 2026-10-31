@@ -8,6 +8,12 @@ to review and must preserve those contracts.
 
 Install Rust 1.85 or newer with the `rustfmt` and `clippy` components. For local
 coverage, also install `llvm-tools-preview` and `cargo-llvm-cov` 0.9.0.
+The local quality script also requires Python 3.10 or newer. It uses CI-owned
+Cargo target generations beside `target` and removes completed generations
+after seven days without CI use. Existing targets and interrupted generations remain; each new
+generation starts with a cold build. Hosted CI and custom Cargo targets or build
+directories skip retention. Set `CARGO_TARGET_DIR` to opt out, and do not use
+managed CI targets for unrelated builds.
 
 On Windows, run the complete local quality suite with:
 
